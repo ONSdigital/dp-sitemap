@@ -13,17 +13,29 @@ all: audit test build
 audit:
 	go list -m all | nancy sleuth
 
+.PHONY: assets
+assets:
+	go get github.com/jteeuwen/go-bindata/go-bindata; cd assets; go run github.com/jteeuwen/go-bindata/go-bindata -o robot.go -pkg assets robot/...
+
+.PHONY: assets-debug
+assets-debug:
+	cd assets; go run github.com/jteeuwen/go-bindata/go-bindata -debug -o robot.go -pkg assets robot/...
+
+.PHONY: clean-assets
+clean-assets:
+	rm assets/robot.go
+
 .PHONY: build
-build:
+build: assets
 	go build -tags 'production' $(LDFLAGS) -o $(BINPATH)/dp-sitemap
 
 .PHONY: debug
-debug:
+debug:assets
 	go build -tags 'debug' $(LDFLAGS) -o $(BINPATH)/dp-sitemap
 	HUMAN_LOG=1 DEBUG=1 $(BINPATH)/dp-sitemap
 
 .PHONY: test
-test:
+test:assets
 	go test -race -cover ./...
 
 .PHONY: produce
@@ -35,5 +47,5 @@ convey:
 	goconvey ./...
 
 .PHONY: test-component
-test-component:
+test-component:assets
 	go test -cover -coverpkg=github.com/ONSdigital/dp-sitemap/... -component

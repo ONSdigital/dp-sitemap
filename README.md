@@ -1,6 +1,25 @@
 # dp-sitemap
 This repo holds all information/code regarding sitemap (for SEO and other purposes).
 
+# Structure of robot.json
+Holds allow/deny list for different user-agents.
+```
+{
+    "Gogglebot": {
+      "AllowList": ["/googleallow1", "/googleallow2"],
+      "DenyList":  ["/googledeny"]
+    },
+    "Bingbot": {
+        "AllowList": ["/bingcontent"],
+        "DenyList":  ["/bingdeny1", "/bingdeny2"]
+    },
+      "*": {
+        "AllowList": ["/"],
+        "DenyList":  ["/private"]
+    }
+}
+```
+
 ### Getting started
 
 * Run `make debug`
@@ -52,4 +71,3 @@ See [CONTRIBUTING](CONTRIBUTING.md) for details.
 Copyright © 2023, Office for National Statistics (https://www.ons.gov.uk)
 
 Released under MIT license, see [LICENSE](LICENSE.md) for details.
-
