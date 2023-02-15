@@ -82,7 +82,7 @@ func Run(ctx context.Context, serviceList *ExternalServiceList, buildTime, gitCo
 		return nil, err
 	}
 
-	if err := registerCheckers(ctx, hc, consumer, esClient); err != nil {
+	if err = registerCheckers(ctx, hc, consumer, esClient); err != nil {
 		return nil, errors.Wrap(err, "unable to register checkers")
 	}
 
@@ -91,7 +91,7 @@ func Run(ctx context.Context, serviceList *ExternalServiceList, buildTime, gitCo
 
 	// Run the http server in a new go-routine
 	go func() {
-		if err := s.ListenAndServe(); err != nil {
+		if serveErr := s.ListenAndServe(); serveErr != nil {
 			svcErrors <- errors.Wrap(err, "failure in http listen and serve")
 		}
 	}()
@@ -191,8 +191,7 @@ func (svc *Service) Close(ctx context.Context) error {
 func registerCheckers(ctx context.Context,
 	hc HealthChecker,
 	consumer kafka.IConsumerGroup,
-	esClient dpEsClient.Client) (err error) {
-
+	esClient dpEsClient.Client) error {
 	hasErrors := false
 
 	if err := hc.AddCheck("Kafka consumer", consumer.Checker); err != nil {
@@ -200,7 +199,7 @@ func registerCheckers(ctx context.Context,
 		log.Error(ctx, "error adding check for Kafka", err)
 	}
 
-	if err = hc.AddCheck("Elasticsearch", esClient.Checker); err != nil {
+	if err := hc.AddCheck("Elasticsearch", esClient.Checker); err != nil {
 		hasErrors = true
 		log.Error(ctx, "error creating elasticsearch health check", err)
 	}
