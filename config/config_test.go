@@ -31,6 +31,12 @@ func TestConfig(t *testing.T) {
 				So(cfg.KafkaConfig.NumWorkers, ShouldEqual, 1)
 				So(cfg.KafkaConfig.HelloCalledGroup, ShouldEqual, "dp-sitemap")
 				So(cfg.KafkaConfig.HelloCalledTopic, ShouldEqual, "hello-called")
+				So(cfg.OpenSearchConfig.SignerFilename, ShouldEqual, "")
+				So(cfg.OpenSearchConfig.SignerProfile, ShouldEqual, "")
+				So(cfg.OpenSearchConfig.SignerRegion, ShouldEqual, "eu-west-2")
+				So(cfg.OpenSearchConfig.SignerService, ShouldEqual, "es")
+				So(cfg.OpenSearchConfig.TLSInsecureSkipVerify, ShouldEqual, false)
+				So(cfg.OpenSearchConfig.APIURL, ShouldEqual, "http://localhost:11200")
 			})
 
 			Convey("Then a second call to config should return the same config", func() {

@@ -4,10 +4,13 @@ import (
 	"context"
 	"time"
 
+	dpEsClient "github.com/ONSdigital/dp-elasticsearch/v3/client"
+
 	kafka "github.com/ONSdigital/dp-kafka/v3"
 	"github.com/ONSdigital/dp-sitemap/config"
 	"github.com/ONSdigital/dp-sitemap/event"
 	"github.com/ONSdigital/log.go/v2/log"
+	"github.com/go-co-op/gocron"
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
 )
@@ -20,6 +23,9 @@ type Service struct {
 	healthCheck     HealthChecker
 	consumer        kafka.IConsumerGroup
 	shutdownTimeout time.Duration
+	scheduler       *gocron.Scheduler
+	esClient        dpEsClient.Client
+	s3Client        S3Uploader
 }
 
 // Run the service
@@ -55,6 +61,20 @@ func Run(ctx context.Context, serviceList *ExternalServiceList, buildTime, gitCo
 	// Kafka error logging go-routine
 	consumer.LogErrors(ctx)
 
+	// Get S3 Client
+	s3Client, err := serviceList.GetS3Client(ctx, cfg)
+	if err != nil {
+		log.Fatal(ctx, "failed to initialise s3 client", err)
+		return nil, err
+	}
+
+	// Get ElasticSearch Client
+	esClient, err := serviceList.GetESClient(ctx, cfg)
+	if err != nil {
+		log.Error(ctx, "Failed to create dp-elasticsearch client", err)
+		return nil, err
+	}
+
 	// Get HealthCheck
 	hc, err := serviceList.GetHealthCheck(cfg, buildTime, gitCommit, version)
 	if err != nil {
@@ -62,7 +82,7 @@ func Run(ctx context.Context, serviceList *ExternalServiceList, buildTime, gitCo
 		return nil, err
 	}
 
-	if err := registerCheckers(ctx, hc, consumer); err != nil {
+	if err := registerCheckers(ctx, hc, consumer, esClient); err != nil {
 		return nil, errors.Wrap(err, "unable to register checkers")
 	}
 
@@ -76,6 +96,15 @@ func Run(ctx context.Context, serviceList *ExternalServiceList, buildTime, gitCo
 		}
 	}()
 
+	scheduler := gocron.NewScheduler(time.UTC)
+	_, err = scheduler.Every(10).Seconds().DoWithJobDetails(func(job gocron.Job) {
+		log.Info(ctx, "scheduler run", log.Data{"last_run": job.LastRun(), "next_run": job.NextRun(), "run_count": job.RunCount()})
+	})
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to run scheduler")
+	}
+	scheduler.StartAsync()
+
 	return &Service{
 		server:          s,
 		router:          r,
@@ -83,6 +112,9 @@ func Run(ctx context.Context, serviceList *ExternalServiceList, buildTime, gitCo
 		healthCheck:     hc,
 		consumer:        consumer,
 		shutdownTimeout: cfg.GracefulShutdownTimeout,
+		scheduler:       scheduler,
+		esClient:        esClient,
+		s3Client:        s3Client,
 	}, nil
 }
 
@@ -102,6 +134,12 @@ func (svc *Service) Close(ctx context.Context) error {
 		// stop healthcheck, as it depends on everything else
 		if svc.serviceList.HealthCheck {
 			svc.healthCheck.Stop()
+		}
+		// stop the scheduler
+		log.Info(ctx, "stopping scheduler")
+		svc.scheduler.Stop()
+		if !svc.scheduler.IsRunning() {
+			log.Info(ctx, "stopped scheduler")
 		}
 
 		// If kafka consumer exists, stop listening to it.
@@ -152,13 +190,19 @@ func (svc *Service) Close(ctx context.Context) error {
 
 func registerCheckers(ctx context.Context,
 	hc HealthChecker,
-	consumer kafka.IConsumerGroup) (err error) {
+	consumer kafka.IConsumerGroup,
+	esClient dpEsClient.Client) (err error) {
 
 	hasErrors := false
 
 	if err := hc.AddCheck("Kafka consumer", consumer.Checker); err != nil {
 		hasErrors = true
 		log.Error(ctx, "error adding check for Kafka", err)
+	}
+
+	if err = hc.AddCheck("Elasticsearch", esClient.Checker); err != nil {
+		hasErrors = true
+		log.Error(ctx, "error creating elasticsearch health check", err)
 	}
 
 	if hasErrors {

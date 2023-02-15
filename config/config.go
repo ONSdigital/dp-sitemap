@@ -16,6 +16,24 @@ type Config struct {
 	HealthCheckCriticalTimeout time.Duration `envconfig:"HEALTHCHECK_CRITICAL_TIMEOUT"`
 	OutputFilePath             string        `envconfig:"OUTPUT_FILE_PATH"`
 	KafkaConfig                KafkaConfig
+	OpenSearchConfig           OpenSearchConfig
+	S3Config                   S3Config
+}
+
+type S3Config struct {
+	UploadBucketName string `envconfig:"S3_UPLOAD_BUCKET_NAME"`
+	AwsRegion        string `envconfig:"S3_AWS_REGION"`
+	LocalstackHost   string `envconfig:"S3_LOCALSTACK_HOST"`
+}
+
+type OpenSearchConfig struct {
+	APIURL                string `envconfig:"OPENSEARCH_API_URL"`
+	Signer                bool   `envconfig:"OPENSEARCH_SIGNER"`
+	SignerFilename        string `envconfig:"OPENSEARCH_SIGNER_AWS_FILENAME"`
+	SignerProfile         string `envconfig:"OPENSEARCH_SIGNER_AWS_PROFILE"`
+	SignerRegion          string `envconfig:"OPENSEARCH_SIGNER_AWS_REGION"`
+	SignerService         string `envconfig:"OPENSEARCH_SIGNER_AWS_SERVICE"`
+	TLSInsecureSkipVerify bool   `envconfig:"OPENSEARCH_TLS_INSECURE_SKIP_VERIFY"`
 }
 
 // KafkaConfig contains the config required to connect to Kafka
@@ -57,6 +75,16 @@ func Get() (*Config, error) {
 			HelloCalledGroup: "dp-sitemap",
 			HelloCalledTopic: "hello-called",
 		},
+	}
+
+	cfg.OpenSearchConfig = OpenSearchConfig{
+		APIURL:                "http://localhost:11200",
+		SignerFilename:        "",
+		SignerProfile:         "",
+		SignerRegion:          "eu-west-2",
+		SignerService:         "es",
+		Signer:                false,
+		TLSInsecureSkipVerify: false,
 	}
 
 	return cfg, envconfig.Process("", cfg)
