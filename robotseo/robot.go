@@ -7,21 +7,26 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/ONSdigital/dp-sitemap/assets"
 	"github.com/ONSdigital/log.go/v2/log"
 	"golang.org/x/exp/slices"
 )
 
-var robotList map[string]SeoRobotModel
+var robotList map[string]assets.SeoRobotModel
 
-func Init(asset func(name string) ([]byte, error)) {
+func Init(efs assets.FileSystemInterface) {
 	ctx := context.Background()
-	b, err := asset("robot/robot.json")
+	b, err := efs.Get(ctx, "robot.json")
 	if err != nil {
 		log.Error(ctx, "can't find robot.json", err)
 		panic("Can't find robot.json")
 	}
+	if err != nil {
+		log.Error(ctx, "error reading robot.json", err)
+		panic("Error reading robot.json")
+	}
 
-	robotList = map[string]SeoRobotModel{}
+	robotList = map[string]assets.SeoRobotModel{}
 	err = json.Unmarshal(b, &robotList)
 	if err != nil {
 		log.Error(ctx, "error reading robot.json", err)

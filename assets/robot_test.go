@@ -6,7 +6,6 @@ import (
 	"os"
 	"testing"
 
-	"github.com/ONSdigital/dp-sitemap/robotseo"
 	"github.com/stretchr/testify/assert"
 	"github.com/valyala/fastjson"
 )
@@ -22,7 +21,7 @@ func TestRobotFileValidity(t *testing.T) {
 // To detect any json definition issues (that are not caught by above test-case)
 // esp: duplicates
 func TestMarshalUnmarshalRoundtrip(t *testing.T) {
-	robot := map[string]robotseo.SeoRobotModel{}
+	robot := map[string]SeoRobotModel{}
 	cOne := &bytes.Buffer{}
 	cTwo := &bytes.Buffer{}
 	b, err := os.ReadFile("robot/robot.json")
