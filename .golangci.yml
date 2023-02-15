@@ -6,7 +6,8 @@ run:
     - feature/*
     - mock/*
   skip-files:
-    - main.go
+    - ".*_test.go"
+    - main.go    
 
   # timeout for analysis, e.g. 30s, 5m, default is 1m
   timeout: 5m
