@@ -4,16 +4,26 @@ import (
 	"context"
 	"net/http"
 
+	dpEs "github.com/ONSdigital/dp-elasticsearch/v3"
+	dpEsClient "github.com/ONSdigital/dp-elasticsearch/v3/client"
 	"github.com/ONSdigital/dp-healthcheck/healthcheck"
 	dpkafka "github.com/ONSdigital/dp-kafka/v3"
+	"github.com/ONSdigital/dp-net/v2/awsauth"
 	dphttp "github.com/ONSdigital/dp-net/v2/http"
+	dps3 "github.com/ONSdigital/dp-s3/v2"
 	"github.com/ONSdigital/dp-sitemap/config"
+	"github.com/ONSdigital/log.go/v2/log"
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/credentials"
+	"github.com/aws/aws-sdk-go/aws/session"
 )
 
 // ExternalServiceList holds the initialiser and initialisation state of external services.
 type ExternalServiceList struct {
 	HealthCheck   bool
 	KafkaConsumer bool
+	S3Client      bool
+	ESClient      bool
 	Init          Initialiser
 }
 
@@ -22,6 +32,7 @@ func NewServiceList(initialiser Initialiser) *ExternalServiceList {
 	return &ExternalServiceList{
 		HealthCheck:   false,
 		KafkaConsumer: false,
+		S3Client:      false,
 		Init:          initialiser,
 	}
 }
@@ -42,6 +53,26 @@ func (e *ExternalServiceList) GetKafkaConsumer(ctx context.Context, cfg *config.
 		return nil, err
 	}
 	e.KafkaConsumer = true
+	return consumer, nil
+}
+
+// GetS3Client creates an S3Client and sets the S3Client flag to true
+func (e *ExternalServiceList) GetS3Client(ctx context.Context, cfg *config.Config) (S3Uploader, error) {
+	consumer, err := e.Init.DoGetS3Client(ctx, &cfg.S3Config)
+	if err != nil {
+		return nil, err
+	}
+	e.S3Client = true
+	return consumer, nil
+}
+
+// GetESClient creates an ESClient and sets the ESClient flag to true
+func (e *ExternalServiceList) GetESClient(ctx context.Context, cfg *config.Config) (dpEsClient.Client, error) {
+	consumer, err := e.Init.DoGetESClient(ctx, &cfg.OpenSearchConfig)
+	if err != nil {
+		return nil, err
+	}
+	e.ESClient = true
 	return consumer, nil
 }
 
@@ -71,6 +102,9 @@ func (e *Init) DoGetKafkaConsumer(ctx context.Context, kafkaCfg *config.KafkaCon
 	cgConfig := &dpkafka.ConsumerGroupConfig{
 		KafkaVersion: &kafkaCfg.Version,
 		Offset:       &kafkaOffset,
+		Topic:        kafkaCfg.HelloCalledTopic,
+		GroupName:    kafkaCfg.HelloCalledGroup,
+		BrokerAddrs:  kafkaCfg.Brokers,
 	}
 	if kafkaCfg.SecProtocol == config.KafkaTLSProtocolFlag {
 		cgConfig.SecurityConfig = dpkafka.GetSecurityConfig(
@@ -89,6 +123,56 @@ func (e *Init) DoGetKafkaConsumer(ctx context.Context, kafkaCfg *config.KafkaCon
 	}
 
 	return kafkaConsumer, nil
+}
+
+// DoGetS3Client returns a S3Client
+func (e *Init) DoGetS3Client(ctx context.Context, cfg *config.S3Config) (S3Uploader, error) {
+	if cfg.LocalstackHost != "" {
+		s, err := session.NewSession(&aws.Config{
+			Endpoint:         aws.String(cfg.LocalstackHost),
+			Region:           aws.String(cfg.AwsRegion),
+			S3ForcePathStyle: aws.Bool(true),
+			Credentials:      credentials.NewStaticCredentials("test", "test", ""),
+		})
+
+		if err != nil {
+			return nil, err
+		}
+
+		return dps3.NewClientWithSession(cfg.UploadBucketName, s), nil
+	}
+
+	s3Client, err := dps3.NewClient(cfg.AwsRegion, cfg.UploadBucketName)
+	if err != nil {
+		return nil, err
+	}
+	return s3Client, nil
+}
+
+// DoGetS3Client returns a S3Client
+func (e *Init) DoGetESClient(ctx context.Context, cfg *config.OpenSearchConfig) (dpEsClient.Client, error) {
+	// Initialise AWS signer
+	esConfig := dpEsClient.Config{
+		ClientLib: dpEsClient.GoElasticV710,
+		Address:   cfg.APIURL,
+		Transport: dphttp.DefaultTransport,
+	}
+
+	if cfg.Signer {
+		awsSignerRT, err := awsauth.NewAWSSignerRoundTripper(cfg.SignerFilename, cfg.SignerProfile, cfg.SignerRegion, cfg.SignerService, awsauth.Options{TlsInsecureSkipVerify: cfg.TLSInsecureSkipVerify})
+		if err != nil {
+			log.Error(ctx, "failed to create aws auth roundtripper", err)
+			return nil, err
+		}
+
+		esConfig.Transport = awsSignerRT
+	}
+
+	esClient, err := dpEs.NewClient(esConfig)
+	if err != nil {
+		return nil, err
+	}
+	return esClient, nil
 }
 
 // DoGetHealthCheck creates a healthcheck with versionInfo

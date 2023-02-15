@@ -7,6 +7,8 @@ import (
 	"sync"
 	"testing"
 
+	dpEsClient "github.com/ONSdigital/dp-elasticsearch/v3/client"
+	dpEsMock "github.com/ONSdigital/dp-elasticsearch/v3/client/mocks"
 	"github.com/ONSdigital/dp-healthcheck/healthcheck"
 	kafka "github.com/ONSdigital/dp-kafka/v3"
 	"github.com/ONSdigital/dp-kafka/v3/kafkatest"
@@ -63,6 +65,8 @@ func TestRun(t *testing.T) {
 				return nil
 			},
 		}
+		s3Mock := &serviceMock.S3UploaderMock{}
+		esMock := &dpEsMock.ClientMock{}
 
 		funcDoGetKafkaConsumerOk := func(ctx context.Context, kafkaCfg *config.KafkaConfig) (kafka.IConsumerGroup, error) {
 			return consumerMock, nil
@@ -74,6 +78,13 @@ func TestRun(t *testing.T) {
 
 		funcDoGetHTTPServer := func(bindAddr string, router http.Handler) service.HTTPServer {
 			return serverMock
+		}
+
+		funcDoGetS3ClientFunc := func(ctx context.Context, cfg *config.S3Config) (service.S3Uploader, error) {
+			return s3Mock, nil
+		}
+		funcDoGetESClientFunc := func(ctx context.Context, cfg *config.OpenSearchConfig) (dpEsClient.Client, error) {
+			return esMock, nil
 		}
 
 		Convey("Given that initialising Kafka consumer returns an error", func() {
@@ -97,6 +108,8 @@ func TestRun(t *testing.T) {
 				DoGetHTTPServerFunc:    funcDoGetHTTPServerNil,
 				DoGetHealthCheckFunc:   funcDoGetHealthcheckErr,
 				DoGetKafkaConsumerFunc: funcDoGetKafkaConsumerOk,
+				DoGetS3ClientFunc:      funcDoGetS3ClientFunc,
+				DoGetESClientFunc:      funcDoGetESClientFunc,
 			}
 			svcErrors := make(chan error, 1)
 			svcList := service.NewServiceList(initMock)
@@ -115,6 +128,8 @@ func TestRun(t *testing.T) {
 				DoGetHTTPServerFunc:    funcDoGetHTTPServer,
 				DoGetHealthCheckFunc:   funcDoGetHealthcheckOk,
 				DoGetKafkaConsumerFunc: funcDoGetKafkaConsumerOk,
+				DoGetS3ClientFunc:      funcDoGetS3ClientFunc,
+				DoGetESClientFunc:      funcDoGetESClientFunc,
 			}
 			svcErrors := make(chan error, 1)
 			svcList := service.NewServiceList(initMock)
@@ -128,8 +143,9 @@ func TestRun(t *testing.T) {
 			})
 
 			Convey("The checkers are registered and the healthcheck and http server started", func() {
-				So(len(hcMock.AddCheckCalls()), ShouldEqual, 1)
+				So(len(hcMock.AddCheckCalls()), ShouldEqual, 2)
 				So(hcMock.AddCheckCalls()[0].Name, ShouldResemble, "Kafka consumer")
+				So(hcMock.AddCheckCalls()[1].Name, ShouldResemble, "Elasticsearch")
 				So(len(initMock.DoGetHTTPServerCalls()), ShouldEqual, 1)
 				So(initMock.DoGetHTTPServerCalls()[0].BindAddr, ShouldEqual, "localhost:")
 				So(len(hcMock.StartCalls()), ShouldEqual, 1)
@@ -152,6 +168,8 @@ func TestRun(t *testing.T) {
 					return hcMockAddFail, nil
 				},
 				DoGetKafkaConsumerFunc: funcDoGetKafkaConsumerOk,
+				DoGetS3ClientFunc:      funcDoGetS3ClientFunc,
+				DoGetESClientFunc:      funcDoGetESClientFunc,
 			}
 			svcErrors := make(chan error, 1)
 			svcList := service.NewServiceList(initMock)
@@ -162,8 +180,9 @@ func TestRun(t *testing.T) {
 				So(err.Error(), ShouldResemble, fmt.Sprintf("unable to register checkers: %s", errAddheckFail.Error()))
 				So(svcList.HealthCheck, ShouldBeTrue)
 				So(svcList.KafkaConsumer, ShouldBeTrue)
-				So(len(hcMockAddFail.AddCheckCalls()), ShouldEqual, 1)
+				So(len(hcMockAddFail.AddCheckCalls()), ShouldEqual, 2)
 				So(hcMockAddFail.AddCheckCalls()[0].Name, ShouldResemble, "Kafka consumer")
+				So(hcMockAddFail.AddCheckCalls()[1].Name, ShouldResemble, "Elasticsearch")
 			})
 		})
 	})
@@ -202,6 +221,9 @@ func TestClose(t *testing.T) {
 			},
 		}
 
+		s3Mock := &serviceMock.S3UploaderMock{}
+		esMock := &dpEsMock.ClientMock{}
+
 		Convey("Closing the service results in all the dependencies being closed in the expected order", func() {
 
 			initMock := &serviceMock.InitialiserMock{
@@ -211,6 +233,12 @@ func TestClose(t *testing.T) {
 				},
 				DoGetKafkaConsumerFunc: func(ctx context.Context, kafkaCfg *config.KafkaConfig) (kafka.IConsumerGroup, error) {
 					return consumerMock, nil
+				},
+				DoGetS3ClientFunc: func(ctx context.Context, cfg *config.S3Config) (service.S3Uploader, error) {
+					return s3Mock, nil
+				},
+				DoGetESClientFunc: func(ctx context.Context, cfg *config.OpenSearchConfig) (dpEsClient.Client, error) {
+					return esMock, nil
 				},
 			}
 
@@ -242,6 +270,12 @@ func TestClose(t *testing.T) {
 				},
 				DoGetKafkaConsumerFunc: func(ctx context.Context, kafkaCfg *config.KafkaConfig) (kafka.IConsumerGroup, error) {
 					return consumerMock, nil
+				},
+				DoGetS3ClientFunc: func(ctx context.Context, cfg *config.S3Config) (service.S3Uploader, error) {
+					return s3Mock, nil
+				},
+				DoGetESClientFunc: func(ctx context.Context, cfg *config.OpenSearchConfig) (dpEsClient.Client, error) {
+					return esMock, nil
 				},
 			}
 

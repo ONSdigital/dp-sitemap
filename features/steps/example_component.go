@@ -6,6 +6,8 @@ import (
 	"os"
 
 	componenttest "github.com/ONSdigital/dp-component-test"
+	dpEsClient "github.com/ONSdigital/dp-elasticsearch/v3/client"
+	dpEsMock "github.com/ONSdigital/dp-elasticsearch/v3/client/mocks"
 	"github.com/ONSdigital/dp-healthcheck/healthcheck"
 	kafka "github.com/ONSdigital/dp-kafka/v3"
 	"github.com/ONSdigital/dp-kafka/v3/kafkatest"
@@ -47,6 +49,12 @@ func NewComponent() *Component {
 		DoGetKafkaConsumerFunc: c.DoGetConsumer,
 		DoGetHealthCheckFunc:   c.DoGetHealthCheck,
 		DoGetHTTPServerFunc:    c.DoGetHTTPServer,
+		DoGetS3ClientFunc: func(ctx context.Context, cfg *config.S3Config) (service.S3Uploader, error) {
+			return nil, nil
+		},
+		DoGetESClientFunc: func(ctx context.Context, cfg *config.OpenSearchConfig) (dpEsClient.Client, error) {
+			return &dpEsMock.ClientMock{}, nil
+		},
 	}
 
 	c.serviceList = service.NewServiceList(initMock)
