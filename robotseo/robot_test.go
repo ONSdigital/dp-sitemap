@@ -42,19 +42,19 @@ func TestInit(t *testing.T) {
 	Convey("happy path scenario", t, func() {
 		shouldError = false
 		returnBytes = []byte(`{
-			"Gogglebot": {
+			"Googlebot": {
 			  "AllowList": ["/googlecontent"],
 			  "DenyList":  ["/googlecontent"]
 			}
 		}`)
-		So(func() { Init(asset) }, ShouldPanicWith, "user agent [Gogglebot], contains [/googlecontent] in both allow and deny")
+		So(func() { Init(asset) }, ShouldPanicWith, "user agent [Googlebot], contains [/googlecontent] in both allow and deny")
 		So(called, ShouldBeTrue)
 	})
 
 	Convey("happy path scenario", t, func() {
 		shouldError = false
 		returnBytes = []byte(`{
-			"Gogglebot": {
+			"Googlebot": {
 			  "AllowList": ["/googlecontent"],
 			  "DenyList":  ["/googleprivate"]
 			},

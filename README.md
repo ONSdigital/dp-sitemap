@@ -5,7 +5,7 @@ This repo holds all information/code regarding sitemap (for SEO and other purpos
 Holds allow/deny list for different user-agents.
 ```
 {
-    "Gogglebot": {
+    "Googlebot": {
       "AllowList": ["/googleallow1", "/googleallow2"],
       "DenyList":  ["/googledeny"]
     },

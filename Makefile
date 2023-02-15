@@ -29,6 +29,10 @@ clean-assets:
 build: assets
 	go build -tags 'production' $(LDFLAGS) -o $(BINPATH)/dp-sitemap
 
+lint:
+	go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.51.1
+	golangci-lint run ./...
+
 .PHONY: debug
 debug:assets
 	go build -tags 'debug' $(LDFLAGS) -o $(BINPATH)/dp-sitemap
