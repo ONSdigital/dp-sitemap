@@ -28,7 +28,10 @@ func main() {
 	}
 
 	pConfig := &kafka.ProducerConfig{
-		KafkaVersion: &cfg.KafkaConfig.Version,
+		KafkaVersion:      &cfg.KafkaConfig.Version,
+		Topic:             cfg.KafkaConfig.ContentUpdatedTopic,
+		BrokerAddrs:       cfg.KafkaConfig.Brokers,
+		MinBrokersHealthy: &cfg.KafkaConfig.NumWorkers,
 	}
 	if cfg.KafkaConfig.SecProtocol == config.KafkaTLSProtocolFlag {
 		pConfig.SecurityConfig = kafka.GetSecurityConfig(
@@ -40,7 +43,7 @@ func main() {
 	}
 	kafkaProducer, err := kafka.NewProducer(ctx, pConfig)
 	if err != nil {
-		log.Fatal(ctx, "fatal error trying to create kafka producer", err, log.Data{"topic": cfg.KafkaConfig.HelloCalledTopic})
+		log.Fatal(ctx, "fatal error trying to create kafka producer", err, log.Data{"topic": cfg.KafkaConfig.ContentUpdatedTopic})
 		os.Exit(1)
 	}
 
@@ -53,7 +56,7 @@ func main() {
 		e := scanEvent(scanner)
 		log.Info(ctx, "sending hello-called event", log.Data{"helloCalledEvent": e})
 
-		bytes, err := schema.HelloCalledEvent.Marshal(e)
+		bytes, err := schema.ContentPublishedEvent.Marshal(e)
 		if err != nil {
 			log.Fatal(ctx, "hello-called event error", err)
 			os.Exit(1)
@@ -66,15 +69,20 @@ func main() {
 }
 
 // scanEvent creates a HelloCalled event according to the user input
-func scanEvent(scanner *bufio.Scanner) *event.HelloCalled {
-	fmt.Println("--- [Send Kafka HelloCalled] ---")
+func scanEvent(scanner *bufio.Scanner) *event.ContentPublished {
+	fmt.Println("--- [Send Kafka ContentPublished] ---")
 
-	fmt.Println("Please type the recipient name")
+	fmt.Println("Press enter to send message")
 	fmt.Printf("$ ")
 	scanner.Scan()
-	name := scanner.Text()
+	scanner.Text()
 
-	return &event.HelloCalled{
-		RecipientName: name,
+	return &event.ContentPublished{
+		URI:          "test-uri",
+		DataType:     "thedatatype",
+		CollectionID: "thecollectionid",
+		JobID:        "thejobId",
+		SearchIndex:  "theSearchIndex",
+		TraceID:      "theTraceId",
 	}
 }

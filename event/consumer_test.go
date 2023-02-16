@@ -3,9 +3,10 @@ package event_test
 import (
 	"context"
 	"errors"
-	"github.com/ONSdigital/dp-sitemap/config"
 	"sync"
 	"testing"
+
+	"github.com/ONSdigital/dp-sitemap/config"
 
 	kafka "github.com/ONSdigital/dp-kafka/v3"
 	"github.com/ONSdigital/dp-kafka/v3/kafkatest"
@@ -19,9 +20,7 @@ var testCtx = context.Background()
 
 var errHandler = errors.New("Handler Error")
 
-var testEvent = event.HelloCalled{
-	RecipientName: "World",
-}
+var testEvent = event.ContentPublished{}
 
 // kafkaStubConsumer mock which exposes Channels function returning empty channels
 // to be used on tests that are not supposed to receive any kafka message
@@ -43,7 +42,7 @@ func TestConsume(t *testing.T) {
 
 		handlerWg := &sync.WaitGroup{}
 		mockEventHandler := &mock.HandlerMock{
-			HandleFunc: func(ctx context.Context, config *config.Config, event *event.HelloCalled) error {
+			HandleFunc: func(ctx context.Context, config *config.Config, event *event.ContentPublished) error {
 				defer handlerWg.Done()
 				return nil
 			},
@@ -103,7 +102,7 @@ func TestConsume(t *testing.T) {
 		})
 
 		Convey("With a failing handler and a kafka message with the valid schema being sent to the Upstream channel", func() {
-			mockEventHandler.HandleFunc = func(ctx context.Context, config *config.Config, event *event.HelloCalled) error {
+			mockEventHandler.HandleFunc = func(ctx context.Context, config *config.Config, event *event.ContentPublished) error {
 				defer handlerWg.Done()
 				return errHandler
 			}
@@ -132,8 +131,8 @@ func TestConsume(t *testing.T) {
 }
 
 // marshal helper method to marshal a event into a []byte
-func marshal(event event.HelloCalled) []byte {
-	bytes, err := schema.HelloCalledEvent.Marshal(event)
+func marshal(event event.ContentPublished) []byte {
+	bytes, err := schema.ContentPublishedEvent.Marshal(event)
 	So(err, ShouldBeNil)
 	return bytes
 }

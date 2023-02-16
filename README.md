@@ -49,8 +49,8 @@ An example event can be created using the helper script, `make produce`.
 | KAFKA_SEC_CLIENT_KEY         | _unset_                           | PEM for the client key ([kafka TLS doc])
 | KAFKA_SEC_CLIENT_CERT        | _unset_                           | PEM for the client certificate ([kafka TLS doc])
 | KAFKA_SEC_SKIP_VERIFY        | false                             | ignores server certificate issues if `true` ([kafka TLS doc])
-| HELLO_CALLED_GROUP           | dp-sitemap                        | The consumer group this application to consume topic messages
-| HELLO_CALLED_TOPIC           | hello-called                      | The name of the topic to consume messages from
+| KAFKA_CONTENT_UPDATED_GROUP  | dp-sitemap                        | The consumer group this application to consume topic messages
+| KAFKA_CONTENT_UPDATED_TOPIC  | content-updated                   | The name of the topic to consume messages from
 
 [kafka TLS doc]: https://github.com/ONSdigital/dp-kafka/tree/main/examples#tls
 
