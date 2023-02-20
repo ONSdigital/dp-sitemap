@@ -19,6 +19,7 @@ import (
 	serviceMock "github.com/ONSdigital/dp-sitemap/service/mock"
 	"github.com/ONSdigital/dp-sitemap/sitemap"
 	sitemapMock "github.com/ONSdigital/dp-sitemap/sitemap/mock"
+	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	es710 "github.com/elastic/go-elasticsearch/v7"
 	esapi710 "github.com/elastic/go-elasticsearch/v7/esapi"
 	"github.com/pkg/errors"
@@ -70,17 +71,21 @@ func TestRun(t *testing.T) {
 				return nil
 			},
 		}
-		s3Mock := &sitemapMock.S3UploaderMock{}
+		s3Mock := &sitemapMock.S3UploaderMock{
+			UploadFunc: func(input *s3manager.UploadInput, options ...func(*s3manager.Uploader)) (*s3manager.UploadOutput, error) {
+				return nil, nil
+			},
+		}
 		esMock := &dpEsMock.ClientMock{}
 		esRawMock := &es710.Client{API: &esapi710.API{
 			Scroll: func(o ...func(*esapi710.ScrollRequest)) (*esapi710.Response, error) {
 				return &esapi710.Response{
-					Body: io.NopCloser(strings.NewReader("")),
+					Body: io.NopCloser(strings.NewReader("{}")),
 				}, nil
 			},
 			Search: func(o ...func(*esapi710.SearchRequest)) (*esapi710.Response, error) {
 				return &esapi710.Response{
-					Body: io.NopCloser(strings.NewReader("")),
+					Body: io.NopCloser(strings.NewReader("{}")),
 				}, nil
 			},
 		}}
@@ -234,17 +239,21 @@ func TestClose(t *testing.T) {
 			},
 		}
 
-		s3Mock := &sitemapMock.S3UploaderMock{}
+		s3Mock := &sitemapMock.S3UploaderMock{
+			UploadFunc: func(input *s3manager.UploadInput, options ...func(*s3manager.Uploader)) (*s3manager.UploadOutput, error) {
+				return nil, nil
+			},
+		}
 		esMock := &dpEsMock.ClientMock{}
 		esRawMock := &es710.Client{API: &esapi710.API{
 			Scroll: func(o ...func(*esapi710.ScrollRequest)) (*esapi710.Response, error) {
 				return &esapi710.Response{
-					Body: io.NopCloser(strings.NewReader("")),
+					Body: io.NopCloser(strings.NewReader("{}")),
 				}, nil
 			},
 			Search: func(o ...func(*esapi710.SearchRequest)) (*esapi710.Response, error) {
 				return &esapi710.Response{
-					Body: io.NopCloser(strings.NewReader("")),
+					Body: io.NopCloser(strings.NewReader("{}")),
 				}, nil
 			},
 		}}
@@ -298,7 +307,7 @@ func TestClose(t *testing.T) {
 					return s3Mock, nil
 				},
 				DoGetESClientsFunc: func(ctx context.Context, cfg *config.OpenSearchConfig) (dpEsClient.Client, *es710.Client, error) {
-					return esMock, &es710.Client{}, nil
+					return esMock, esRawMock, nil
 				},
 			}
 
