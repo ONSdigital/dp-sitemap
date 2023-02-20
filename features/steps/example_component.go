@@ -6,8 +6,6 @@ import (
 	"os"
 
 	componenttest "github.com/ONSdigital/dp-component-test"
-	dpEsClient "github.com/ONSdigital/dp-elasticsearch/v3/client"
-	dpEsMock "github.com/ONSdigital/dp-elasticsearch/v3/client/mocks"
 	"github.com/ONSdigital/dp-healthcheck/healthcheck"
 	kafka "github.com/ONSdigital/dp-kafka/v3"
 	"github.com/ONSdigital/dp-kafka/v3/kafkatest"
@@ -15,6 +13,11 @@ import (
 	"github.com/ONSdigital/dp-sitemap/config"
 	"github.com/ONSdigital/dp-sitemap/service"
 	"github.com/ONSdigital/dp-sitemap/service/mock"
+	"github.com/ONSdigital/dp-sitemap/sitemap"
+	es710 "github.com/elastic/go-elasticsearch/v7"
+
+	dpEsClient "github.com/ONSdigital/dp-elasticsearch/v3/client"
+	dpEsMock "github.com/ONSdigital/dp-elasticsearch/v3/client/mocks"
 )
 
 type Component struct {
@@ -49,11 +52,11 @@ func NewComponent() *Component {
 		DoGetKafkaConsumerFunc: c.DoGetConsumer,
 		DoGetHealthCheckFunc:   c.DoGetHealthCheck,
 		DoGetHTTPServerFunc:    c.DoGetHTTPServer,
-		DoGetS3ClientFunc: func(ctx context.Context, cfg *config.S3Config) (service.S3Uploader, error) {
+		DoGetS3ClientFunc: func(ctx context.Context, cfg *config.S3Config) (sitemap.S3Uploader, error) {
 			return nil, nil
 		},
-		DoGetESClientFunc: func(ctx context.Context, cfg *config.OpenSearchConfig) (dpEsClient.Client, error) {
-			return &dpEsMock.ClientMock{}, nil
+		DoGetESClientsFunc: func(ctx context.Context, cfg *config.OpenSearchConfig) (dpEsClient.Client, *es710.Client, error) {
+			return &dpEsMock.ClientMock{}, &es710.Client{}, nil
 		},
 	}
 

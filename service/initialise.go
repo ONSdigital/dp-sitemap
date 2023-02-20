@@ -12,10 +12,13 @@ import (
 	dphttp "github.com/ONSdigital/dp-net/v2/http"
 	dps3 "github.com/ONSdigital/dp-s3/v2"
 	"github.com/ONSdigital/dp-sitemap/config"
+	"github.com/ONSdigital/dp-sitemap/sitemap"
 	"github.com/ONSdigital/log.go/v2/log"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
+
+	es710 "github.com/elastic/go-elasticsearch/v7"
 )
 
 // ExternalServiceList holds the initialiser and initialisation state of external services.
@@ -57,7 +60,7 @@ func (e *ExternalServiceList) GetKafkaConsumer(ctx context.Context, cfg *config.
 }
 
 // GetS3Client creates an S3Client and sets the S3Client flag to true
-func (e *ExternalServiceList) GetS3Client(ctx context.Context, cfg *config.Config) (S3Uploader, error) {
+func (e *ExternalServiceList) GetS3Client(ctx context.Context, cfg *config.Config) (sitemap.S3Uploader, error) {
 	consumer, err := e.Init.DoGetS3Client(ctx, &cfg.S3Config)
 	if err != nil {
 		return nil, err
@@ -67,13 +70,13 @@ func (e *ExternalServiceList) GetS3Client(ctx context.Context, cfg *config.Confi
 }
 
 // GetESClient creates an ESClient and sets the ESClient flag to true
-func (e *ExternalServiceList) GetESClient(ctx context.Context, cfg *config.Config) (dpEsClient.Client, error) {
-	consumer, err := e.Init.DoGetESClient(ctx, &cfg.OpenSearchConfig)
+func (e *ExternalServiceList) GetESClient(ctx context.Context, cfg *config.Config) (dpEsClient.Client, *es710.Client, error) {
+	dpClient, rawClient, err := e.Init.DoGetESClients(ctx, &cfg.OpenSearchConfig)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	e.ESClient = true
-	return consumer, nil
+	return dpClient, rawClient, nil
 }
 
 // GetHealthCheck creates a healthcheck with versionInfo and sets teh HealthCheck flag to true
@@ -126,7 +129,7 @@ func (e *Init) DoGetKafkaConsumer(ctx context.Context, kafkaCfg *config.KafkaCon
 }
 
 // DoGetS3Client returns a S3Client
-func (e *Init) DoGetS3Client(ctx context.Context, cfg *config.S3Config) (S3Uploader, error) {
+func (e *Init) DoGetS3Client(ctx context.Context, cfg *config.S3Config) (sitemap.S3Uploader, error) {
 	if cfg.LocalstackHost != "" {
 		s, err := session.NewSession(&aws.Config{
 			Endpoint:         aws.String(cfg.LocalstackHost),
@@ -134,7 +137,6 @@ func (e *Init) DoGetS3Client(ctx context.Context, cfg *config.S3Config) (S3Uploa
 			S3ForcePathStyle: aws.Bool(true),
 			Credentials:      credentials.NewStaticCredentials("test", "test", ""),
 		})
-
 		if err != nil {
 			return nil, err
 		}
@@ -149,30 +151,36 @@ func (e *Init) DoGetS3Client(ctx context.Context, cfg *config.S3Config) (S3Uploa
 	return s3Client, nil
 }
 
-// DoGetS3Client returns a S3Client
-func (e *Init) DoGetESClient(ctx context.Context, cfg *config.OpenSearchConfig) (dpEsClient.Client, error) {
-	// Initialise AWS signer
-	esConfig := dpEsClient.Config{
-		ClientLib: dpEsClient.GoElasticV710,
-		Address:   cfg.APIURL,
-		Transport: dphttp.DefaultTransport,
-	}
-
+// DoGetS3Clients returns a DP and raw Elastic clients
+func (e *Init) DoGetESClients(ctx context.Context, cfg *config.OpenSearchConfig) (dpEsClient.Client, *es710.Client, error) {
+	var transport http.RoundTripper = dphttp.DefaultTransport
 	if cfg.Signer {
 		awsSignerRT, err := awsauth.NewAWSSignerRoundTripper(cfg.SignerFilename, cfg.SignerProfile, cfg.SignerRegion, cfg.SignerService, awsauth.Options{TlsInsecureSkipVerify: cfg.TLSInsecureSkipVerify})
 		if err != nil {
 			log.Error(ctx, "failed to create aws auth roundtripper", err)
-			return nil, err
+			return nil, nil, err
 		}
-
-		esConfig.Transport = awsSignerRT
+		transport = awsSignerRT
 	}
 
-	esClient, err := dpEs.NewClient(esConfig)
+	esClient, err := dpEs.NewClient(dpEsClient.Config{
+		ClientLib: dpEsClient.GoElasticV710,
+		Address:   cfg.APIURL,
+		Transport: transport,
+	})
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	return esClient, nil
+
+	rawClient, err := es710.NewClient(es710.Config{
+		Addresses: []string{cfg.APIURL},
+		Transport: transport,
+	})
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return esClient, rawClient, nil
 }
 
 // DoGetHealthCheck creates a healthcheck with versionInfo

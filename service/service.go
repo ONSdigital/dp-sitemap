@@ -9,6 +9,7 @@ import (
 	kafka "github.com/ONSdigital/dp-kafka/v3"
 	"github.com/ONSdigital/dp-sitemap/config"
 	"github.com/ONSdigital/dp-sitemap/event"
+	"github.com/ONSdigital/dp-sitemap/sitemap"
 	"github.com/ONSdigital/log.go/v2/log"
 	"github.com/go-co-op/gocron"
 	"github.com/gorilla/mux"
@@ -25,7 +26,7 @@ type Service struct {
 	shutdownTimeout time.Duration
 	scheduler       *gocron.Scheduler
 	esClient        dpEsClient.Client
-	s3Client        S3Uploader
+	s3Client        sitemap.S3Uploader
 }
 
 // Run the service
@@ -68,10 +69,10 @@ func Run(ctx context.Context, serviceList *ExternalServiceList, buildTime, gitCo
 		return nil, err
 	}
 
-	// Get ElasticSearch Client
-	esClient, err := serviceList.GetESClient(ctx, cfg)
+	// Get ElasticSearch Clients
+	esClient, esRawClient, err := serviceList.GetESClient(ctx, cfg)
 	if err != nil {
-		log.Error(ctx, "Failed to create dp-elasticsearch client", err)
+		log.Error(ctx, "Failed to create dp-elasticsearch clients", err)
 		return nil, err
 	}
 
@@ -96,10 +97,28 @@ func Run(ctx context.Context, serviceList *ExternalServiceList, buildTime, gitCo
 		}
 	}()
 
+	generator := sitemap.NewGenerator(
+		sitemap.NewElasticFetcher(
+			esRawClient,
+			&cfg.OpenSearchConfig,
+		),
+		s3Client,
+		&cfg.S3Config,
+	)
+	generateSitemapJob := func(job gocron.Job) {
+		log.Info(ctx, "scheduler run start", log.Data{"last_run": job.LastRun(), "next_run": job.NextRun(), "run_count": job.RunCount()})
+		ctx, cancel := context.WithTimeout(context.Background(), cfg.SitemapGenerationTimeout)
+		defer cancel()
+		genErr := generator.MakeFullSitemap(ctx)
+		if genErr != nil {
+			log.Error(ctx, "failed to generate sitemap", genErr)
+			return
+		}
+		log.Info(ctx, "scheduler run complete", log.Data{"last_run": job.LastRun(), "next_run": job.NextRun(), "run_count": job.RunCount()})
+	}
+
 	scheduler := gocron.NewScheduler(time.UTC)
-	_, err = scheduler.Every(10).Seconds().DoWithJobDetails(func(job gocron.Job) {
-		log.Info(ctx, "scheduler run", log.Data{"last_run": job.LastRun(), "next_run": job.NextRun(), "run_count": job.RunCount()})
-	})
+	_, err = scheduler.Every(cfg.SitemapGenerationFrequency).DoWithJobDetails(generateSitemapJob)
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to run scheduler")
 	}
@@ -191,7 +210,8 @@ func (svc *Service) Close(ctx context.Context) error {
 func registerCheckers(ctx context.Context,
 	hc HealthChecker,
 	consumer kafka.IConsumerGroup,
-	esClient dpEsClient.Client) error {
+	esClient dpEsClient.Client,
+) error {
 	hasErrors := false
 
 	if err := hc.AddCheck("Kafka consumer", consumer.Checker); err != nil {

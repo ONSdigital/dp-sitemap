@@ -8,21 +8,21 @@ import (
 	"github.com/ONSdigital/dp-healthcheck/healthcheck"
 	kafka "github.com/ONSdigital/dp-kafka/v3"
 	"github.com/ONSdigital/dp-sitemap/config"
-	"github.com/aws/aws-sdk-go/service/s3/s3manager"
+	"github.com/ONSdigital/dp-sitemap/sitemap"
+	es710 "github.com/elastic/go-elasticsearch/v7"
 )
 
 //go:generate moq -out mock/initialiser.go -pkg mock . Initialiser
 //go:generate moq -out mock/server.go -pkg mock . HTTPServer
 //go:generate moq -out mock/healthCheck.go -pkg mock . HealthChecker
-//go:generate moq -out mock/s3uploader.go -pkg mock . S3Uploader
 
 // Initialiser defines the methods to initialise external services
 type Initialiser interface {
 	DoGetHTTPServer(bindAddr string, router http.Handler) HTTPServer
 	DoGetHealthCheck(cfg *config.Config, buildTime, gitCommit, version string) (HealthChecker, error)
 	DoGetKafkaConsumer(ctx context.Context, kafkaCfg *config.KafkaConfig) (kafka.IConsumerGroup, error)
-	DoGetS3Client(ctx context.Context, cfg *config.S3Config) (S3Uploader, error)
-	DoGetESClient(ctx context.Context, cfg *config.OpenSearchConfig) (dpEsClient.Client, error)
+	DoGetS3Client(ctx context.Context, cfg *config.S3Config) (sitemap.S3Uploader, error)
+	DoGetESClients(ctx context.Context, cfg *config.OpenSearchConfig) (dpEsClient.Client, *es710.Client, error)
 }
 
 // HTTPServer defines the required methods from the HTTP server
@@ -42,8 +42,4 @@ type HealthChecker interface {
 // EventConsumer defines the required methods from event Consumer
 type EventConsumer interface {
 	Close(ctx context.Context) (err error)
-}
-
-type S3Uploader interface {
-	Upload(input *s3manager.UploadInput, options ...func(*s3manager.Uploader)) (*s3manager.UploadOutput, error)
 }
