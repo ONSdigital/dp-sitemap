@@ -166,8 +166,6 @@ func (f *ElasticFetcher) StartScroll(ctx context.Context, result interface{}) er
 	}
 	defer res.Body.Close()
 
-	fmt.Print(res.Status() + "\n")
-
 	err = json.NewDecoder(res.Body).Decode(result)
 	if err != nil {
 		return err
@@ -185,8 +183,6 @@ func (f *ElasticFetcher) GetScroll(ctx context.Context, id string, result interf
 		return err
 	}
 	defer res.Body.Close()
-
-	fmt.Print(res.Status() + "\n")
 
 	err = json.NewDecoder(res.Body).Decode(result)
 	if err != nil {
