@@ -20,13 +20,13 @@ require (
 
 require (
 	github.com/ONSdigital/dp-api-clients-go v1.43.0 // indirect
-	github.com/ONSdigital/dp-api-clients-go/v2 v2.191.0 // indirect
-	github.com/ONSdigital/dp-elasticsearch/v3 v3.0.1-alpha.4 // indirect
+	github.com/ONSdigital/dp-api-clients-go/v2 v2.230.0 // indirect
+	github.com/ONSdigital/dp-elasticsearch/v3 v3.0.1-alpha.4
 	github.com/ONSdigital/dp-mongodb-in-memory v1.5.0 // indirect
 	github.com/ONSdigital/dp-net v1.5.0 // indirect
-	github.com/ONSdigital/dp-s3/v2 v2.1.0-beta.1 // indirect
+	github.com/ONSdigital/dp-s3/v2 v2.1.0-beta.1
 	github.com/Shopify/sarama v1.37.2 // indirect
-	github.com/aws/aws-sdk-go v1.44.76 // indirect
+	github.com/aws/aws-sdk-go v1.44.204
 	github.com/chromedp/cdproto v0.0.0-20211126220118-81fa0469ad77 // indirect
 	github.com/chromedp/chromedp v0.7.6 // indirect
 	github.com/chromedp/sysutil v1.0.0 // indirect
@@ -36,10 +36,10 @@ require (
 	github.com/eapache/go-resiliency v1.3.0 // indirect
 	github.com/eapache/go-xerial-snappy v0.0.0-20180814174437-776d5712da21 // indirect
 	github.com/eapache/queue v1.1.0 // indirect
-	github.com/elastic/go-elasticsearch/v7 v7.10.0 // indirect
-	github.com/fatih/color v1.13.0 // indirect
+	github.com/elastic/go-elasticsearch/v7 v7.10.0
+	github.com/fatih/color v1.14.1 // indirect
 	github.com/go-avro/avro v0.0.0-20171219232920-444163702c11 // indirect
-	github.com/go-co-op/gocron v1.18.0 // indirect
+	github.com/go-co-op/gocron v1.18.0
 	github.com/go-stack/stack v1.8.0 // indirect
 	github.com/gobwas/httphead v0.1.0 // indirect
 	github.com/gobwas/pool v0.2.1 // indirect
@@ -67,7 +67,7 @@ require (
 	github.com/klauspost/compress v1.15.11 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
-	github.com/mattn/go-isatty v0.0.16 // indirect
+	github.com/mattn/go-isatty v0.0.17 // indirect
 	github.com/maxcnunes/httpfake v1.2.4 // indirect
 	github.com/pierrec/lz4/v4 v4.1.17 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
@@ -85,9 +85,9 @@ require (
 	go.mongodb.org/mongo-driver v1.8.0 // indirect
 	golang.org/x/crypto v0.1.0 // indirect
 	golang.org/x/exp v0.0.0-20230212135524-a684f29349b6
-	golang.org/x/net v0.1.0 // indirect
+	golang.org/x/net v0.7.0 // indirect
 	golang.org/x/sync v0.0.0-20220923202941-7f9b1623fab7 // indirect
-	golang.org/x/sys v0.1.0 // indirect
-	golang.org/x/text v0.4.0 // indirect
+	golang.org/x/sys v0.5.0 // indirect
+	golang.org/x/text v0.7.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
