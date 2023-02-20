@@ -70,8 +70,8 @@ func (e *ExternalServiceList) GetS3Client(ctx context.Context, cfg *config.Confi
 }
 
 // GetESClient creates an ESClient and sets the ESClient flag to true
-func (e *ExternalServiceList) GetESClient(ctx context.Context, cfg *config.Config) (dpEsClient.Client, *es710.Client, error) {
-	dpClient, rawClient, err := e.Init.DoGetESClients(ctx, &cfg.OpenSearchConfig)
+func (e *ExternalServiceList) GetESClient(ctx context.Context, cfg *config.Config) (dpClient dpEsClient.Client, rawClient *es710.Client, err error) {
+	dpClient, rawClient, err = e.Init.DoGetESClients(ctx, &cfg.OpenSearchConfig)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -152,18 +152,17 @@ func (e *Init) DoGetS3Client(ctx context.Context, cfg *config.S3Config) (sitemap
 }
 
 // DoGetS3Clients returns a DP and raw Elastic clients
-func (e *Init) DoGetESClients(ctx context.Context, cfg *config.OpenSearchConfig) (dpEsClient.Client, *es710.Client, error) {
+func (e *Init) DoGetESClients(ctx context.Context, cfg *config.OpenSearchConfig) (esClient dpEsClient.Client, rawClient *es710.Client, err error) {
 	var transport http.RoundTripper = dphttp.DefaultTransport
 	if cfg.Signer {
-		awsSignerRT, err := awsauth.NewAWSSignerRoundTripper(cfg.SignerFilename, cfg.SignerProfile, cfg.SignerRegion, cfg.SignerService, awsauth.Options{TlsInsecureSkipVerify: cfg.TLSInsecureSkipVerify})
+		transport, err = awsauth.NewAWSSignerRoundTripper(cfg.SignerFilename, cfg.SignerProfile, cfg.SignerRegion, cfg.SignerService, awsauth.Options{TlsInsecureSkipVerify: cfg.TLSInsecureSkipVerify})
 		if err != nil {
 			log.Error(ctx, "failed to create aws auth roundtripper", err)
 			return nil, nil, err
 		}
-		transport = awsSignerRT
 	}
 
-	esClient, err := dpEs.NewClient(dpEsClient.Config{
+	esClient, err = dpEs.NewClient(dpEsClient.Config{
 		ClientLib: dpEsClient.GoElasticV710,
 		Address:   cfg.APIURL,
 		Transport: transport,
@@ -172,7 +171,7 @@ func (e *Init) DoGetESClients(ctx context.Context, cfg *config.OpenSearchConfig)
 		return nil, nil, err
 	}
 
-	rawClient, err := es710.NewClient(es710.Config{
+	rawClient, err = es710.NewClient(es710.Config{
 		Addresses: []string{cfg.APIURL},
 		Transport: transport,
 	})

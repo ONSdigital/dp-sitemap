@@ -117,13 +117,11 @@ func (f *ElasticFetcher) GetFullSitemap(ctx context.Context) (fileName string, e
 	}
 
 	scrollID := result.ScrollID
-	i := 0
 	for len(result.Hits.Hits) > 0 {
-		for _, hit := range result.Hits.Hits {
-			i++
+		for i := range result.Hits.Hits {
 			err = enc.Encode(URL{
-				Loc:     hit.Source.URI,
-				Lastmod: hit.Source.ReleaseDate.Format("2006-01-02"),
+				Loc:     result.Hits.Hits[i].Source.URI,
+				Lastmod: result.Hits.Hits[i].Source.ReleaseDate.Format("2006-01-02"),
 			})
 			if err != nil {
 				return fileName, fmt.Errorf("sitemap page xml encode error: %w", err)
