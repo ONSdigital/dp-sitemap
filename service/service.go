@@ -105,17 +105,19 @@ func Run(ctx context.Context, serviceList *ExternalServiceList, buildTime, gitCo
 		s3Client,
 		&cfg.S3Config,
 	)
-	generateSitemapJob := func(job gocron.Job) {
-		log.Info(ctx, "scheduler run start", log.Data{"last_run": job.LastRun(), "next_run": job.NextRun(), "run_count": job.RunCount()})
+
+	limiter := NewJobLimiter(1)
+	generateSitemapJob := limiter.GetJob(func(job gocron.Job) {
 		ctx, cancel := context.WithTimeout(context.Background(), cfg.SitemapGenerationTimeout)
 		defer cancel()
+		log.Info(ctx, "sitemap generation job start", log.Data{"last_run": job.LastRun(), "next_run": job.NextRun(), "run_count": job.RunCount()})
 		genErr := generator.MakeFullSitemap(ctx)
 		if genErr != nil {
 			log.Error(ctx, "failed to generate sitemap", genErr)
 			return
 		}
-		log.Info(ctx, "scheduler run complete", log.Data{"last_run": job.LastRun(), "next_run": job.NextRun(), "run_count": job.RunCount()})
-	}
+		log.Info(ctx, "sitemap generation job complete", log.Data{"last_run": job.LastRun(), "next_run": job.NextRun(), "run_count": job.RunCount()})
+	})
 
 	scheduler := gocron.NewScheduler(time.UTC)
 	_, err = scheduler.Every(cfg.SitemapGenerationFrequency).DoWithJobDetails(generateSitemapJob)

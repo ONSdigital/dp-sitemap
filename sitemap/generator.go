@@ -48,10 +48,13 @@ func (g *Generator) MakeFullSitemap(ctx context.Context) error {
 		}
 		log.Info(ctx, "removed temporary sitemap file "+fileName)
 	}()
+
 	file, err := os.Open(fileName)
 	if err != nil {
 		return fmt.Errorf("failed to open sitemap: %w", err)
 	}
+	defer file.Close()
+
 	_, err = g.uploader.Upload(&s3manager.UploadInput{
 		Body:   file,
 		Bucket: &g.cfg.UploadBucketName,
