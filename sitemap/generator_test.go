@@ -59,8 +59,12 @@ func TestGenerator(t *testing.T) {
 			tempFile = file.Name()
 			return tempFile, nil
 		}
+		var uploadedFile string
 		s3 := &mock.S3UploaderMock{}
 		s3.UploadFunc = func(input *s3manager.UploadInput, options ...func(*s3manager.Uploader)) (*s3manager.UploadOutput, error) {
+			body, err := io.ReadAll(input.Body)
+			So(err, ShouldBeNil)
+			uploadedFile = string(body)
 			return nil, nil
 		}
 
@@ -75,9 +79,6 @@ func TestGenerator(t *testing.T) {
 		})
 		Convey("Generator should pass correct params to uploader", func() {
 			params := s3.UploadCalls()[0].Input
-			body, err := io.ReadAll(params.Body)
-			So(err, ShouldBeNil)
-			uploadedFile := string(body)
 
 			So(uploadedFile, ShouldEqual, "file content")
 			So(*params.Bucket, ShouldEqual, cfg.UploadBucketName)
@@ -98,8 +99,12 @@ func TestGenerator(t *testing.T) {
 			tempFile = file.Name()
 			return tempFile, nil
 		}
+		var uploadedFile string
 		s3 := &mock.S3UploaderMock{}
 		s3.UploadFunc = func(input *s3manager.UploadInput, options ...func(*s3manager.Uploader)) (*s3manager.UploadOutput, error) {
+			body, err := io.ReadAll(input.Body)
+			So(err, ShouldBeNil)
+			uploadedFile = string(body)
 			return nil, errors.New("uploader error")
 		}
 
@@ -111,9 +116,6 @@ func TestGenerator(t *testing.T) {
 		})
 		Convey("Generator should pass correct params to uploader", func() {
 			params := s3.UploadCalls()[0].Input
-			body, err := io.ReadAll(params.Body)
-			So(err, ShouldBeNil)
-			uploadedFile := string(body)
 
 			So(uploadedFile, ShouldEqual, "file content")
 			So(*params.Bucket, ShouldEqual, cfg.UploadBucketName)
