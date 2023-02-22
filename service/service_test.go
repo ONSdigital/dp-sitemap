@@ -3,7 +3,9 @@ package service_test
 import (
 	"context"
 	"fmt"
+	"io"
 	"net/http"
+	"strings"
 	"sync"
 	"testing"
 
@@ -15,6 +17,11 @@ import (
 	"github.com/ONSdigital/dp-sitemap/config"
 	"github.com/ONSdigital/dp-sitemap/service"
 	serviceMock "github.com/ONSdigital/dp-sitemap/service/mock"
+	"github.com/ONSdigital/dp-sitemap/sitemap"
+	sitemapMock "github.com/ONSdigital/dp-sitemap/sitemap/mock"
+	"github.com/aws/aws-sdk-go/service/s3/s3manager"
+	es710 "github.com/elastic/go-elasticsearch/v7"
+	esapi710 "github.com/elastic/go-elasticsearch/v7/esapi"
 	"github.com/pkg/errors"
 	. "github.com/smartystreets/goconvey/convey"
 )
@@ -44,7 +51,6 @@ var funcDoGetHTTPServerNil = func(bindAddr string, router http.Handler) service.
 }
 
 func TestRun(t *testing.T) {
-
 	Convey("Having a set of mocked dependencies", t, func() {
 		consumerMock := &kafkatest.IConsumerGroupMock{
 			StartFunc:     func() error { return nil },
@@ -65,8 +71,24 @@ func TestRun(t *testing.T) {
 				return nil
 			},
 		}
-		s3Mock := &serviceMock.S3UploaderMock{}
+		s3Mock := &sitemapMock.S3UploaderMock{
+			UploadFunc: func(input *s3manager.UploadInput, options ...func(*s3manager.Uploader)) (*s3manager.UploadOutput, error) {
+				return nil, nil
+			},
+		}
 		esMock := &dpEsMock.ClientMock{}
+		esRawMock := &es710.Client{API: &esapi710.API{
+			Scroll: func(o ...func(*esapi710.ScrollRequest)) (*esapi710.Response, error) {
+				return &esapi710.Response{
+					Body: io.NopCloser(strings.NewReader("{}")),
+				}, nil
+			},
+			Search: func(o ...func(*esapi710.SearchRequest)) (*esapi710.Response, error) {
+				return &esapi710.Response{
+					Body: io.NopCloser(strings.NewReader("{}")),
+				}, nil
+			},
+		}}
 
 		funcDoGetKafkaConsumerOk := func(ctx context.Context, kafkaCfg *config.KafkaConfig) (kafka.IConsumerGroup, error) {
 			return consumerMock, nil
@@ -80,11 +102,11 @@ func TestRun(t *testing.T) {
 			return serverMock
 		}
 
-		funcDoGetS3ClientFunc := func(ctx context.Context, cfg *config.S3Config) (service.S3Uploader, error) {
+		funcDoGetS3ClientFunc := func(ctx context.Context, cfg *config.S3Config) (sitemap.S3Uploader, error) {
 			return s3Mock, nil
 		}
-		funcDoGetESClientFunc := func(ctx context.Context, cfg *config.OpenSearchConfig) (dpEsClient.Client, error) {
-			return esMock, nil
+		funcDoGetESClientFunc := func(ctx context.Context, cfg *config.OpenSearchConfig) (dpEsClient.Client, *es710.Client, error) {
+			return esMock, esRawMock, nil
 		}
 
 		Convey("Given that initialising Kafka consumer returns an error", func() {
@@ -109,7 +131,7 @@ func TestRun(t *testing.T) {
 				DoGetHealthCheckFunc:   funcDoGetHealthcheckErr,
 				DoGetKafkaConsumerFunc: funcDoGetKafkaConsumerOk,
 				DoGetS3ClientFunc:      funcDoGetS3ClientFunc,
-				DoGetESClientFunc:      funcDoGetESClientFunc,
+				DoGetESClientsFunc:     funcDoGetESClientFunc,
 			}
 			svcErrors := make(chan error, 1)
 			svcList := service.NewServiceList(initMock)
@@ -123,13 +145,12 @@ func TestRun(t *testing.T) {
 		})
 
 		Convey("Given that all dependencies are successfully initialised", func() {
-
 			initMock := &serviceMock.InitialiserMock{
 				DoGetHTTPServerFunc:    funcDoGetHTTPServer,
 				DoGetHealthCheckFunc:   funcDoGetHealthcheckOk,
 				DoGetKafkaConsumerFunc: funcDoGetKafkaConsumerOk,
 				DoGetS3ClientFunc:      funcDoGetS3ClientFunc,
-				DoGetESClientFunc:      funcDoGetESClientFunc,
+				DoGetESClientsFunc:     funcDoGetESClientFunc,
 			}
 			svcErrors := make(chan error, 1)
 			svcList := service.NewServiceList(initMock)
@@ -155,7 +176,6 @@ func TestRun(t *testing.T) {
 		})
 
 		Convey("Given that Checkers cannot be registered", func() {
-
 			errAddheckFail := errors.New("Error(s) registering checkers for healthcheck")
 			hcMockAddFail := &serviceMock.HealthCheckerMock{
 				AddCheckFunc: func(name string, checker healthcheck.Checker) error { return errAddheckFail },
@@ -169,7 +189,7 @@ func TestRun(t *testing.T) {
 				},
 				DoGetKafkaConsumerFunc: funcDoGetKafkaConsumerOk,
 				DoGetS3ClientFunc:      funcDoGetS3ClientFunc,
-				DoGetESClientFunc:      funcDoGetESClientFunc,
+				DoGetESClientsFunc:     funcDoGetESClientFunc,
 			}
 			svcErrors := make(chan error, 1)
 			svcList := service.NewServiceList(initMock)
@@ -189,9 +209,7 @@ func TestRun(t *testing.T) {
 }
 
 func TestClose(t *testing.T) {
-
 	Convey("Having a correctly initialised service", t, func() {
-
 		hcStopped := false
 
 		consumerMock := &kafkatest.IConsumerGroupMock{
@@ -221,11 +239,26 @@ func TestClose(t *testing.T) {
 			},
 		}
 
-		s3Mock := &serviceMock.S3UploaderMock{}
+		s3Mock := &sitemapMock.S3UploaderMock{
+			UploadFunc: func(input *s3manager.UploadInput, options ...func(*s3manager.Uploader)) (*s3manager.UploadOutput, error) {
+				return nil, nil
+			},
+		}
 		esMock := &dpEsMock.ClientMock{}
+		esRawMock := &es710.Client{API: &esapi710.API{
+			Scroll: func(o ...func(*esapi710.ScrollRequest)) (*esapi710.Response, error) {
+				return &esapi710.Response{
+					Body: io.NopCloser(strings.NewReader("{}")),
+				}, nil
+			},
+			Search: func(o ...func(*esapi710.SearchRequest)) (*esapi710.Response, error) {
+				return &esapi710.Response{
+					Body: io.NopCloser(strings.NewReader("{}")),
+				}, nil
+			},
+		}}
 
 		Convey("Closing the service results in all the dependencies being closed in the expected order", func() {
-
 			initMock := &serviceMock.InitialiserMock{
 				DoGetHTTPServerFunc: func(bindAddr string, router http.Handler) service.HTTPServer { return serverMock },
 				DoGetHealthCheckFunc: func(cfg *config.Config, buildTime string, gitCommit string, version string) (service.HealthChecker, error) {
@@ -234,11 +267,11 @@ func TestClose(t *testing.T) {
 				DoGetKafkaConsumerFunc: func(ctx context.Context, kafkaCfg *config.KafkaConfig) (kafka.IConsumerGroup, error) {
 					return consumerMock, nil
 				},
-				DoGetS3ClientFunc: func(ctx context.Context, cfg *config.S3Config) (service.S3Uploader, error) {
+				DoGetS3ClientFunc: func(ctx context.Context, cfg *config.S3Config) (sitemap.S3Uploader, error) {
 					return s3Mock, nil
 				},
-				DoGetESClientFunc: func(ctx context.Context, cfg *config.OpenSearchConfig) (dpEsClient.Client, error) {
-					return esMock, nil
+				DoGetESClientsFunc: func(ctx context.Context, cfg *config.OpenSearchConfig) (dpEsClient.Client, *es710.Client, error) {
+					return esMock, esRawMock, nil
 				},
 			}
 
@@ -255,7 +288,6 @@ func TestClose(t *testing.T) {
 		})
 
 		Convey("If services fail to stop, the Close operation tries to close all dependencies and returns an error", func() {
-
 			failingserverMock := &serviceMock.HTTPServerMock{
 				ListenAndServeFunc: func() error { return nil },
 				ShutdownFunc: func(ctx context.Context) error {
@@ -271,11 +303,11 @@ func TestClose(t *testing.T) {
 				DoGetKafkaConsumerFunc: func(ctx context.Context, kafkaCfg *config.KafkaConfig) (kafka.IConsumerGroup, error) {
 					return consumerMock, nil
 				},
-				DoGetS3ClientFunc: func(ctx context.Context, cfg *config.S3Config) (service.S3Uploader, error) {
+				DoGetS3ClientFunc: func(ctx context.Context, cfg *config.S3Config) (sitemap.S3Uploader, error) {
 					return s3Mock, nil
 				},
-				DoGetESClientFunc: func(ctx context.Context, cfg *config.OpenSearchConfig) (dpEsClient.Client, error) {
-					return esMock, nil
+				DoGetESClientsFunc: func(ctx context.Context, cfg *config.OpenSearchConfig) (dpEsClient.Client, *es710.Client, error) {
+					return esMock, esRawMock, nil
 				},
 			}
 

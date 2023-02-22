@@ -4,27 +4,27 @@
 package mock
 
 import (
-	"github.com/ONSdigital/dp-sitemap/service"
+	"github.com/ONSdigital/dp-sitemap/sitemap"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"sync"
 )
 
-// Ensure, that S3UploaderMock does implement service.S3Uploader.
+// Ensure, that S3UploaderMock does implement sitemap.S3Uploader.
 // If this is not the case, regenerate this file with moq.
-var _ service.S3Uploader = &S3UploaderMock{}
+var _ sitemap.S3Uploader = &S3UploaderMock{}
 
-// S3UploaderMock is a mock implementation of service.S3Uploader.
+// S3UploaderMock is a mock implementation of sitemap.S3Uploader.
 //
 // 	func TestSomethingThatUsesS3Uploader(t *testing.T) {
 //
-// 		// make and configure a mocked service.S3Uploader
+// 		// make and configure a mocked sitemap.S3Uploader
 // 		mockedS3Uploader := &S3UploaderMock{
 // 			UploadFunc: func(input *s3manager.UploadInput, options ...func(*s3manager.Uploader)) (*s3manager.UploadOutput, error) {
 // 				panic("mock out the Upload method")
 // 			},
 // 		}
 //
-// 		// use mockedS3Uploader in code that requires service.S3Uploader
+// 		// use mockedS3Uploader in code that requires sitemap.S3Uploader
 // 		// and then make assertions.
 //
 // 	}
