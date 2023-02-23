@@ -48,6 +48,7 @@ func TestFetcher(t *testing.T) {
 		}}
 		f := sitemap.NewElasticFetcher(esMock, cfg)
 		filename, err := f.GetFullSitemap(context.Background())
+		defer os.Remove(filename)
 
 		Convey("Fetcher should return with no error", func() {
 			So(err, ShouldBeNil)
@@ -104,6 +105,7 @@ func TestFetcher(t *testing.T) {
 		}}
 		f := sitemap.NewElasticFetcher(esMock, cfg)
 		filename, err := f.GetFullSitemap(context.Background())
+		defer os.Remove(filename)
 
 		Convey("Fetcher should return with no error", func() {
 			So(err, ShouldBeNil)
@@ -249,6 +251,7 @@ func TestFetcher(t *testing.T) {
 		}}
 		f := sitemap.NewElasticFetcher(esMock, cfg)
 		filename, err := f.GetFullSitemap(context.Background())
+		defer os.Remove(filename)
 
 		Convey("Fetcher should return with no error", func() {
 			So(err, ShouldBeNil)
