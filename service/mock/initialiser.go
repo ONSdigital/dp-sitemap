@@ -9,6 +9,8 @@ import (
 	kafka "github.com/ONSdigital/dp-kafka/v3"
 	"github.com/ONSdigital/dp-sitemap/config"
 	"github.com/ONSdigital/dp-sitemap/service"
+	"github.com/ONSdigital/dp-sitemap/sitemap"
+	es710 "github.com/elastic/go-elasticsearch/v7"
 	"net/http"
 	"sync"
 )
@@ -23,8 +25,8 @@ var _ service.Initialiser = &InitialiserMock{}
 //
 // 		// make and configure a mocked service.Initialiser
 // 		mockedInitialiser := &InitialiserMock{
-// 			DoGetESClientFunc: func(ctx context.Context, cfg *config.OpenSearchConfig) (dpEsClient.Client, error) {
-// 				panic("mock out the DoGetESClient method")
+// 			DoGetESClientsFunc: func(ctx context.Context, cfg *config.OpenSearchConfig) (dpEsClient.Client, *es710.Client, error) {
+// 				panic("mock out the DoGetESClients method")
 // 			},
 // 			DoGetHTTPServerFunc: func(bindAddr string, router http.Handler) service.HTTPServer {
 // 				panic("mock out the DoGetHTTPServer method")
@@ -35,7 +37,7 @@ var _ service.Initialiser = &InitialiserMock{}
 // 			DoGetKafkaConsumerFunc: func(ctx context.Context, kafkaCfg *config.KafkaConfig) (kafka.IConsumerGroup, error) {
 // 				panic("mock out the DoGetKafkaConsumer method")
 // 			},
-// 			DoGetS3ClientFunc: func(ctx context.Context, cfg *config.S3Config) (service.S3Uploader, error) {
+// 			DoGetS3ClientFunc: func(ctx context.Context, cfg *config.S3Config) (sitemap.S3Uploader, error) {
 // 				panic("mock out the DoGetS3Client method")
 // 			},
 // 		}
@@ -45,8 +47,8 @@ var _ service.Initialiser = &InitialiserMock{}
 //
 // 	}
 type InitialiserMock struct {
-	// DoGetESClientFunc mocks the DoGetESClient method.
-	DoGetESClientFunc func(ctx context.Context, cfg *config.OpenSearchConfig) (dpEsClient.Client, error)
+	// DoGetESClientsFunc mocks the DoGetESClients method.
+	DoGetESClientsFunc func(ctx context.Context, cfg *config.OpenSearchConfig) (dpEsClient.Client, *es710.Client, error)
 
 	// DoGetHTTPServerFunc mocks the DoGetHTTPServer method.
 	DoGetHTTPServerFunc func(bindAddr string, router http.Handler) service.HTTPServer
@@ -58,12 +60,12 @@ type InitialiserMock struct {
 	DoGetKafkaConsumerFunc func(ctx context.Context, kafkaCfg *config.KafkaConfig) (kafka.IConsumerGroup, error)
 
 	// DoGetS3ClientFunc mocks the DoGetS3Client method.
-	DoGetS3ClientFunc func(ctx context.Context, cfg *config.S3Config) (service.S3Uploader, error)
+	DoGetS3ClientFunc func(ctx context.Context, cfg *config.S3Config) (sitemap.S3Uploader, error)
 
 	// calls tracks calls to the methods.
 	calls struct {
-		// DoGetESClient holds details about calls to the DoGetESClient method.
-		DoGetESClient []struct {
+		// DoGetESClients holds details about calls to the DoGetESClients method.
+		DoGetESClients []struct {
 			// Ctx is the ctx argument value.
 			Ctx context.Context
 			// Cfg is the cfg argument value.
@@ -102,17 +104,17 @@ type InitialiserMock struct {
 			Cfg *config.S3Config
 		}
 	}
-	lockDoGetESClient      sync.RWMutex
+	lockDoGetESClients     sync.RWMutex
 	lockDoGetHTTPServer    sync.RWMutex
 	lockDoGetHealthCheck   sync.RWMutex
 	lockDoGetKafkaConsumer sync.RWMutex
 	lockDoGetS3Client      sync.RWMutex
 }
 
-// DoGetESClient calls DoGetESClientFunc.
-func (mock *InitialiserMock) DoGetESClient(ctx context.Context, cfg *config.OpenSearchConfig) (dpEsClient.Client, error) {
-	if mock.DoGetESClientFunc == nil {
-		panic("InitialiserMock.DoGetESClientFunc: method is nil but Initialiser.DoGetESClient was just called")
+// DoGetESClients calls DoGetESClientsFunc.
+func (mock *InitialiserMock) DoGetESClients(ctx context.Context, cfg *config.OpenSearchConfig) (dpEsClient.Client, *es710.Client, error) {
+	if mock.DoGetESClientsFunc == nil {
+		panic("InitialiserMock.DoGetESClientsFunc: method is nil but Initialiser.DoGetESClients was just called")
 	}
 	callInfo := struct {
 		Ctx context.Context
@@ -121,16 +123,16 @@ func (mock *InitialiserMock) DoGetESClient(ctx context.Context, cfg *config.Open
 		Ctx: ctx,
 		Cfg: cfg,
 	}
-	mock.lockDoGetESClient.Lock()
-	mock.calls.DoGetESClient = append(mock.calls.DoGetESClient, callInfo)
-	mock.lockDoGetESClient.Unlock()
-	return mock.DoGetESClientFunc(ctx, cfg)
+	mock.lockDoGetESClients.Lock()
+	mock.calls.DoGetESClients = append(mock.calls.DoGetESClients, callInfo)
+	mock.lockDoGetESClients.Unlock()
+	return mock.DoGetESClientsFunc(ctx, cfg)
 }
 
-// DoGetESClientCalls gets all the calls that were made to DoGetESClient.
+// DoGetESClientsCalls gets all the calls that were made to DoGetESClients.
 // Check the length with:
-//     len(mockedInitialiser.DoGetESClientCalls())
-func (mock *InitialiserMock) DoGetESClientCalls() []struct {
+//     len(mockedInitialiser.DoGetESClientsCalls())
+func (mock *InitialiserMock) DoGetESClientsCalls() []struct {
 	Ctx context.Context
 	Cfg *config.OpenSearchConfig
 } {
@@ -138,9 +140,9 @@ func (mock *InitialiserMock) DoGetESClientCalls() []struct {
 		Ctx context.Context
 		Cfg *config.OpenSearchConfig
 	}
-	mock.lockDoGetESClient.RLock()
-	calls = mock.calls.DoGetESClient
-	mock.lockDoGetESClient.RUnlock()
+	mock.lockDoGetESClients.RLock()
+	calls = mock.calls.DoGetESClients
+	mock.lockDoGetESClients.RUnlock()
 	return calls
 }
 
@@ -258,7 +260,7 @@ func (mock *InitialiserMock) DoGetKafkaConsumerCalls() []struct {
 }
 
 // DoGetS3Client calls DoGetS3ClientFunc.
-func (mock *InitialiserMock) DoGetS3Client(ctx context.Context, cfg *config.S3Config) (service.S3Uploader, error) {
+func (mock *InitialiserMock) DoGetS3Client(ctx context.Context, cfg *config.S3Config) (sitemap.S3Uploader, error) {
 	if mock.DoGetS3ClientFunc == nil {
 		panic("InitialiserMock.DoGetS3ClientFunc: method is nil but Initialiser.DoGetS3Client was just called")
 	}
