@@ -2,90 +2,42 @@ package steps
 
 import (
 	"context"
-	"io/ioutil"
+	"fmt"
 	"os"
-	"os/signal"
-	"syscall"
-	"time"
+	"strings"
 
-	"github.com/ONSdigital/dp-kafka/v3/kafkatest"
-	"github.com/ONSdigital/dp-sitemap/event"
-	"github.com/ONSdigital/dp-sitemap/schema"
-	"github.com/ONSdigital/dp-sitemap/service"
 	"github.com/cucumber/godog"
-	"github.com/rdumont/assistdog"
-	"github.com/stretchr/testify/assert"
+
+	assetmock "github.com/ONSdigital/dp-sitemap/assets/mock"
+	"github.com/ONSdigital/dp-sitemap/robotseo"
 )
 
-func (c *Component) RegisterSteps(ctx *godog.ScenarioContext) {
-	ctx.Step(`^these hello events are consumed:$`, c.theseHelloEventsAreConsumed)
-	ctx.Step(`^I should receive a hello-world response$`, c.iShouldReceiveAHelloworldResponse)
+func (c *Component) RegisterSteps(ctx *godog.ScenarioContext) {	
+	ctx.Step(`^i have the following robot\.json:$`, iHaveTheFollowingRobotjson)
+	ctx.Step(`^i invoke writejson with the sitemaps "([^"]*)"$`, c.iInvokeWritejsonWithTheSitemaps)
+	ctx.Step(`^the content of the resulting robots file must be$`, c.theContentOfTheResultingRobotsFileMustBe)
 }
 
-func (c *Component) iShouldReceiveAHelloworldResponse() error {
-	content, err := ioutil.ReadFile(c.cfg.OutputFilePath)
-	if err != nil {
-		return err
+func iHaveTheFollowingRobotjson(arg1 *godog.DocString) error {
+	amock := assetmock.FileSystemInterfaceMock{
+		GetFunc: func(contextMoqParam context.Context, path string) ([]byte, error) { return []byte(arg1.Content), nil },
 	}
-
-	assert.Equal(c, "Hello, Tim!", string(content))
-
-	return c.StepError()
-}
-
-func (c *Component) theseHelloEventsAreConsumed(table *godog.Table) error {
-
-	observationEvents, err := c.convertToHelloEvents(table)
-	if err != nil {
-		return err
-	}
-
-	signals := registerInterrupt()
-
-	// run application in separate goroutine
-	go func() {
-		c.svc, err = service.Run(context.Background(), c.serviceList, "", "", "", c.errorChan)
-	}()
-
-	// consume extracted observations
-	for _, e := range observationEvents {
-		if err := c.sendToConsumer(e); err != nil {
-			return err
-		}
-	}
-
-	time.Sleep(300 * time.Millisecond)
-
-	// kill application
-	signals <- os.Interrupt
-
+	robotseo.Init(&amock)
 	return nil
 }
 
-func (c *Component) convertToHelloEvents(table *godog.Table) ([]*event.ContentPublished, error) {
-	assist := assistdog.NewDefault()
-	events, err := assist.CreateSlice(&event.ContentPublished{}, table)
-	if err != nil {
-		return nil, err
-	}
-	return events.([]*event.ContentPublished), nil
+func (c *Component)iInvokeWritejsonWithTheSitemaps(arg1 string) error {
+	fw := robotseo.RobotFileWriter{}
+	return fw.WriteRobotsFile(c.cfg, strings.Split(arg1, ","))
 }
 
-func (c *Component) sendToConsumer(e *event.ContentPublished) error {
-	bytes, err := schema.ContentPublishedEvent.Marshal(e)
+func (c *Component)theContentOfTheResultingRobotsFileMustBe(arg1 *godog.DocString) error {
+	b, err := os.ReadFile(c.cfg.RobotsFilePath)
 	if err != nil {
 		return err
 	}
-
-	msg, err := kafkatest.NewMessage(bytes, 0)
-	if err == nil {
-		c.KafkaConsumer.Channels().Upstream <- msg
+	if strings.Compare(arg1.Content, string(b)) != 0 {
+		return fmt.Errorf("robot file content mismatch actual [%s], expecting [%s]", string(b), arg1.Content)
 	}
-	return err
-}
-
-func registerInterrupt() chan os.Signal {
-	signals := make(chan os.Signal, 1)
-	signal.Notify(signals, os.Interrupt, syscall.SIGTERM)
-	return signals
+	return nil
 }

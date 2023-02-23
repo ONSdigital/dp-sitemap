@@ -14,7 +14,7 @@ type Config struct {
 	GracefulShutdownTimeout    time.Duration `envconfig:"GRACEFUL_SHUTDOWN_TIMEOUT"`
 	HealthCheckInterval        time.Duration `envconfig:"HEALTHCHECK_INTERVAL"`
 	HealthCheckCriticalTimeout time.Duration `envconfig:"HEALTHCHECK_CRITICAL_TIMEOUT"`
-	OutputFilePath             string        `envconfig:"OUTPUT_FILE_PATH"`
+	RobotsFilePath             string        `envconfig:"ROBOTS_FILE_PATH"`
 	KafkaConfig                KafkaConfig
 	OpenSearchConfig           OpenSearchConfig
 	S3Config                   S3Config
@@ -66,7 +66,7 @@ func Get() (*Config, error) {
 		GracefulShutdownTimeout:    5 * time.Second,
 		HealthCheckInterval:        30 * time.Second,
 		HealthCheckCriticalTimeout: 90 * time.Second,
-		OutputFilePath:             "/tmp/helloworld.txt",
+		RobotsFilePath:             "./dp_robot_file.txt",
 		KafkaConfig: KafkaConfig{
 			Brokers:             []string{"localhost:9092"},
 			Version:             "1.0.2",

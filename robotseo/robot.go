@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"strings"
 
 	"github.com/ONSdigital/dp-sitemap/assets"
 	"github.com/ONSdigital/log.go/v2/log"
@@ -50,19 +49,4 @@ func Init(efs assets.FileSystemInterface) {
 			}
 		}
 	}
-}
-
-func GetRobotsFileBody() string {
-	robot := strings.Builder{}
-	for k, v := range robotList {
-		robot.WriteString("\nUser-agent: " + k)
-		for _, allow := range v.AllowList {
-			robot.WriteString("\nAllow: " + allow)
-		}
-		for _, deny := range v.DenyList {
-			robot.WriteString("\nDisallow: " + deny)
-		}
-		robot.WriteString("\n")
-	}
-	return robot.String()
 }
