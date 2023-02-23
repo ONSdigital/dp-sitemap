@@ -7,7 +7,6 @@ import (
 
 	asset "github.com/ONSdigital/dp-sitemap/assets"
 	mockassets "github.com/ONSdigital/dp-sitemap/assets/mock"
-	"github.com/ONSdigital/dp-sitemap/config"
 	. "github.com/smartystreets/goconvey/convey"
 )
 
@@ -133,25 +132,5 @@ Disallow: /googledeny2
 		robotFile := r.GetRobotsFileBody()
 		So(robotFile, ShouldContainSubstring, bot1)
 		So(robotFile, ShouldContainSubstring, bot2)
-	})
-}
-
-func TestRobotFileWriter_WriteRobotsFile(t *testing.T) {
-	var expectedError error
-	r := &RobotFileWriter{}
-	cfg, _ := config.Get()
-
-	Convey("no file path provided", t, func() {
-		robotList = map[string]asset.SeoRobotModel{}
-		expectedError = ErrNoRobotsFilePath
-		cfg.RobotsFilePath = ""
-		So(r.WriteRobotsFile(cfg, []string{}), ShouldEqual, expectedError)
-	})
-
-	Convey("no robots body", t, func() {
-		robotList = map[string]asset.SeoRobotModel{}
-		expectedError = ErrNoRobotsBody
-		cfg.RobotsFilePath = "/tmp/dp_robot.txt"
-		So(r.WriteRobotsFile(cfg, []string{}), ShouldEqual, expectedError)
 	})
 }

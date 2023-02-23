@@ -37,6 +37,7 @@ func TestConfig(t *testing.T) {
 				So(cfg.OpenSearchConfig.SignerService, ShouldEqual, "es")
 				So(cfg.OpenSearchConfig.TLSInsecureSkipVerify, ShouldEqual, false)
 				So(cfg.OpenSearchConfig.APIURL, ShouldEqual, "http://localhost:11200")
+				So(cfg.RobotsFilePath, ShouldNotBeEmpty)
 			})
 
 			Convey("Then a second call to config should return the same config", func() {
