@@ -97,13 +97,24 @@ func Run(ctx context.Context, serviceList *ExternalServiceList, buildTime, gitCo
 		}
 	}()
 
+	var saver sitemap.FileSaver
+	switch cfg.SitemapSaveLocation {
+	case "s3":
+		saver = sitemap.NewS3Saver(
+			s3Client,
+			cfg.S3Config.UploadBucketName,
+			cfg.S3Config.SitemapFileKey,
+		)
+	default:
+		saver = sitemap.NewLocalSaver(cfg.SitemapLocalFile)
+	}
+
 	generator := sitemap.NewGenerator(
 		sitemap.NewElasticFetcher(
 			esRawClient,
 			&cfg.OpenSearchConfig,
 		),
-		s3Client,
-		&cfg.S3Config,
+		saver,
 	)
 
 	generateSitemapJob := func(job gocron.Job) {

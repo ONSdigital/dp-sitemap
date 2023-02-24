@@ -7,27 +7,21 @@ import (
 	"os"
 	"testing"
 
-	"github.com/ONSdigital/dp-sitemap/config"
 	"github.com/ONSdigital/dp-sitemap/sitemap"
 	"github.com/ONSdigital/dp-sitemap/sitemap/mock"
-	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	. "github.com/smartystreets/goconvey/convey"
 )
 
 func TestGenerator(t *testing.T) {
-	s3 := &mock.S3UploaderMock{}
+	saver := &mock.FileSaverMock{}
 	fetcher := &mock.FetcherMock{}
-	cfg := &config.S3Config{
-		UploadBucketName: "upload-bucket",
-		SitemapFileKey:   "sitemap-file-key",
-	}
 
 	Convey("When fetcher returns an error", t, func() {
 		fetcher.GetFullSitemapFunc = func(ctx context.Context) (string, error) {
 			return "", errors.New("fetcher error")
 		}
 
-		g := sitemap.NewGenerator(fetcher, s3, cfg)
+		g := sitemap.NewGenerator(fetcher, saver)
 		err := g.MakeFullSitemap(context.Background())
 
 		Convey("Generator should return correct error", func() {
@@ -41,7 +35,7 @@ func TestGenerator(t *testing.T) {
 			return "filename", nil
 		}
 
-		g := sitemap.NewGenerator(fetcher, s3, cfg)
+		g := sitemap.NewGenerator(fetcher, saver)
 		err := g.MakeFullSitemap(context.Background())
 
 		Convey("Generator should return correct error", func() {
@@ -60,29 +54,25 @@ func TestGenerator(t *testing.T) {
 			return tempFile, nil
 		}
 		var uploadedFile string
-		s3 := &mock.S3UploaderMock{}
-		s3.UploadFunc = func(input *s3manager.UploadInput, options ...func(*s3manager.Uploader)) (*s3manager.UploadOutput, error) {
-			body, err := io.ReadAll(input.Body)
+		saver := &mock.FileSaverMock{}
+		saver.SaveFileFunc = func(reader io.Reader) error {
+			body, err := io.ReadAll(reader)
 			So(err, ShouldBeNil)
 			uploadedFile = string(body)
-			return nil, nil
+			return nil
 		}
 
-		g := sitemap.NewGenerator(fetcher, s3, cfg)
+		g := sitemap.NewGenerator(fetcher, saver)
 		err := g.MakeFullSitemap(context.Background())
 
 		Convey("Generator should return with no error", func() {
 			So(err, ShouldBeNil)
 		})
-		Convey("Generator should call uploader", func() {
-			So(s3.UploadCalls(), ShouldHaveLength, 1)
+		Convey("Generator should call saver", func() {
+			So(saver.SaveFileCalls(), ShouldHaveLength, 1)
 		})
-		Convey("Generator should pass correct params to uploader", func() {
-			params := s3.UploadCalls()[0].Input
-
+		Convey("Generator should pass correct file content to saver", func() {
 			So(uploadedFile, ShouldEqual, "file content")
-			So(*params.Bucket, ShouldEqual, cfg.UploadBucketName)
-			So(*params.Key, ShouldEqual, cfg.SitemapFileKey)
 		})
 		Convey("Generator should remove the temporary file", func() {
 			_, err := os.Stat(tempFile)
@@ -100,29 +90,26 @@ func TestGenerator(t *testing.T) {
 			return tempFile, nil
 		}
 		var uploadedFile string
-		s3 := &mock.S3UploaderMock{}
-		s3.UploadFunc = func(input *s3manager.UploadInput, options ...func(*s3manager.Uploader)) (*s3manager.UploadOutput, error) {
-			body, err := io.ReadAll(input.Body)
+		saver := &mock.FileSaverMock{}
+
+		saver.SaveFileFunc = func(reader io.Reader) error {
+			body, err := io.ReadAll(reader)
 			So(err, ShouldBeNil)
 			uploadedFile = string(body)
-			return nil, errors.New("uploader error")
+			return errors.New("uploader error")
 		}
 
-		g := sitemap.NewGenerator(fetcher, s3, cfg)
+		g := sitemap.NewGenerator(fetcher, saver)
 		err := g.MakeFullSitemap(context.Background())
 
-		Convey("Generator should call uploader", func() {
-			So(s3.UploadCalls(), ShouldHaveLength, 1)
+		Convey("Generator should call saver", func() {
+			So(saver.SaveFileCalls(), ShouldHaveLength, 1)
 		})
-		Convey("Generator should pass correct params to uploader", func() {
-			params := s3.UploadCalls()[0].Input
-
+		Convey("Generator should pass correct file content to saver", func() {
 			So(uploadedFile, ShouldEqual, "file content")
-			So(*params.Bucket, ShouldEqual, cfg.UploadBucketName)
-			So(*params.Key, ShouldEqual, cfg.SitemapFileKey)
 		})
 		Convey("Generator should return correct error", func() {
-			So(err.Error(), ShouldContainSubstring, "failed to upload sitemap")
+			So(err.Error(), ShouldContainSubstring, "failed to save sitemap file")
 			So(err.Error(), ShouldContainSubstring, "uploader error")
 		})
 		Convey("Generator should remove the temporary file", func() {

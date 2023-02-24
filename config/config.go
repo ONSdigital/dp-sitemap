@@ -19,6 +19,8 @@ type Config struct {
 	RobotsFilePath             string        `envconfig:"ROBOTS_FILE_PATH"`
 	KafkaConfig                KafkaConfig
 	OpenSearchConfig           OpenSearchConfig
+	SitemapSaveLocation        string `envconfig:"SITEMAP_SAVE_LOCATION"` // "local" or "s3", default: "local"
+	SitemapLocalFile           string `envconfig:"SITEMAP_LOCAL_FILE"`
 	S3Config                   S3Config
 }
 
@@ -83,6 +85,8 @@ func Get() (*Config, error) {
 			ContentUpdatedGroup: "dp-sitemap",
 			ContentUpdatedTopic: "content-updated",
 		},
+		SitemapSaveLocation: "local",
+		SitemapLocalFile:    "/tmp/dp-sitemap.xml",
 	}
 
 	cfg.OpenSearchConfig = OpenSearchConfig{

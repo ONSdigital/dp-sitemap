@@ -14,7 +14,6 @@ func TestConfig(t *testing.T) {
 		cfg, err := Get()
 
 		Convey("When the config values are retrieved", func() {
-
 			Convey("Then there should be no error returned", func() {
 				So(err, ShouldBeNil)
 			})
@@ -37,6 +36,8 @@ func TestConfig(t *testing.T) {
 				So(cfg.OpenSearchConfig.SignerService, ShouldEqual, "es")
 				So(cfg.OpenSearchConfig.TLSInsecureSkipVerify, ShouldEqual, false)
 				So(cfg.OpenSearchConfig.APIURL, ShouldEqual, "http://localhost:11200")
+				So(cfg.SitemapSaveLocation, ShouldEqual, "local")
+				So(cfg.SitemapLocalFile, ShouldEqual, "/tmp/dp-sitemap.xml")
 				So(cfg.RobotsFilePath, ShouldNotBeEmpty)
 			})
 

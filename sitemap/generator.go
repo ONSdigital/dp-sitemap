@@ -3,18 +3,17 @@ package sitemap
 import (
 	"context"
 	"fmt"
+	"io"
 	"os"
 
-	"github.com/ONSdigital/dp-sitemap/config"
 	"github.com/ONSdigital/log.go/v2/log"
-	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 )
 
-//go:generate moq -out mock/s3uploader.go -pkg mock . S3Uploader
+//go:generate moq -out mock/filesaver.go -pkg mock . FileSaver
 //go:generate moq -out mock/fetcher.go -pkg mock . Fetcher
 
-type S3Uploader interface {
-	Upload(input *s3manager.UploadInput, options ...func(*s3manager.Uploader)) (*s3manager.UploadOutput, error)
+type FileSaver interface {
+	SaveFile(body io.Reader) error
 }
 
 type Fetcher interface {
@@ -22,16 +21,14 @@ type Fetcher interface {
 }
 
 type Generator struct {
-	fetcher  Fetcher
-	uploader S3Uploader
-	cfg      *config.S3Config
+	fetcher Fetcher
+	saver   FileSaver
 }
 
-func NewGenerator(fetcher Fetcher, uploader S3Uploader, cfg *config.S3Config) *Generator {
+func NewGenerator(fetcher Fetcher, saver FileSaver) *Generator {
 	return &Generator{
-		fetcher:  fetcher,
-		uploader: uploader,
-		cfg:      cfg,
+		fetcher: fetcher,
+		saver:   saver,
 	}
 }
 
@@ -55,13 +52,9 @@ func (g *Generator) MakeFullSitemap(ctx context.Context) error {
 	}
 	defer file.Close()
 
-	_, err = g.uploader.Upload(&s3manager.UploadInput{
-		Body:   file,
-		Bucket: &g.cfg.UploadBucketName,
-		Key:    &g.cfg.SitemapFileKey,
-	})
+	err = g.saver.SaveFile(file)
 	if err != nil {
-		return fmt.Errorf("failed to upload sitemap: %w", err)
+		return fmt.Errorf("failed to save sitemap file: %w", err)
 	}
 	return nil
 }
