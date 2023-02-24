@@ -16,7 +16,7 @@ type Config struct {
 	HealthCheckCriticalTimeout time.Duration `envconfig:"HEALTHCHECK_CRITICAL_TIMEOUT"`
 	SitemapGenerationFrequency time.Duration `envconfig:"SITEMAP_GENERATION_FREQUENCY"`
 	SitemapGenerationTimeout   time.Duration `envconfig:"SITEMAP_GENERATION_TIMEOUT"`
-	OutputFilePath             string        `envconfig:"OUTPUT_FILE_PATH"`
+	RobotsFilePath             string        `envconfig:"ROBOTS_FILE_PATH"`
 	KafkaConfig                KafkaConfig
 	OpenSearchConfig           OpenSearchConfig
 	SitemapSaveLocation        string `envconfig:"SITEMAP_SAVE_LOCATION"` // "local" or "s3", default: "local"
@@ -76,7 +76,7 @@ func Get() (*Config, error) {
 		HealthCheckCriticalTimeout: 90 * time.Second,
 		SitemapGenerationFrequency: time.Hour,
 		SitemapGenerationTimeout:   10 * time.Minute,
-		OutputFilePath:             "/tmp/helloworld.txt",
+		RobotsFilePath:             "./dp_robot_file.txt",
 		KafkaConfig: KafkaConfig{
 			Brokers:             []string{"localhost:9092"},
 			Version:             "1.0.2",

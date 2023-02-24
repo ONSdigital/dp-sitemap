@@ -79,11 +79,12 @@ func TestInit(t *testing.T) {
 
 func TestGetRobotsFileBody(t *testing.T) {
 	var expectedRobotsBody string
+	r := RobotFileWriter{}
 
 	Convey("no robots data", t, func() {
 		robotList = map[string]asset.SeoRobotModel{}
 		expectedRobotsBody = ""
-		So(GetRobotsFileBody(), ShouldEqual, expectedRobotsBody)
+		So(r.GetRobotsFileBody(), ShouldEqual, expectedRobotsBody)
 	})
 
 	Convey("simple allow/deny with one user-agent", t, func() {
@@ -94,7 +95,7 @@ User-agent: GoogleBot
 Allow: /googleallow
 Disallow: /googledeny
 `
-		So(GetRobotsFileBody(), ShouldEqual, expectedRobotsBody)
+		So(r.GetRobotsFileBody(), ShouldEqual, expectedRobotsBody)
 	})
 
 	Convey("multiple allow/deny with one user-agent", t, func() {
@@ -107,7 +108,7 @@ Allow: /googleallow2
 Disallow: /googledeny1
 Disallow: /googledeny2
 `
-		So(GetRobotsFileBody(), ShouldEqual, expectedRobotsBody)
+		So(r.GetRobotsFileBody(), ShouldEqual, expectedRobotsBody)
 	})
 
 	Convey("multiple allow/deny with multiple user-agents", t, func() {
@@ -128,7 +129,7 @@ Allow: /googleallow2
 Disallow: /googledeny1
 Disallow: /googledeny2
 `
-		robotFile := GetRobotsFileBody()
+		robotFile := r.GetRobotsFileBody()
 		So(robotFile, ShouldContainSubstring, bot1)
 		So(robotFile, ShouldContainSubstring, bot2)
 	})

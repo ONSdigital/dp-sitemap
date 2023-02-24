@@ -38,6 +38,7 @@ func TestConfig(t *testing.T) {
 				So(cfg.OpenSearchConfig.APIURL, ShouldEqual, "http://localhost:11200")
 				So(cfg.SitemapSaveLocation, ShouldEqual, "local")
 				So(cfg.SitemapLocalFile, ShouldEqual, "/tmp/dp-sitemap.xml")
+				So(cfg.RobotsFilePath, ShouldNotBeEmpty)
 			})
 
 			Convey("Then a second call to config should return the same config", func() {
