@@ -7,9 +7,9 @@ import (
 	dpEsClient "github.com/ONSdigital/dp-elasticsearch/v3/client"
 	"github.com/ONSdigital/dp-healthcheck/healthcheck"
 	kafka "github.com/ONSdigital/dp-kafka/v3"
+	"github.com/ONSdigital/dp-sitemap/clients"
 	"github.com/ONSdigital/dp-sitemap/config"
 	"github.com/ONSdigital/dp-sitemap/sitemap"
-	"github.com/ONSdigital/dp-sitemap/clients"
 	es710 "github.com/elastic/go-elasticsearch/v7"
 )
 
