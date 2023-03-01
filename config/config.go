@@ -22,6 +22,7 @@ type Config struct {
 	SitemapSaveLocation        string `envconfig:"SITEMAP_SAVE_LOCATION"` // "local" or "s3", default: "local"
 	SitemapLocalFile           string `envconfig:"SITEMAP_LOCAL_FILE"`
 	S3Config                   S3Config
+	ZebedeeURL                 string `envconfig:"ZEBEDEE_URL"`
 }
 
 type S3Config struct {
@@ -87,6 +88,7 @@ func Get() (*Config, error) {
 		},
 		SitemapSaveLocation: "local",
 		SitemapLocalFile:    "/tmp/dp-sitemap.xml",
+		ZebedeeURL:          "http://localhost:8082",
 	}
 
 	cfg.OpenSearchConfig = OpenSearchConfig{

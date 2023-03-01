@@ -7,6 +7,7 @@ import (
 	"context"
 	dpEsClient "github.com/ONSdigital/dp-elasticsearch/v3/client"
 	kafka "github.com/ONSdigital/dp-kafka/v3"
+	"github.com/ONSdigital/dp-sitemap/clients"
 	"github.com/ONSdigital/dp-sitemap/config"
 	"github.com/ONSdigital/dp-sitemap/service"
 	"github.com/ONSdigital/dp-sitemap/sitemap"
@@ -40,6 +41,9 @@ var _ service.Initialiser = &InitialiserMock{}
 // 			DoGetS3ClientFunc: func(ctx context.Context, cfg *config.S3Config) (sitemap.S3Uploader, error) {
 // 				panic("mock out the DoGetS3Client method")
 // 			},
+// 			DoGetZebedeeClientFunc: func(cfg *config.Config) clients.ZebedeeClient {
+// 				panic("mock out the DoGetZebedeeClient method")
+// 			},
 // 		}
 //
 // 		// use mockedInitialiser in code that requires service.Initialiser
@@ -61,6 +65,9 @@ type InitialiserMock struct {
 
 	// DoGetS3ClientFunc mocks the DoGetS3Client method.
 	DoGetS3ClientFunc func(ctx context.Context, cfg *config.S3Config) (sitemap.S3Uploader, error)
+
+	// DoGetZebedeeClientFunc mocks the DoGetZebedeeClient method.
+	DoGetZebedeeClientFunc func(cfg *config.Config) clients.ZebedeeClient
 
 	// calls tracks calls to the methods.
 	calls struct {
@@ -103,12 +110,18 @@ type InitialiserMock struct {
 			// Cfg is the cfg argument value.
 			Cfg *config.S3Config
 		}
+		// DoGetZebedeeClient holds details about calls to the DoGetZebedeeClient method.
+		DoGetZebedeeClient []struct {
+			// Cfg is the cfg argument value.
+			Cfg *config.Config
+		}
 	}
 	lockDoGetESClients     sync.RWMutex
 	lockDoGetHTTPServer    sync.RWMutex
 	lockDoGetHealthCheck   sync.RWMutex
 	lockDoGetKafkaConsumer sync.RWMutex
 	lockDoGetS3Client      sync.RWMutex
+	lockDoGetZebedeeClient sync.RWMutex
 }
 
 // DoGetESClients calls DoGetESClientsFunc.
@@ -291,5 +304,36 @@ func (mock *InitialiserMock) DoGetS3ClientCalls() []struct {
 	mock.lockDoGetS3Client.RLock()
 	calls = mock.calls.DoGetS3Client
 	mock.lockDoGetS3Client.RUnlock()
+	return calls
+}
+
+// DoGetZebedeeClient calls DoGetZebedeeClientFunc.
+func (mock *InitialiserMock) DoGetZebedeeClient(cfg *config.Config) clients.ZebedeeClient {
+	if mock.DoGetZebedeeClientFunc == nil {
+		panic("InitialiserMock.DoGetZebedeeClientFunc: method is nil but Initialiser.DoGetZebedeeClient was just called")
+	}
+	callInfo := struct {
+		Cfg *config.Config
+	}{
+		Cfg: cfg,
+	}
+	mock.lockDoGetZebedeeClient.Lock()
+	mock.calls.DoGetZebedeeClient = append(mock.calls.DoGetZebedeeClient, callInfo)
+	mock.lockDoGetZebedeeClient.Unlock()
+	return mock.DoGetZebedeeClientFunc(cfg)
+}
+
+// DoGetZebedeeClientCalls gets all the calls that were made to DoGetZebedeeClient.
+// Check the length with:
+//     len(mockedInitialiser.DoGetZebedeeClientCalls())
+func (mock *InitialiserMock) DoGetZebedeeClientCalls() []struct {
+	Cfg *config.Config
+} {
+	var calls []struct {
+		Cfg *config.Config
+	}
+	mock.lockDoGetZebedeeClient.RLock()
+	calls = mock.calls.DoGetZebedeeClient
+	mock.lockDoGetZebedeeClient.RUnlock()
 	return calls
 }

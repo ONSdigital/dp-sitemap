@@ -7,6 +7,7 @@ import (
 	dpEsClient "github.com/ONSdigital/dp-elasticsearch/v3/client"
 
 	kafka "github.com/ONSdigital/dp-kafka/v3"
+	"github.com/ONSdigital/dp-sitemap/clients"
 	"github.com/ONSdigital/dp-sitemap/config"
 	"github.com/ONSdigital/dp-sitemap/event"
 	"github.com/ONSdigital/dp-sitemap/sitemap"
@@ -76,6 +77,8 @@ func Run(ctx context.Context, serviceList *ExternalServiceList, buildTime, gitCo
 		return nil, err
 	}
 
+	zebedeeClient := serviceList.GetZebedee(cfg)
+
 	// Get HealthCheck
 	hc, err := serviceList.GetHealthCheck(cfg, buildTime, gitCommit, version)
 	if err != nil {
@@ -83,7 +86,7 @@ func Run(ctx context.Context, serviceList *ExternalServiceList, buildTime, gitCo
 		return nil, err
 	}
 
-	if err = registerCheckers(ctx, hc, consumer, esClient); err != nil {
+	if err = registerCheckers(ctx, hc, consumer, esClient, zebedeeClient); err != nil {
 		return nil, errors.Wrap(err, "unable to register checkers")
 	}
 
@@ -224,6 +227,7 @@ func registerCheckers(ctx context.Context,
 	hc HealthChecker,
 	consumer kafka.IConsumerGroup,
 	esClient dpEsClient.Client,
+	zebedeeClient clients.ZebedeeClient,
 ) error {
 	hasErrors := false
 
@@ -235,6 +239,11 @@ func registerCheckers(ctx context.Context,
 	if err := hc.AddCheck("Elasticsearch", esClient.Checker); err != nil {
 		hasErrors = true
 		log.Error(ctx, "error creating elasticsearch health check", err)
+	}
+
+	if err := hc.AddCheck("Zebedee client", zebedeeClient.Checker); err != nil {
+		hasErrors = true
+		log.Error(ctx, "error adding check for ZebedeeClient", err)
 	}
 
 	if hasErrors {

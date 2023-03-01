@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 
+	"github.com/ONSdigital/dp-api-clients-go/v2/zebedee"
 	dpEs "github.com/ONSdigital/dp-elasticsearch/v3"
 	dpEsClient "github.com/ONSdigital/dp-elasticsearch/v3/client"
 	"github.com/ONSdigital/dp-healthcheck/healthcheck"
@@ -11,6 +12,7 @@ import (
 	"github.com/ONSdigital/dp-net/v2/awsauth"
 	dphttp "github.com/ONSdigital/dp-net/v2/http"
 	dps3 "github.com/ONSdigital/dp-s3/v2"
+	"github.com/ONSdigital/dp-sitemap/clients"
 	"github.com/ONSdigital/dp-sitemap/config"
 	"github.com/ONSdigital/dp-sitemap/sitemap"
 	"github.com/ONSdigital/log.go/v2/log"
@@ -27,6 +29,7 @@ type ExternalServiceList struct {
 	KafkaConsumer bool
 	S3Client      bool
 	ESClient      bool
+	ZebedeeClient bool
 	Init          Initialiser
 }
 
@@ -87,6 +90,19 @@ func (e *ExternalServiceList) GetHealthCheck(cfg *config.Config, buildTime, gitC
 	}
 	e.HealthCheck = true
 	return hc, nil
+}
+
+// GetZebedee return zebedee client
+func (e *ExternalServiceList) GetZebedee(cfg *config.Config) clients.ZebedeeClient {
+	zebedeeClient := e.Init.DoGetZebedeeClient(cfg)
+	e.ZebedeeClient = true
+	return zebedeeClient
+}
+
+// DoGetZebedeeClient gets and initialises the Zebedee Client
+func (e *Init) DoGetZebedeeClient(cfg *config.Config) clients.ZebedeeClient {
+	zebedeeClient := zebedee.New(cfg.ZebedeeURL)
+	return zebedeeClient
 }
 
 // DoGetHTTPServer creates an HTTP Server with the provided bind address and router

@@ -36,6 +36,7 @@ func TestConfig(t *testing.T) {
 				So(cfg.OpenSearchConfig.SignerService, ShouldEqual, "es")
 				So(cfg.OpenSearchConfig.TLSInsecureSkipVerify, ShouldEqual, false)
 				So(cfg.OpenSearchConfig.APIURL, ShouldEqual, "http://localhost:11200")
+				So(cfg.ZebedeeURL, ShouldEqual, "http://localhost:8082")
 				So(cfg.SitemapSaveLocation, ShouldEqual, "local")
 				So(cfg.SitemapLocalFile, ShouldEqual, "/tmp/dp-sitemap.xml")
 				So(cfg.RobotsFilePath, ShouldNotBeEmpty)

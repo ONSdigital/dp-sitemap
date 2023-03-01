@@ -9,6 +9,7 @@ import (
 	kafka "github.com/ONSdigital/dp-kafka/v3"
 	"github.com/ONSdigital/dp-sitemap/config"
 	"github.com/ONSdigital/dp-sitemap/sitemap"
+	"github.com/ONSdigital/dp-sitemap/clients"
 	es710 "github.com/elastic/go-elasticsearch/v7"
 )
 
@@ -23,6 +24,7 @@ type Initialiser interface {
 	DoGetKafkaConsumer(ctx context.Context, kafkaCfg *config.KafkaConfig) (kafka.IConsumerGroup, error)
 	DoGetS3Client(ctx context.Context, cfg *config.S3Config) (sitemap.S3Uploader, error)
 	DoGetESClients(ctx context.Context, cfg *config.OpenSearchConfig) (dpEsClient.Client, *es710.Client, error)
+	DoGetZebedeeClient(cfg *config.Config) clients.ZebedeeClient
 }
 
 // HTTPServer defines the required methods from the HTTP server
