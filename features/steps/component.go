@@ -14,6 +14,7 @@ import (
 	"github.com/ONSdigital/dp-sitemap/service"
 	"github.com/ONSdigital/dp-sitemap/service/mock"
 	"github.com/ONSdigital/dp-sitemap/sitemap"
+	"github.com/cucumber/godog"
 	es710 "github.com/elastic/go-elasticsearch/v7"
 
 	dpEsClient "github.com/ONSdigital/dp-elasticsearch/v3/client"
@@ -22,17 +23,19 @@ import (
 
 type Component struct {
 	componenttest.ErrorFeature
-	serviceList   *service.ExternalServiceList
-	KafkaConsumer kafka.IConsumerGroup
-	killChannel   chan os.Signal
-	apiFeature    *componenttest.APIFeature
-	errorChan     chan error
-	svc           *service.Service
-	cfg           *config.Config
+	serviceList       *service.ExternalServiceList
+	KafkaConsumer     kafka.IConsumerGroup
+	EsClient          *es710.Client
+	EsIndex           *godog.Table
+	S3UploadedSitemap string
+	killChannel       chan os.Signal
+	apiFeature        *componenttest.APIFeature
+	errorChan         chan error
+	svc               *service.Service
+	cfg               *config.Config
 }
 
 func NewComponent() *Component {
-
 	c := &Component{errorChan: make(chan error)}
 
 	consumer := kafkatest.NewMessageConsumer(false)
@@ -73,7 +76,7 @@ func (c *Component) Reset() {
 	os.Remove(c.cfg.RobotsFilePath)
 }
 
-func (c *Component) DoGetHealthCheck(cfg *config.Config, buildTime string, gitCommit string, version string) (service.HealthChecker, error) {
+func (c *Component) DoGetHealthCheck(cfg *config.Config, buildTime, gitCommit, version string) (service.HealthChecker, error) {
 	return &mock.HealthCheckerMock{
 		AddCheckFunc: func(name string, checker healthcheck.Checker) error { return nil },
 		StartFunc:    func(ctx context.Context) {},
