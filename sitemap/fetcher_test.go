@@ -131,12 +131,12 @@ func TestFetcher(t *testing.T) {
 			sitemap, err := os.ReadFile(filename)
 			So(err, ShouldBeNil)
 			So(string(sitemap), ShouldEqual, `<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url>
-	<loc>uri_1</loc>
-	<lastmod>2014-12-10</lastmod>
+  <loc>uri_1</loc>
+  <lastmod>2014-12-10</lastmod>
 </url>
 <url>
-	<loc>uri_2</loc>
-	<lastmod>2023-03-31</lastmod>
+  <loc>uri_2</loc>
+  <lastmod>2023-03-31</lastmod>
 </url></urlset>`)
 		})
 	})
@@ -277,28 +277,28 @@ func TestFetcher(t *testing.T) {
 			sitemap, err := os.ReadFile(filename)
 			So(err, ShouldBeNil)
 			So(string(sitemap), ShouldEqual, `<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url>
-	<loc>uri_1</loc>
-	<lastmod>2014-12-10</lastmod>
+  <loc>uri_1</loc>
+  <lastmod>2014-12-10</lastmod>
 </url>
 <url>
-	<loc>uri_2</loc>
-	<lastmod>2023-03-31</lastmod>
+  <loc>uri_2</loc>
+  <lastmod>2023-03-31</lastmod>
 </url>
 <url>
-	<loc>uri_3</loc>
-	<lastmod>2015-12-10</lastmod>
+  <loc>uri_3</loc>
+  <lastmod>2015-12-10</lastmod>
 </url>
 <url>
-	<loc>uri_4</loc>
-	<lastmod>2024-03-31</lastmod>
+  <loc>uri_4</loc>
+  <lastmod>2024-03-31</lastmod>
 </url>
 <url>
-	<loc>uri_3</loc>
-	<lastmod>2015-12-10</lastmod>
+  <loc>uri_3</loc>
+  <lastmod>2015-12-10</lastmod>
 </url>
 <url>
-	<loc>uri_4</loc>
-	<lastmod>2024-03-31</lastmod>
+  <loc>uri_4</loc>
+  <lastmod>2024-03-31</lastmod>
 </url></urlset>`)
 		})
 	})

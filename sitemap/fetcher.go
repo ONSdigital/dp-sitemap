@@ -32,34 +32,37 @@ type ElasticResult struct {
 			Value    int    `json:"value"`
 			Relation string `json:"relation"`
 		} `json:"total"`
-		MaxScore interface{} `json:"max_score"`
-		Hits     []struct {
-			Index  string      `json:"_index"`
-			Type   string      `json:"_type"`
-			ID     string      `json:"_id"`
-			Score  interface{} `json:"_score"`
-			Source struct {
-				Type            string      `json:"type"`
-				URI             string      `json:"uri"`
-				JobID           string      `json:"job_id"`
-				SearchIndex     string      `json:"search_index"`
-				Cdid            string      `json:"cdid"`
-				DatasetID       string      `json:"dataset_id"`
-				Edition         string      `json:"edition"`
-				Keywords        []string    `json:"keywords"`
-				MetaDescription string      `json:"meta_description"`
-				ReleaseDate     time.Time   `json:"release_date"`
-				Summary         string      `json:"summary"`
-				Title           string      `json:"title"`
-				Topics          interface{} `json:"topics"`
-				Cancelled       bool        `json:"cancelled"`
-				Finalised       bool        `json:"finalised"`
-				Published       bool        `json:"published"`
-				CanonicalTopic  string      `json:"canonical_topic"`
-			} `json:"_source"`
-			Sort []string `json:"sort"`
-		} `json:"hits"`
+		MaxScore interface{}  `json:"max_score"`
+		Hits     []ElasticHit `json:"hits"`
 	} `json:"hits"`
+}
+
+type ElasticHit struct {
+	Index  string           `json:"_index"`
+	Type   string           `json:"_type"`
+	ID     string           `json:"_id"`
+	Score  interface{}      `json:"_score"`
+	Source ElasticHitSource `json:"_source"`
+	Sort   []string         `json:"sort"`
+}
+type ElasticHitSource struct {
+	Type            string      `json:"type"`
+	URI             string      `json:"uri"`
+	JobID           string      `json:"job_id"`
+	SearchIndex     string      `json:"search_index"`
+	Cdid            string      `json:"cdid"`
+	DatasetID       string      `json:"dataset_id"`
+	Edition         string      `json:"edition"`
+	Keywords        []string    `json:"keywords"`
+	MetaDescription string      `json:"meta_description"`
+	ReleaseDate     time.Time   `json:"release_date"`
+	Summary         string      `json:"summary"`
+	Title           string      `json:"title"`
+	Topics          interface{} `json:"topics"`
+	Cancelled       bool        `json:"cancelled"`
+	Finalised       bool        `json:"finalised"`
+	Published       bool        `json:"published"`
+	CanonicalTopic  string      `json:"canonical_topic"`
 }
 
 type URL struct {
@@ -106,7 +109,7 @@ func (f *ElasticFetcher) GetFullSitemap(ctx context.Context) (fileName string, e
 	defer bufferedFile.Flush()
 
 	enc := xml.NewEncoder(bufferedFile)
-	enc.Indent("", "	")
+	enc.Indent("", "  ")
 
 	_, err = bufferedFile.WriteString(`<?xml version="1.0" encoding="UTF-8"?>` +
 		`<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">`)
