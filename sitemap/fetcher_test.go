@@ -8,6 +8,9 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/ONSdigital/dp-api-clients-go/v2/zebedee"
+	"github.com/ONSdigital/dp-healthcheck/healthcheck"
+	zcMock "github.com/ONSdigital/dp-sitemap/clients/mock"
 	"github.com/ONSdigital/dp-sitemap/config"
 	"github.com/ONSdigital/dp-sitemap/sitemap"
 	es710 "github.com/elastic/go-elasticsearch/v7"
@@ -16,7 +19,13 @@ import (
 )
 
 func TestFetcher(t *testing.T) {
-	cfg := &config.OpenSearchConfig{}
+	cfg := &config.Config{}
+	zc := zcMock.ZebedeeClientMock{
+		CheckerFunc: func(contextMoqParam context.Context, checkState *healthcheck.CheckState) error { return nil },
+		GetFileSizeFunc: func(ctx context.Context, userAccessToken, collectionID, lang, uri string) (zebedee.FileSize, error) {
+			return zebedee.FileSize{Size: 1}, nil
+		},
+	}
 
 	Convey("When elastic start scroll returns an error", t, func() {
 		esMock := &es710.Client{API: &esapi710.API{
@@ -25,7 +34,7 @@ func TestFetcher(t *testing.T) {
 			},
 		}}
 
-		f := sitemap.NewElasticFetcher(esMock, cfg)
+		f := sitemap.NewElasticFetcher(esMock, cfg, &zc)
 		filename, err := f.GetFullSitemap(context.Background())
 
 		Convey("Generator should return correct error", func() {
@@ -46,7 +55,7 @@ func TestFetcher(t *testing.T) {
 				}, nil
 			},
 		}}
-		f := sitemap.NewElasticFetcher(esMock, cfg)
+		f := sitemap.NewElasticFetcher(esMock, cfg, &zc)
 		filename, err := f.GetFullSitemap(context.Background())
 		defer os.Remove(filename)
 
@@ -103,7 +112,7 @@ func TestFetcher(t *testing.T) {
 				}, nil
 			},
 		}}
-		f := sitemap.NewElasticFetcher(esMock, cfg)
+		f := sitemap.NewElasticFetcher(esMock, cfg, &zc)
 		filename, err := f.GetFullSitemap(context.Background())
 		defer os.Remove(filename)
 
@@ -168,7 +177,7 @@ func TestFetcher(t *testing.T) {
 				return nil, errors.New("subsequent scroll error")
 			},
 		}}
-		f := sitemap.NewElasticFetcher(esMock, cfg)
+		f := sitemap.NewElasticFetcher(esMock, cfg, &zc)
 		filename, err := f.GetFullSitemap(context.Background())
 
 		Convey("Generator should return correct error", func() {
@@ -249,7 +258,7 @@ func TestFetcher(t *testing.T) {
 				}, nil
 			},
 		}}
-		f := sitemap.NewElasticFetcher(esMock, cfg)
+		f := sitemap.NewElasticFetcher(esMock, cfg, &zc)
 		filename, err := f.GetFullSitemap(context.Background())
 		defer os.Remove(filename)
 

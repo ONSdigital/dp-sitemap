@@ -6,10 +6,12 @@ import (
 	"encoding/json"
 	"encoding/xml"
 	"fmt"
+	"net/url"
 	"os"
 	"strings"
 	"time"
 
+	"github.com/ONSdigital/dp-sitemap/clients"
 	"github.com/ONSdigital/dp-sitemap/config"
 	"github.com/ONSdigital/log.go/v2/log"
 	es710 "github.com/elastic/go-elasticsearch/v7"
@@ -68,13 +70,15 @@ type URL struct {
 
 type ElasticFetcher struct {
 	elastic *es710.Client
-	cfg     *config.OpenSearchConfig
+	cfg     *config.Config
+	zClient clients.ZebedeeClient
 }
 
-func NewElasticFetcher(elastic *es710.Client, cfg *config.OpenSearchConfig) *ElasticFetcher {
+func NewElasticFetcher(elastic *es710.Client, cfg *config.Config, zc clients.ZebedeeClient) *ElasticFetcher {
 	return &ElasticFetcher{
 		elastic: elastic,
 		cfg:     cfg,
+		zClient: zc,
 	}
 }
 
@@ -119,8 +123,12 @@ func (f *ElasticFetcher) GetFullSitemap(ctx context.Context) (fileName string, e
 	scrollID := result.ScrollID
 	for len(result.Hits.Hits) > 0 {
 		for i := range result.Hits.Hits {
+			uri, err := url.JoinPath(f.cfg.DpOnsUrlHostName, result.Hits.Hits[i].Source.URI)
+			if err != nil {
+				return fileName, fmt.Errorf("sitemap compose url error: %w", err)
+			}
 			err = enc.Encode(URL{
-				Loc:     result.Hits.Hits[i].Source.URI,
+				Loc:     uri,
 				Lastmod: result.Hits.Hits[i].Source.ReleaseDate.Format("2006-01-02"),
 			})
 			if err != nil {
@@ -144,9 +152,9 @@ func (f *ElasticFetcher) GetFullSitemap(ctx context.Context) (fileName string, e
 
 func (f *ElasticFetcher) StartScroll(ctx context.Context, result interface{}) error {
 	res, err := f.elastic.Search(
-		f.elastic.Search.WithIndex(f.cfg.SitemapIndex),
-		f.elastic.Search.WithScroll(f.cfg.ScrollTimeout),
-		f.elastic.Search.WithSize(f.cfg.ScrollSize),
+		f.elastic.Search.WithIndex(f.cfg.OpenSearchConfig.SitemapIndex),
+		f.elastic.Search.WithScroll(f.cfg.OpenSearchConfig.ScrollTimeout),
+		f.elastic.Search.WithSize(f.cfg.OpenSearchConfig.ScrollSize),
 		f.elastic.Search.WithContext(ctx),
 		f.elastic.Search.WithBody(strings.NewReader(`
 		{
@@ -173,7 +181,7 @@ func (f *ElasticFetcher) StartScroll(ctx context.Context, result interface{}) er
 
 func (f *ElasticFetcher) GetScroll(ctx context.Context, id string, result interface{}) error {
 	res, err := f.elastic.Scroll(
-		f.elastic.Scroll.WithScroll(f.cfg.ScrollTimeout),
+		f.elastic.Scroll.WithScroll(f.cfg.OpenSearchConfig.ScrollTimeout),
 		f.elastic.Scroll.WithScrollID(id),
 		f.elastic.Scroll.WithContext(ctx),
 	)

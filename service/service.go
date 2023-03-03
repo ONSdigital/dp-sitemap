@@ -115,7 +115,8 @@ func Run(ctx context.Context, serviceList *ExternalServiceList, buildTime, gitCo
 	generator := sitemap.NewGenerator(
 		sitemap.NewElasticFetcher(
 			esRawClient,
-			&cfg.OpenSearchConfig,
+			cfg,
+			zebedeeClient,
 		),
 		saver,
 	)
