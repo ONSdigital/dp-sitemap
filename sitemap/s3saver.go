@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/ONSdigital/dp-sitemap/config"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 )
 
@@ -16,10 +17,10 @@ type S3Uploader interface {
 type S3Saver struct {
 	uploader S3Uploader
 	bucket   string
-	fileKey  string
+	fileKey  map[config.Language]string
 }
 
-func NewS3Saver(uploader S3Uploader, bucket, fileKey string) *S3Saver {
+func NewS3Saver(uploader S3Uploader, bucket string, fileKey map[config.Language]string) *S3Saver {
 	return &S3Saver{
 		uploader: uploader,
 		bucket:   bucket,
@@ -27,11 +28,12 @@ func NewS3Saver(uploader S3Uploader, bucket, fileKey string) *S3Saver {
 	}
 }
 
-func (s *S3Saver) SaveFile(body io.Reader) error {
+func (s *S3Saver) SaveFile(lang config.Language, body io.Reader) error {
+	k := lang.String()
 	_, err := s.uploader.Upload(&s3manager.UploadInput{
 		Body:   body,
 		Bucket: &s.bucket,
-		Key:    &s.fileKey,
+		Key:    &k,
 	})
 	if err != nil {
 		return fmt.Errorf("failed to upload file to s3: %w", err)

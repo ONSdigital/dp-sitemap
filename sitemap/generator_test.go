@@ -7,6 +7,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/ONSdigital/dp-sitemap/config"
 	"github.com/ONSdigital/dp-sitemap/sitemap"
 	"github.com/ONSdigital/dp-sitemap/sitemap/mock"
 	. "github.com/smartystreets/goconvey/convey"
@@ -16,9 +17,10 @@ func TestGenerator(t *testing.T) {
 	saver := &mock.FileSaverMock{}
 	fetcher := &mock.FetcherMock{}
 
+	fetcher.HasWelshContentFunc = func(ctx context.Context, path string) bool { return false }
 	Convey("When fetcher returns an error", t, func() {
-		fetcher.GetFullSitemapFunc = func(ctx context.Context) (string, error) {
-			return "", errors.New("fetcher error")
+		fetcher.GetFullSitemapFunc = func(ctx context.Context) ([]string, error) {
+			return []string{""}, errors.New("fetcher error")
 		}
 
 		g := sitemap.NewGenerator(fetcher, saver)
@@ -31,8 +33,8 @@ func TestGenerator(t *testing.T) {
 	})
 
 	Convey("When fetcher returns a non-existent file", t, func() {
-		fetcher.GetFullSitemapFunc = func(ctx context.Context) (string, error) {
-			return "filename", nil
+		fetcher.GetFullSitemapFunc = func(ctx context.Context) ([]string, error) {
+			return []string{"filename"}, nil
 		}
 
 		g := sitemap.NewGenerator(fetcher, saver)
@@ -46,16 +48,16 @@ func TestGenerator(t *testing.T) {
 
 	Convey("When fetcher returns a file with known content", t, func() {
 		var tempFile string
-		fetcher.GetFullSitemapFunc = func(ctx context.Context) (string, error) {
+		fetcher.GetFullSitemapFunc = func(ctx context.Context) ([]string, error) {
 			file, err := os.CreateTemp("", "sitemap")
 			So(err, ShouldBeNil)
 			file.WriteString("file content")
 			tempFile = file.Name()
-			return tempFile, nil
+			return []string{tempFile}, nil
 		}
 		var uploadedFile string
 		saver := &mock.FileSaverMock{}
-		saver.SaveFileFunc = func(reader io.Reader) error {
+		saver.SaveFileFunc = func(lang config.Language, reader io.Reader) error {
 			body, err := io.ReadAll(reader)
 			So(err, ShouldBeNil)
 			uploadedFile = string(body)
@@ -82,17 +84,17 @@ func TestGenerator(t *testing.T) {
 
 	Convey("When uploader returns with an error", t, func() {
 		var tempFile string
-		fetcher.GetFullSitemapFunc = func(ctx context.Context) (string, error) {
+		fetcher.GetFullSitemapFunc = func(ctx context.Context) ([]string, error) {
 			file, err := os.CreateTemp("", "sitemap")
 			So(err, ShouldBeNil)
 			file.WriteString("file content")
 			tempFile = file.Name()
-			return tempFile, nil
+			return []string{tempFile}, nil
 		}
 		var uploadedFile string
 		saver := &mock.FileSaverMock{}
 
-		saver.SaveFileFunc = func(reader io.Reader) error {
+		saver.SaveFileFunc = func(lang config.Language, reader io.Reader) error {
 			body, err := io.ReadAll(reader)
 			So(err, ShouldBeNil)
 			uploadedFile = string(body)

@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strings"
 
+	"github.com/ONSdigital/dp-sitemap/config"
 	"github.com/ONSdigital/log.go/v2/log"
 )
 
@@ -13,11 +15,12 @@ import (
 //go:generate moq -out mock/fetcher.go -pkg mock . Fetcher
 
 type FileSaver interface {
-	SaveFile(body io.Reader) error
+	SaveFile(lang config.Language, body io.Reader) error
 }
 
 type Fetcher interface {
-	GetFullSitemap(ctx context.Context) (string, error)
+	GetFullSitemap(ctx context.Context) ([]string, error)
+	HasWelshContent(ctx context.Context, path string) bool
 }
 
 type Generator struct {
@@ -33,28 +36,36 @@ func NewGenerator(fetcher Fetcher, saver FileSaver) *Generator {
 }
 
 func (g *Generator) MakeFullSitemap(ctx context.Context) error {
-	fileName, err := g.fetcher.GetFullSitemap(ctx)
+	fileNames, err := g.fetcher.GetFullSitemap(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to fetch sitemap: %w", err)
 	}
 	defer func() {
-		err = os.Remove(fileName)
-		if err != nil {
-			log.Error(ctx, "failed to remove temporary sitemap file "+fileName, err)
-			return
+		for _, fl := range fileNames {
+			err = os.Remove(fl)
+			if err != nil {
+				log.Error(ctx, "failed to remove temporary sitemap file "+fl, err)
+				return
+			}
+			log.Info(ctx, "removed temporary sitemap file "+fl)
 		}
-		log.Info(ctx, "removed temporary sitemap file "+fileName)
 	}()
 
-	file, err := os.Open(fileName)
-	if err != nil {
-		return fmt.Errorf("failed to open sitemap: %w", err)
-	}
-	defer file.Close()
+	for _, fl := range fileNames {
+		lang := config.English
+		if strings.Contains(fl, tempSitemapFileCy) {
+			lang = config.Welsh
+		}
+		file, err := os.Open(fl)
+		if err != nil {
+			return fmt.Errorf("failed to open sitemap: %w", err)
+		}
 
-	err = g.saver.SaveFile(file)
-	if err != nil {
-		return fmt.Errorf("failed to save sitemap file: %w", err)
+		err = g.saver.SaveFile(lang, file)
+		file.Close()
+		if err != nil {
+			return fmt.Errorf("failed to save sitemap file: %w", err)
+		}
 	}
 	return nil
 }

@@ -4,6 +4,7 @@
 package mock
 
 import (
+	"github.com/ONSdigital/dp-sitemap/config"
 	"github.com/ONSdigital/dp-sitemap/sitemap"
 	"io"
 	"sync"
@@ -19,7 +20,7 @@ var _ sitemap.FileSaver = &FileSaverMock{}
 //
 // 		// make and configure a mocked sitemap.FileSaver
 // 		mockedFileSaver := &FileSaverMock{
-// 			SaveFileFunc: func(body io.Reader) error {
+// 			SaveFileFunc: func(lang config.Language, body io.Reader) error {
 // 				panic("mock out the SaveFile method")
 // 			},
 // 		}
@@ -30,12 +31,14 @@ var _ sitemap.FileSaver = &FileSaverMock{}
 // 	}
 type FileSaverMock struct {
 	// SaveFileFunc mocks the SaveFile method.
-	SaveFileFunc func(body io.Reader) error
+	SaveFileFunc func(lang config.Language, body io.Reader) error
 
 	// calls tracks calls to the methods.
 	calls struct {
 		// SaveFile holds details about calls to the SaveFile method.
 		SaveFile []struct {
+			// Lang is the lang argument value.
+			Lang config.Language
 			// Body is the body argument value.
 			Body io.Reader
 		}
@@ -44,28 +47,32 @@ type FileSaverMock struct {
 }
 
 // SaveFile calls SaveFileFunc.
-func (mock *FileSaverMock) SaveFile(body io.Reader) error {
+func (mock *FileSaverMock) SaveFile(lang config.Language, body io.Reader) error {
 	if mock.SaveFileFunc == nil {
 		panic("FileSaverMock.SaveFileFunc: method is nil but FileSaver.SaveFile was just called")
 	}
 	callInfo := struct {
+		Lang config.Language
 		Body io.Reader
 	}{
+		Lang: lang,
 		Body: body,
 	}
 	mock.lockSaveFile.Lock()
 	mock.calls.SaveFile = append(mock.calls.SaveFile, callInfo)
 	mock.lockSaveFile.Unlock()
-	return mock.SaveFileFunc(body)
+	return mock.SaveFileFunc(lang, body)
 }
 
 // SaveFileCalls gets all the calls that were made to SaveFile.
 // Check the length with:
 //     len(mockedFileSaver.SaveFileCalls())
 func (mock *FileSaverMock) SaveFileCalls() []struct {
+	Lang config.Language
 	Body io.Reader
 } {
 	var calls []struct {
+		Lang config.Language
 		Body io.Reader
 	}
 	mock.lockSaveFile.RLock()

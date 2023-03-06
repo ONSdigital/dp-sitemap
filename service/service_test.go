@@ -273,7 +273,7 @@ func TestClose(t *testing.T) {
 		zMock := clientMock.ZebedeeClientMock{
 			CheckerFunc: func(contextMoqParam context.Context, checkState *healthcheck.CheckState) error { return nil },
 			GetFileSizeFunc: func(ctx context.Context, userAccessToken, collectionID, lang, uri string) (zebedee.FileSize, error) {
-				return zebedee.FileSize{Size: 1}, nil
+				return zebedee.FileSize{Size: 1}, errors.New("no welsh content")
 			},
 		}
 

@@ -4,20 +4,22 @@ import (
 	"fmt"
 	"io"
 	"os"
+
+	"github.com/ONSdigital/dp-sitemap/config"
 )
 
 type LocalSaver struct {
-	fileName string
+	fileNames map[config.Language]string
 }
 
-func NewLocalSaver(fileName string) *LocalSaver {
+func NewLocalSaver(fileNames map[config.Language]string) *LocalSaver {
 	return &LocalSaver{
-		fileName: fileName,
+		fileNames: fileNames,
 	}
 }
 
-func (s *LocalSaver) SaveFile(body io.Reader) error {
-	file, err := os.OpenFile(s.fileName, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0o600)
+func (s *LocalSaver) SaveFile(lang config.Language, body io.Reader) error {
+	file, err := os.OpenFile(s.fileNames[lang], os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0o600)
 	if err != nil {
 		return fmt.Errorf("failed to open a local file: %w", err)
 	}

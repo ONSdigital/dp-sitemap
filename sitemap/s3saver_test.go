@@ -6,6 +6,7 @@ import (
 	"strings"
 	"testing"
 
+	. "github.com/ONSdigital/dp-sitemap/config"
 	"github.com/ONSdigital/dp-sitemap/sitemap"
 	"github.com/ONSdigital/dp-sitemap/sitemap/mock"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
@@ -14,7 +15,7 @@ import (
 
 func TestS3Saver(t *testing.T) {
 	bucket := "upload-bucket"
-	fileKey := "sitemap-file-key"
+	fileKey := map[Language]string{English: "sitemap-file-key", Welsh: "sitemap-file-key-cy"}
 
 	Convey("When s3 upload fails", t, func() {
 		var uploadedFile string
@@ -27,7 +28,7 @@ func TestS3Saver(t *testing.T) {
 		}
 
 		s := sitemap.NewS3Saver(s3, bucket, fileKey)
-		err := s.SaveFile(strings.NewReader("file content"))
+		err := s.SaveFile(English, strings.NewReader("file content"))
 
 		Convey("Generator should return correct error", func() {
 			So(err.Error(), ShouldContainSubstring, "failed to upload file to s3")
@@ -41,7 +42,7 @@ func TestS3Saver(t *testing.T) {
 
 			So(uploadedFile, ShouldEqual, "file content")
 			So(*params.Bucket, ShouldEqual, bucket)
-			So(*params.Key, ShouldEqual, fileKey)
+			So(*params.Key, ShouldEqual, English.String())
 		})
 	})
 
@@ -56,7 +57,7 @@ func TestS3Saver(t *testing.T) {
 		}
 
 		s := sitemap.NewS3Saver(s3, bucket, fileKey)
-		err := s.SaveFile(strings.NewReader("file content"))
+		err := s.SaveFile(English, strings.NewReader("file content"))
 
 		Convey("SaveFile should return no error", func() {
 			So(err, ShouldBeNil)
@@ -69,7 +70,7 @@ func TestS3Saver(t *testing.T) {
 
 			So(uploadedFile, ShouldEqual, "file content")
 			So(*params.Bucket, ShouldEqual, bucket)
-			So(*params.Key, ShouldEqual, fileKey)
+			So(*params.Key, ShouldEqual, English.String())
 		})
 	})
 }
