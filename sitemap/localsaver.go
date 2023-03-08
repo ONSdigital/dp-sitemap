@@ -1,11 +1,13 @@
 package sitemap
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"os"
 
 	"github.com/ONSdigital/dp-sitemap/config"
+	"github.com/ONSdigital/log.go/v2/log"
 )
 
 type LocalSaver struct {
@@ -30,5 +32,6 @@ func (s *LocalSaver) SaveFile(lang config.Language, body io.Reader) error {
 		return fmt.Errorf("failed to copy to a local file: %w", err)
 	}
 
+	log.Info(context.Background(), fmt.Sprintf("saved file [%s], language [%s]", s.fileNames[lang], lang.String()))
 	return nil
 }

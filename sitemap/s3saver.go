@@ -1,10 +1,12 @@
 package sitemap
 
 import (
+	"context"
 	"fmt"
 	"io"
 
 	"github.com/ONSdigital/dp-sitemap/config"
+	"github.com/ONSdigital/log.go/v2/log"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 )
 
@@ -38,5 +40,6 @@ func (s *S3Saver) SaveFile(lang config.Language, body io.Reader) error {
 	if err != nil {
 		return fmt.Errorf("failed to upload file to s3: %w", err)
 	}
+	log.Info(context.Background(), fmt.Sprintf("saved key [%s], bucket [%s]", k, s.bucket))
 	return nil
 }
