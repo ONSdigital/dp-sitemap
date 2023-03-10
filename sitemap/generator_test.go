@@ -8,6 +8,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/ONSdigital/dp-sitemap/config"
 	"github.com/ONSdigital/dp-sitemap/sitemap"
 	"github.com/ONSdigital/dp-sitemap/sitemap/mock"
 	. "github.com/smartystreets/goconvey/convey"
@@ -164,13 +165,14 @@ func TestGenerateFullSitemap(t *testing.T) {
 	store := &mock.FileStoreMock{}
 	fetcher := &mock.FetcherMock{}
 
+	fetcher.HasWelshContentFunc = func(ctx context.Context, path string) bool { return false }
 	Convey("When fetcher returns an error", t, func() {
-		fetcher.GetFullSitemapFunc = func(ctx context.Context) (string, error) {
-			return "", errors.New("fetcher error")
+		fetcher.GetFullSitemapFunc = func(ctx context.Context) (sitemap.Files, error) {
+			return nil, errors.New("fetcher error")
 		}
 
 		g := sitemap.NewGenerator(fetcher, nil, store)
-		err := g.MakeFullSitemap(context.Background(), "")
+		err := g.MakeFullSitemap(context.Background(), nil)
 
 		Convey("Generator should return correct error", func() {
 			So(err.Error(), ShouldContainSubstring, "failed to fetch sitemap")
@@ -179,12 +181,12 @@ func TestGenerateFullSitemap(t *testing.T) {
 	})
 
 	Convey("When fetcher returns a non-existent file", t, func() {
-		fetcher.GetFullSitemapFunc = func(ctx context.Context) (string, error) {
-			return "filename", nil
+		fetcher.GetFullSitemapFunc = func(ctx context.Context) (sitemap.Files, error) {
+			return sitemap.Files{config.English: "filename"}, nil
 		}
 
 		g := sitemap.NewGenerator(fetcher, nil, store)
-		err := g.MakeFullSitemap(context.Background(), "")
+		err := g.MakeFullSitemap(context.Background(), nil)
 
 		Convey("Generator should return correct error", func() {
 			So(err.Error(), ShouldContainSubstring, "failed to open sitemap")
@@ -194,12 +196,12 @@ func TestGenerateFullSitemap(t *testing.T) {
 
 	Convey("When fetcher returns a file with known content", t, func() {
 		var tempFile string
-		fetcher.GetFullSitemapFunc = func(ctx context.Context) (string, error) {
+		fetcher.GetFullSitemapFunc = func(ctx context.Context) (sitemap.Files, error) {
 			file, err := os.CreateTemp("", "sitemap")
 			So(err, ShouldBeNil)
 			file.WriteString("file content")
 			tempFile = file.Name()
-			return tempFile, nil
+			return sitemap.Files{config.English: tempFile}, nil
 		}
 		var uploadedFile string
 		store := &mock.FileStoreMock{}
@@ -212,7 +214,7 @@ func TestGenerateFullSitemap(t *testing.T) {
 		}
 
 		g := sitemap.NewGenerator(fetcher, nil, store)
-		err := g.MakeFullSitemap(context.Background(), "sitemap.xml")
+		err := g.MakeFullSitemap(context.Background(), sitemap.Files{config.English: "sitemap.xml"})
 
 		Convey("Generator should return with no error", func() {
 			So(err, ShouldBeNil)
@@ -231,12 +233,12 @@ func TestGenerateFullSitemap(t *testing.T) {
 
 	Convey("When save file returns with an error", t, func() {
 		var tempFile string
-		fetcher.GetFullSitemapFunc = func(ctx context.Context) (string, error) {
+		fetcher.GetFullSitemapFunc = func(ctx context.Context) (sitemap.Files, error) {
 			file, err := os.CreateTemp("", "sitemap")
 			So(err, ShouldBeNil)
 			file.WriteString("file content")
 			tempFile = file.Name()
-			return tempFile, nil
+			return sitemap.Files{config.English: tempFile}, nil
 		}
 		var uploadedFile string
 		store := &mock.FileStoreMock{}
@@ -250,7 +252,7 @@ func TestGenerateFullSitemap(t *testing.T) {
 		}
 
 		g := sitemap.NewGenerator(fetcher, nil, store)
-		err := g.MakeFullSitemap(context.Background(), "sitemap.xml")
+		err := g.MakeFullSitemap(context.Background(), sitemap.Files{config.English: "sitemap.xml"})
 
 		Convey("Generator should call store", func() {
 			So(store.SaveFileCalls(), ShouldHaveLength, 1)

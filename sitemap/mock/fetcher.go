@@ -19,8 +19,11 @@ var _ sitemap.Fetcher = &FetcherMock{}
 //
 // 		// make and configure a mocked sitemap.Fetcher
 // 		mockedFetcher := &FetcherMock{
-// 			GetFullSitemapFunc: func(ctx context.Context) (string, error) {
+// 			GetFullSitemapFunc: func(ctx context.Context) (sitemap.Files, error) {
 // 				panic("mock out the GetFullSitemap method")
+// 			},
+// 			HasWelshContentFunc: func(ctx context.Context, path string) bool {
+// 				panic("mock out the HasWelshContent method")
 // 			},
 // 		}
 //
@@ -30,7 +33,10 @@ var _ sitemap.Fetcher = &FetcherMock{}
 // 	}
 type FetcherMock struct {
 	// GetFullSitemapFunc mocks the GetFullSitemap method.
-	GetFullSitemapFunc func(ctx context.Context) (string, error)
+	GetFullSitemapFunc func(ctx context.Context) (sitemap.Files, error)
+
+	// HasWelshContentFunc mocks the HasWelshContent method.
+	HasWelshContentFunc func(ctx context.Context, path string) bool
 
 	// calls tracks calls to the methods.
 	calls struct {
@@ -39,12 +45,20 @@ type FetcherMock struct {
 			// Ctx is the ctx argument value.
 			Ctx context.Context
 		}
+		// HasWelshContent holds details about calls to the HasWelshContent method.
+		HasWelshContent []struct {
+			// Ctx is the ctx argument value.
+			Ctx context.Context
+			// Path is the path argument value.
+			Path string
+		}
 	}
-	lockGetFullSitemap sync.RWMutex
+	lockGetFullSitemap  sync.RWMutex
+	lockHasWelshContent sync.RWMutex
 }
 
 // GetFullSitemap calls GetFullSitemapFunc.
-func (mock *FetcherMock) GetFullSitemap(ctx context.Context) (string, error) {
+func (mock *FetcherMock) GetFullSitemap(ctx context.Context) (sitemap.Files, error) {
 	if mock.GetFullSitemapFunc == nil {
 		panic("FetcherMock.GetFullSitemapFunc: method is nil but Fetcher.GetFullSitemap was just called")
 	}
@@ -71,5 +85,40 @@ func (mock *FetcherMock) GetFullSitemapCalls() []struct {
 	mock.lockGetFullSitemap.RLock()
 	calls = mock.calls.GetFullSitemap
 	mock.lockGetFullSitemap.RUnlock()
+	return calls
+}
+
+// HasWelshContent calls HasWelshContentFunc.
+func (mock *FetcherMock) HasWelshContent(ctx context.Context, path string) bool {
+	if mock.HasWelshContentFunc == nil {
+		panic("FetcherMock.HasWelshContentFunc: method is nil but Fetcher.HasWelshContent was just called")
+	}
+	callInfo := struct {
+		Ctx  context.Context
+		Path string
+	}{
+		Ctx:  ctx,
+		Path: path,
+	}
+	mock.lockHasWelshContent.Lock()
+	mock.calls.HasWelshContent = append(mock.calls.HasWelshContent, callInfo)
+	mock.lockHasWelshContent.Unlock()
+	return mock.HasWelshContentFunc(ctx, path)
+}
+
+// HasWelshContentCalls gets all the calls that were made to HasWelshContent.
+// Check the length with:
+//     len(mockedFetcher.HasWelshContentCalls())
+func (mock *FetcherMock) HasWelshContentCalls() []struct {
+	Ctx  context.Context
+	Path string
+} {
+	var calls []struct {
+		Ctx  context.Context
+		Path string
+	}
+	mock.lockHasWelshContent.RLock()
+	calls = mock.calls.HasWelshContent
+	mock.lockHasWelshContent.RUnlock()
 	return calls
 }

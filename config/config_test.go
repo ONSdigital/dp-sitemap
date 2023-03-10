@@ -37,8 +37,11 @@ func TestConfig(t *testing.T) {
 				So(cfg.OpenSearchConfig.TLSInsecureSkipVerify, ShouldEqual, false)
 				So(cfg.OpenSearchConfig.APIURL, ShouldEqual, "http://localhost:11200")
 				So(cfg.ZebedeeURL, ShouldEqual, "http://localhost:8082")
+				So(cfg.DpOnsURLHostNameEn, ShouldEqual, "https://dp.aws.onsdigital.uk/")
+				So(cfg.DpOnsURLHostNameCy, ShouldEqual, "https://cy.dp.aws.onsdigital.uk/")
 				So(cfg.SitemapSaveLocation, ShouldEqual, "local")
-				So(cfg.SitemapLocalFile, ShouldEqual, "/tmp/dp-sitemap.xml")
+				So(cfg.SitemapLocalFile[English], ShouldEqual, "/tmp/dp-sitemap-en.xml")
+				So(cfg.SitemapLocalFile[Welsh], ShouldEqual, "/tmp/dp-sitemap-cy.xml")
 				So(cfg.RobotsFilePath, ShouldNotBeEmpty)
 			})
 

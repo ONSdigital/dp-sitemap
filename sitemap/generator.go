@@ -6,6 +6,7 @@ import (
 	"io"
 	"os"
 
+	"github.com/ONSdigital/dp-sitemap/config"
 	"github.com/ONSdigital/log.go/v2/log"
 )
 
@@ -13,13 +14,16 @@ import (
 //go:generate moq -out mock/fetcher.go -pkg mock . Fetcher
 //go:generate moq -out mock/adder.go -pkg mock . Adder
 
+type Files map[config.Language]string
+
 type FileStore interface {
 	SaveFile(name string, body io.Reader) error
 	GetFile(name string) (body io.ReadCloser, err error)
 }
 
 type Fetcher interface {
-	GetFullSitemap(ctx context.Context) (string, error)
+	GetFullSitemap(ctx context.Context) (Files, error)
+	HasWelshContent(ctx context.Context, path string) bool
 }
 type Adder interface {
 	Add(oldSitemap io.Reader, url URL) (string, error)
@@ -72,29 +76,33 @@ func (g *Generator) MakeIncrementalSitemap(ctx context.Context, name string, url
 	return nil
 }
 
-func (g *Generator) MakeFullSitemap(ctx context.Context, name string) error {
-	fileName, err := g.fetcher.GetFullSitemap(ctx)
+func (g *Generator) MakeFullSitemap(ctx context.Context, fileNames Files) error {
+	sitemaps, err := g.fetcher.GetFullSitemap(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to fetch sitemap: %w", err)
 	}
 	defer func() {
-		err = os.Remove(fileName)
-		if err != nil {
-			log.Error(ctx, "failed to remove temporary sitemap file "+fileName, err)
-			return
+		for _, fl := range sitemaps {
+			err = os.Remove(fl)
+			if err != nil {
+				log.Error(ctx, "failed to remove temporary sitemap file "+fl, err)
+				return
+			}
+			log.Info(ctx, "removed temporary sitemap file "+fl)
 		}
-		log.Info(ctx, "removed temporary sitemap file "+fileName)
 	}()
 
-	file, err := os.Open(fileName)
-	if err != nil {
-		return fmt.Errorf("failed to open sitemap: %w", err)
-	}
-	defer file.Close()
+	for _, fl := range sitemaps {
+		file, err := os.Open(fl)
+		if err != nil {
+			return fmt.Errorf("failed to open sitemap: %w", err)
+		}
 
-	err = g.store.SaveFile(name, file)
-	if err != nil {
-		return fmt.Errorf("failed to save sitemap file: %w", err)
+		err = g.store.SaveFile(fl, file)
+		file.Close()
+		if err != nil {
+			return fmt.Errorf("failed to save sitemap file: %w", err)
+		}
 	}
 	return nil
 }

@@ -101,25 +101,26 @@ func Run(ctx context.Context, serviceList *ExternalServiceList, buildTime, gitCo
 	}()
 
 	var (
-		saver           sitemap.FileStore
-		fullSitemapFile string
+		saver            sitemap.FileStore
+		fullSitemapFiles sitemap.Files
 	)
 	switch cfg.SitemapSaveLocation {
 	case "s3":
 		saver = sitemap.NewS3Store(
 			s3Client,
 		)
-		fullSitemapFile = cfg.S3Config.SitemapFileKey
+		fullSitemapFiles = cfg.S3Config.SitemapFileKey
 
 	default:
 		saver = &sitemap.LocalStore{}
-		fullSitemapFile = cfg.SitemapLocalFile
+		fullSitemapFiles = cfg.SitemapLocalFile
 	}
 
 	generator := sitemap.NewGenerator(
 		sitemap.NewElasticFetcher(
 			esRawClient,
-			&cfg.OpenSearchConfig,
+			cfg,
+			zebedeeClient,
 		),
 		&sitemap.DefaultAdder{},
 		saver,
@@ -129,7 +130,7 @@ func Run(ctx context.Context, serviceList *ExternalServiceList, buildTime, gitCo
 		ctx, cancel := context.WithTimeout(context.Background(), cfg.SitemapGenerationTimeout)
 		defer cancel()
 		log.Info(ctx, "sitemap generation job start", log.Data{"last_run": job.LastRun(), "next_run": job.NextRun(), "run_count": job.RunCount()})
-		genErr := generator.MakeFullSitemap(ctx, fullSitemapFile)
+		genErr := generator.MakeFullSitemap(ctx, fullSitemapFiles)
 		if genErr != nil {
 			log.Error(ctx, "failed to generate sitemap", genErr)
 			return
