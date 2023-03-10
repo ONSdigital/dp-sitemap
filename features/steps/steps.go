@@ -39,12 +39,21 @@ func (c *Component) RegisterSteps(ctx *godog.ScenarioContext) {
 	ctx.Step(`^Sitemap "([^"]*)" looks like the following:$`, c.sitemapLooksLikeTheFollowing)
 	ctx.Step(`^Sitemap "([^"]*)" doesn\'t exist yet$`, c.sitemapDoesntExistYet)
 	ctx.Step(`^the new content of the sitemap "([^"]*)" should be$`, c.theNewContentOfTheSitemapShouldBe)
+	ctx.Step(`^URL "([^"]*)" has Welsh version$`, c.uRLHasWelshVersion)
+}
+
+func (c *Component) uRLHasWelshVersion(url string) error {
+	c.welshVersion[url+"/data_cy.json"] = true
+	return nil
 }
 
 func (c *Component) iAddAURLDatedToSitemap(url, date, sitemapID string) error {
 	zc := zcMock.ZebedeeClientMock{
 		CheckerFunc: func(contextMoqParam context.Context, checkState *healthcheck.CheckState) error { return nil },
 		GetFileSizeFunc: func(ctx context.Context, userAccessToken, collectionID, lang, uri string) (zebedee.FileSize, error) {
+			if c.welshVersion[uri] {
+				return zebedee.FileSize{Size: 1}, nil
+			}
 			return zebedee.FileSize{Size: 1}, errors.New("no welsh content")
 		},
 	}

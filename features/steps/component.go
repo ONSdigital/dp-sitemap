@@ -34,6 +34,7 @@ type Component struct {
 	svc               *service.Service
 	cfg               *config.Config
 	files             map[string]string
+	welshVersion      map[string]bool
 }
 
 func NewComponent() *Component {
@@ -67,8 +68,9 @@ func NewComponent() *Component {
 	c.serviceList = service.NewServiceList(initMock)
 
 	c.files = make(map[string]string)
-
 	c.S3UploadedSitemap = make(map[string]string)
+	c.welshVersion = make(map[string]bool)
+
 	return c
 }
 

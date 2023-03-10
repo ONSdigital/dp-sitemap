@@ -48,3 +48,36 @@ Feature: URLs can be added to an existing sitemap
           </url>
         </urlset>
         """
+
+    Scenario: Add URL with Welsh version
+        Given Sitemap "C" looks like the following:
+        """
+        <?xml version="1.0" encoding="UTF-8"?>
+          <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+          <url>
+            <loc>https://dp.aws.onsdigital.uk/economy/economicoutputandproductivity/1</loc>
+            <lastmod>2022-01-01</lastmod>
+          </url>
+        </urlset>
+        """
+        And URL "economy/economicoutputandproductivity/2" has Welsh version
+        When I add a URL "economy/economicoutputandproductivity/2" dated "2023-02-02" to sitemap "C"
+        Then the new content of the sitemap "C" should be
+        """
+        <?xml version="1.0" encoding="UTF-8"?>
+        <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+          <url>
+            <loc>https://dp.aws.onsdigital.uk/economy/economicoutputandproductivity/1</loc>
+            <lastmod>2022-01-01</lastmod>
+          </url>
+          <url>
+            <loc>https://dp.aws.onsdigital.uk/economy/economicoutputandproductivity/2</loc>
+            <lastmod>2023-02-02</lastmod>
+            <xhtml:link>
+              <rel>alternate</rel>
+              <hreflang>cy</hreflang>
+              <href>https://cy.dp.aws.onsdigital.uk/economy/economicoutputandproductivity/2</href>
+            </xhtml:link>
+          </url>
+        </urlset>
+        """
