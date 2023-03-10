@@ -64,7 +64,7 @@ type InitialiserMock struct {
 	DoGetKafkaConsumerFunc func(ctx context.Context, kafkaCfg *config.KafkaConfig) (kafka.IConsumerGroup, error)
 
 	// DoGetS3ClientFunc mocks the DoGetS3Client method.
-	DoGetS3ClientFunc func(ctx context.Context, cfg *config.S3Config) (sitemap.S3Uploader, error)
+	DoGetS3ClientFunc func(ctx context.Context, cfg *config.S3Config) (sitemap.S3Client, error)
 
 	// DoGetZebedeeClientFunc mocks the DoGetZebedeeClient method.
 	DoGetZebedeeClientFunc func(cfg *config.Config) clients.ZebedeeClient
@@ -273,7 +273,7 @@ func (mock *InitialiserMock) DoGetKafkaConsumerCalls() []struct {
 }
 
 // DoGetS3Client calls DoGetS3ClientFunc.
-func (mock *InitialiserMock) DoGetS3Client(ctx context.Context, cfg *config.S3Config) (sitemap.S3Uploader, error) {
+func (mock *InitialiserMock) DoGetS3Client(ctx context.Context, cfg *config.S3Config) (sitemap.S3Client, error) {
 	if mock.DoGetS3ClientFunc == nil {
 		panic("InitialiserMock.DoGetS3ClientFunc: method is nil but Initialiser.DoGetS3Client was just called")
 	}

@@ -22,7 +22,7 @@ type Initialiser interface {
 	DoGetHTTPServer(bindAddr string, router http.Handler) HTTPServer
 	DoGetHealthCheck(cfg *config.Config, buildTime, gitCommit, version string) (HealthChecker, error)
 	DoGetKafkaConsumer(ctx context.Context, kafkaCfg *config.KafkaConfig) (kafka.IConsumerGroup, error)
-	DoGetS3Client(ctx context.Context, cfg *config.S3Config) (sitemap.S3Uploader, error)
+	DoGetS3Client(ctx context.Context, cfg *config.S3Config) (sitemap.S3Client, error)
 	DoGetESClients(ctx context.Context, cfg *config.OpenSearchConfig) (dpEsClient.Client, *es710.Client, error)
 	DoGetZebedeeClient(cfg *config.Config) clients.ZebedeeClient
 }

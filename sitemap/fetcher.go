@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"encoding/xml"
 	"fmt"
+	"io"
 	"os"
 	"strings"
 	"time"
@@ -62,6 +63,11 @@ type ElasticHitSource struct {
 	Published       bool        `json:"published"`
 	CanonicalTopic  string      `json:"canonical_topic"`
 }
+type Urlset struct {
+	XMLName xml.Name `xml:"urlset"`
+	Xmlns   string   `xml:"xmlns,attr"`
+	URL     []URL    `xml:"url"`
+}
 
 type URL struct {
 	XMLName xml.Name `xml:"url"`
@@ -107,8 +113,8 @@ func (f *ElasticFetcher) GetFullSitemap(ctx context.Context) (fileName string, e
 	enc := xml.NewEncoder(bufferedFile)
 	enc.Indent("", "  ")
 
-	_, err = bufferedFile.WriteString(`<?xml version="1.0" encoding="UTF-8"?>` +
-		`<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">`)
+	_, err = bufferedFile.WriteString(xml.Header +
+		`<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">` + "\n")
 	if err != nil {
 		return fileName, fmt.Errorf("sitemap page xml header write error: %w", err)
 	}
@@ -137,7 +143,7 @@ func (f *ElasticFetcher) GetFullSitemap(ctx context.Context) (fileName string, e
 		}
 	}
 
-	_, err = bufferedFile.WriteString(`</urlset>`)
+	_, err = bufferedFile.WriteString("\n" + `</urlset>`)
 	if err != nil {
 		return fileName, fmt.Errorf("sitemap page xml footer write error: %w", err)
 	}
@@ -190,4 +196,8 @@ func (f *ElasticFetcher) GetScroll(ctx context.Context, id string, result interf
 		return err
 	}
 	return nil
+}
+
+func (f *ElasticFetcher) IncrementSitemap(ctx context.Context, oldSitemap io.Reader) (string, error) {
+	return "", nil
 }

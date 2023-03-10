@@ -33,6 +33,7 @@ type Component struct {
 	errorChan         chan error
 	svc               *service.Service
 	cfg               *config.Config
+	files             map[string]string
 }
 
 func NewComponent() *Component {
@@ -55,7 +56,7 @@ func NewComponent() *Component {
 		DoGetKafkaConsumerFunc: c.DoGetConsumer,
 		DoGetHealthCheckFunc:   c.DoGetHealthCheck,
 		DoGetHTTPServerFunc:    c.DoGetHTTPServer,
-		DoGetS3ClientFunc: func(ctx context.Context, cfg *config.S3Config) (sitemap.S3Uploader, error) {
+		DoGetS3ClientFunc: func(ctx context.Context, cfg *config.S3Config) (sitemap.S3Client, error) {
 			return nil, nil
 		},
 		DoGetESClientsFunc: func(ctx context.Context, cfg *config.OpenSearchConfig) (dpEsClient.Client, *es710.Client, error) {
@@ -65,15 +66,23 @@ func NewComponent() *Component {
 
 	c.serviceList = service.NewServiceList(initMock)
 
+	c.files = make(map[string]string)
+
 	return c
 }
 
 func (c *Component) Close() {
 	os.Remove(c.cfg.RobotsFilePath)
+	for _, file := range c.files {
+		os.Remove(file)
+	}
 }
 
 func (c *Component) Reset() {
 	os.Remove(c.cfg.RobotsFilePath)
+	for _, file := range c.files {
+		os.Remove(file)
+	}
 }
 
 func (c *Component) DoGetHealthCheck(cfg *config.Config, buildTime, gitCommit, version string) (service.HealthChecker, error) {

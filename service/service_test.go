@@ -74,7 +74,7 @@ func TestRun(t *testing.T) {
 				return nil
 			},
 		}
-		s3Mock := &sitemapMock.S3UploaderMock{
+		s3Mock := &sitemapMock.S3ClientMock{
 			UploadFunc: func(input *s3manager.UploadInput, options ...func(*s3manager.Uploader)) (*s3manager.UploadOutput, error) {
 				return nil, nil
 			},
@@ -107,7 +107,7 @@ func TestRun(t *testing.T) {
 			return serverMock
 		}
 
-		funcDoGetS3ClientFunc := func(ctx context.Context, cfg *config.S3Config) (sitemap.S3Uploader, error) {
+		funcDoGetS3ClientFunc := func(ctx context.Context, cfg *config.S3Config) (sitemap.S3Client, error) {
 			return s3Mock, nil
 		}
 		funcDoGetESClientFunc := func(ctx context.Context, cfg *config.OpenSearchConfig) (dpEsClient.Client, *es710.Client, error) {
@@ -177,7 +177,7 @@ func TestRun(t *testing.T) {
 			Convey("The checkers are registered and the healthcheck and http server started", func() {
 				So(len(hcMock.AddCheckCalls()), ShouldEqual, 3)
 				So(hcMock.AddCheckCalls()[0].Name, ShouldResemble, "Kafka consumer")
-				So(hcMock.AddCheckCalls()[1].Name, ShouldResemble, "Elasticsearch")  
+				So(hcMock.AddCheckCalls()[1].Name, ShouldResemble, "Elasticsearch")
 				So(hcMock.AddCheckCalls()[2].Name, ShouldResemble, "Zebedee client")
 				So(len(initMock.DoGetHTTPServerCalls()), ShouldEqual, 1)
 				So(initMock.DoGetHTTPServerCalls()[0].BindAddr, ShouldEqual, "localhost:")
@@ -252,7 +252,7 @@ func TestClose(t *testing.T) {
 			},
 		}
 
-		s3Mock := &sitemapMock.S3UploaderMock{
+		s3Mock := &sitemapMock.S3ClientMock{
 			UploadFunc: func(input *s3manager.UploadInput, options ...func(*s3manager.Uploader)) (*s3manager.UploadOutput, error) {
 				return nil, nil
 			},
@@ -286,7 +286,7 @@ func TestClose(t *testing.T) {
 				DoGetKafkaConsumerFunc: func(ctx context.Context, kafkaCfg *config.KafkaConfig) (kafka.IConsumerGroup, error) {
 					return consumerMock, nil
 				},
-				DoGetS3ClientFunc: func(ctx context.Context, cfg *config.S3Config) (sitemap.S3Uploader, error) {
+				DoGetS3ClientFunc: func(ctx context.Context, cfg *config.S3Config) (sitemap.S3Client, error) {
 					return s3Mock, nil
 				},
 				DoGetESClientsFunc: func(ctx context.Context, cfg *config.OpenSearchConfig) (dpEsClient.Client, *es710.Client, error) {
@@ -325,7 +325,7 @@ func TestClose(t *testing.T) {
 				DoGetKafkaConsumerFunc: func(ctx context.Context, kafkaCfg *config.KafkaConfig) (kafka.IConsumerGroup, error) {
 					return consumerMock, nil
 				},
-				DoGetS3ClientFunc: func(ctx context.Context, cfg *config.S3Config) (sitemap.S3Uploader, error) {
+				DoGetS3ClientFunc: func(ctx context.Context, cfg *config.S3Config) (sitemap.S3Client, error) {
 					return s3Mock, nil
 				},
 				DoGetESClientsFunc: func(ctx context.Context, cfg *config.OpenSearchConfig) (dpEsClient.Client, *es710.Client, error) {

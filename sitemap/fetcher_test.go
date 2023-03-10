@@ -61,7 +61,10 @@ func TestFetcher(t *testing.T) {
 		Convey("Sitemap should be a valid xml and include no urls", func() {
 			sitemap, err := os.ReadFile(filename)
 			So(err, ShouldBeNil)
-			So(string(sitemap), ShouldEqual, `<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"></urlset>`)
+			So(string(sitemap), ShouldEqual, `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+
+</urlset>`)
 		})
 	})
 	Convey("When elastic start scroll returns hits", t, func() {
@@ -121,14 +124,17 @@ func TestFetcher(t *testing.T) {
 		Convey("Sitemap should be valid and include all received urls", func() {
 			sitemap, err := os.ReadFile(filename)
 			So(err, ShouldBeNil)
-			So(string(sitemap), ShouldEqual, `<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url>
+			So(string(sitemap), ShouldEqual, `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<url>
   <loc>uri_1</loc>
   <lastmod>2014-12-10</lastmod>
 </url>
 <url>
   <loc>uri_2</loc>
   <lastmod>2023-03-31</lastmod>
-</url></urlset>`)
+</url>
+</urlset>`)
 		})
 	})
 	Convey("When subsequent scroll returns error", t, func() {
@@ -267,7 +273,9 @@ func TestFetcher(t *testing.T) {
 		Convey("Sitemap should be valid and include all received urls", func() {
 			sitemap, err := os.ReadFile(filename)
 			So(err, ShouldBeNil)
-			So(string(sitemap), ShouldEqual, `<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url>
+			So(string(sitemap), ShouldEqual, `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<url>
   <loc>uri_1</loc>
   <lastmod>2014-12-10</lastmod>
 </url>
@@ -290,7 +298,8 @@ func TestFetcher(t *testing.T) {
 <url>
   <loc>uri_4</loc>
   <lastmod>2024-03-31</lastmod>
-</url></urlset>`)
+</url>
+</urlset>`)
 		})
 	})
 }
