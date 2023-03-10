@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"encoding/xml"
 	"fmt"
-	"io"
 	"net/url"
 	"os"
 	"strings"
@@ -106,6 +105,35 @@ func (f *ElasticFetcher) HasWelshContent(ctx context.Context, path string) bool 
 	return err == nil
 }
 
+func (f *ElasticFetcher) URLVersions(ctx context.Context, path, lastmod string) (en URL, cy *URL) {
+	enLoc, _ := url.JoinPath(f.cfg.DpOnsURLHostNameEn, path)
+	en = URL{
+		Loc:     enLoc,
+		Lastmod: lastmod,
+	}
+	if f.HasWelshContent(ctx, path) {
+		// has equivalent welsh content
+		// 1. Add the welsh as and alternate in english sitemap
+		// 2. Add the english link as alternate in the welsh sitemap
+		cyLoc, _ := url.JoinPath(f.cfg.DpOnsURLHostNameCy, path)
+		en.Alternate = &AlternateURL{
+			Rel:  "alternate",
+			Lang: "cy",
+			Link: cyLoc,
+		}
+		cy = &URL{
+			Loc:     cyLoc,
+			Lastmod: lastmod,
+			Alternate: &AlternateURL{
+				Rel:  "alternate",
+				Lang: "en",
+				Link: enLoc,
+			},
+		}
+	}
+	return
+}
+
 var (
 	tempSitemapFileEn = "sitemap_en"
 	tempSitemapFileCy = "sitemap_cy"
@@ -171,46 +199,20 @@ func (f *ElasticFetcher) GetFullSitemap(ctx context.Context) (fileNames Files, e
 	scrollID := result.ScrollID
 	for len(result.Hits.Hits) > 0 {
 		for i := range result.Hits.Hits {
-			uriEn, _ := url.JoinPath(f.cfg.DpOnsURLHostNameEn, result.Hits.Hits[i].Source.URI)
+			urlEn, urlCy := f.URLVersions(
+				ctx,
+				result.Hits.Hits[i].Source.URI,
+				result.Hits.Hits[i].Source.ReleaseDate.Format("2006-01-02"),
+			)
 
-			if f.HasWelshContent(ctx, result.Hits.Hits[i].Source.URI) {
-				// has equivalent welsh content
-				// 1. Add the welsh as and alternate in english sitemap
-				// 2. Add the english link as alternate in the welsh sitemap
-				uriCy, _ := url.JoinPath(f.cfg.DpOnsURLHostNameCy, result.Hits.Hits[i].Source.URI)
-
-				err = encEn.Encode(URL{
-					Loc:     uriEn,
-					Lastmod: result.Hits.Hits[i].Source.ReleaseDate.Format("2006-01-02"),
-					Alternate: &AlternateURL{
-						Rel:  "alternate",
-						Lang: "cy",
-						Link: uriCy,
-					},
-				})
-				if err != nil {
-					return fileNames, fmt.Errorf("sitemap_en page xml encode error: %w", err)
-				}
-
-				err = encCy.Encode(URL{
-					Loc:     uriCy,
-					Lastmod: result.Hits.Hits[i].Source.ReleaseDate.Format("2006-01-02"),
-					Alternate: &AlternateURL{
-						Rel:  "alternate",
-						Lang: "en",
-						Link: uriEn,
-					},
-				})
+			err = encEn.Encode(urlEn)
+			if err != nil {
+				return fileNames, fmt.Errorf("sitemap_en page xml encode error: %w", err)
+			}
+			if urlCy != nil {
+				err = encCy.Encode(urlCy)
 				if err != nil {
 					return fileNames, fmt.Errorf("sitemap_cy page xml encode error: %w", err)
-				}
-			} else { // no welsh content
-				err = encEn.Encode(URL{
-					Loc:     uriEn,
-					Lastmod: result.Hits.Hits[i].Source.ReleaseDate.Format("2006-01-02"),
-				})
-				if err != nil {
-					return fileNames, fmt.Errorf("sitemap_en page xml encode error: %w", err)
 				}
 			}
 		}
@@ -278,8 +280,4 @@ func (f *ElasticFetcher) GetScroll(ctx context.Context, id string, result interf
 		return err
 	}
 	return nil
-}
-
-func (f *ElasticFetcher) IncrementSitemap(ctx context.Context, oldSitemap io.Reader) (string, error) {
-	return "", nil
 }

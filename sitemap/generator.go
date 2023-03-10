@@ -24,6 +24,7 @@ type FileStore interface {
 type Fetcher interface {
 	GetFullSitemap(ctx context.Context) (Files, error)
 	HasWelshContent(ctx context.Context, path string) bool
+	URLVersions(ctx context.Context, path string, lastmod string) (en URL, cy *URL)
 }
 type Adder interface {
 	Add(oldSitemap io.Reader, url URL) (string, error)
@@ -50,7 +51,17 @@ func (g *Generator) MakeIncrementalSitemap(ctx context.Context, name string, url
 	}
 	defer currentSitemap.Close()
 
-	fileName, err := g.adder.Add(currentSitemap, url)
+	urlEn, _ := g.fetcher.URLVersions(
+		ctx,
+		url.Loc,
+		url.Lastmod,
+	)
+
+	return g.AppendURL(ctx, currentSitemap, urlEn, name)
+}
+
+func (g *Generator) AppendURL(ctx context.Context, sitemap io.ReadCloser, url URL, destination string) error {
+	fileName, err := g.adder.Add(sitemap, url)
 	if err != nil {
 		return fmt.Errorf("failed to add to sitemap: %w", err)
 	}
@@ -69,7 +80,7 @@ func (g *Generator) MakeIncrementalSitemap(ctx context.Context, name string, url
 	}
 	defer file.Close()
 
-	err = g.store.SaveFile(name, file)
+	err = g.store.SaveFile(destination, file)
 	if err != nil {
 		return fmt.Errorf("failed to save incremental sitemap file: %w", err)
 	}
@@ -92,13 +103,13 @@ func (g *Generator) MakeFullSitemap(ctx context.Context, fileNames Files) error 
 		}
 	}()
 
-	for _, fl := range sitemaps {
+	for lang, fl := range sitemaps {
 		file, err := os.Open(fl)
 		if err != nil {
 			return fmt.Errorf("failed to open sitemap: %w", err)
 		}
 
-		err = g.store.SaveFile(fl, file)
+		err = g.store.SaveFile(fileNames[lang], file)
 		file.Close()
 		if err != nil {
 			return fmt.Errorf("failed to save sitemap file: %w", err)

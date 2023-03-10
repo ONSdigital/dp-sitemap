@@ -27,7 +27,7 @@ type Component struct {
 	KafkaConsumer     kafka.IConsumerGroup
 	EsClient          *es710.Client
 	EsIndex           *godog.Table
-	S3UploadedSitemap sitemap.Files
+	S3UploadedSitemap map[string]string
 	killChannel       chan os.Signal
 	apiFeature        *componenttest.APIFeature
 	errorChan         chan error
@@ -68,7 +68,7 @@ func NewComponent() *Component {
 
 	c.files = make(map[string]string)
 
-	c.S3UploadedSitemap = make(sitemap.Files)
+	c.S3UploadedSitemap = make(map[string]string)
 	return c
 }
 

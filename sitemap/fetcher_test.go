@@ -416,7 +416,9 @@ func TestFetcher(t *testing.T) {
 		Convey("Sitemap should be valid and include all received urls", func() {
 			sitemap, err := os.ReadFile(filenames[config.English])
 			So(err, ShouldBeNil)
-			So(string(sitemap), ShouldEqual, `<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url>
+			So(string(sitemap), ShouldEqual, `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<url>
   <loc>uri_1</loc>
   <lastmod>2014-12-10</lastmod>
   <xhtml:link>
@@ -469,7 +471,8 @@ func TestFetcher(t *testing.T) {
     <hreflang>cy</hreflang>
     <href>uri_4</href>
   </xhtml:link>
-</url></urlset>`)
+</url>
+</urlset>`)
 		})
 	})
 }

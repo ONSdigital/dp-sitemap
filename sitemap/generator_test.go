@@ -17,6 +17,10 @@ import (
 func TestGenerateIncrementalSitemap(t *testing.T) {
 	store := &mock.FileStoreMock{}
 	adder := &mock.AdderMock{}
+	fetcher := &mock.FetcherMock{}
+	fetcher.URLVersionsFunc = func(ctx context.Context, path, lastmod string) (sitemap.URL, *sitemap.URL) {
+		return sitemap.URL{Loc: path, Lastmod: lastmod}, nil
+	}
 	Convey("When getting current sitemap returns an error", t, func() {
 		store.GetFileFunc = func(name string) (io.ReadCloser, error) {
 			So(name, ShouldEqual, "sitemap.xml")
@@ -53,7 +57,7 @@ func TestGenerateIncrementalSitemap(t *testing.T) {
 			return "", errors.New("adder error")
 		}
 
-		g := sitemap.NewGenerator(nil, adder, store)
+		g := sitemap.NewGenerator(fetcher, adder, store)
 		err := g.MakeIncrementalSitemap(context.Background(), "", sitemap.URL{})
 
 		Convey("Generator should return correct error", func() {
@@ -70,7 +74,7 @@ func TestGenerateIncrementalSitemap(t *testing.T) {
 			return "filename", nil
 		}
 
-		g := sitemap.NewGenerator(nil, adder, store)
+		g := sitemap.NewGenerator(fetcher, adder, store)
 		err := g.MakeIncrementalSitemap(context.Background(), "", sitemap.URL{})
 
 		Convey("Generator should return correct error", func() {
@@ -102,7 +106,7 @@ func TestGenerateIncrementalSitemap(t *testing.T) {
 			return nil
 		}
 
-		g := sitemap.NewGenerator(nil, adder, store)
+		g := sitemap.NewGenerator(fetcher, adder, store)
 		err := g.MakeIncrementalSitemap(context.Background(), "sitemap.xml", sitemap.URL{Loc: "a", Lastmod: "b"})
 
 		Convey("Generator should return with no error", func() {
@@ -141,7 +145,7 @@ func TestGenerateIncrementalSitemap(t *testing.T) {
 			return errors.New("uploader error")
 		}
 
-		g := sitemap.NewGenerator(nil, adder, store)
+		g := sitemap.NewGenerator(fetcher, adder, store)
 		err := g.MakeIncrementalSitemap(context.Background(), "sitemap.xml", sitemap.URL{})
 
 		Convey("Generator should call store", func() {

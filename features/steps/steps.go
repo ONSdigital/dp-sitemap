@@ -42,8 +42,18 @@ func (c *Component) RegisterSteps(ctx *godog.ScenarioContext) {
 }
 
 func (c *Component) iAddAURLDatedToSitemap(url, date, sitemapID string) error {
+	zc := zcMock.ZebedeeClientMock{
+		CheckerFunc: func(contextMoqParam context.Context, checkState *healthcheck.CheckState) error { return nil },
+		GetFileSizeFunc: func(ctx context.Context, userAccessToken, collectionID, lang, uri string) (zebedee.FileSize, error) {
+			return zebedee.FileSize{Size: 1}, errors.New("no welsh content")
+		},
+	}
 	generator := sitemap.NewGenerator(
-		nil,
+		sitemap.NewElasticFetcher(
+			c.EsClient,
+			c.cfg,
+			&zc,
+		),
 		&sitemap.DefaultAdder{},
 		&sitemap.LocalStore{},
 	)
@@ -193,7 +203,7 @@ func (c *Component) iGenerateS3Sitemap() error {
 		if readErr != nil {
 			return nil, readErr
 		}
-		c.S3UploadedSitemap[config.Language(*input.Key)] = string(body)
+		c.S3UploadedSitemap[*input.Key] = string(body)
 		return nil, nil
 	}
 	s3uploader.BucketNameFunc = func() string { return c.cfg.S3Config.UploadBucketName }
@@ -215,8 +225,9 @@ func (c *Component) iGenerateS3Sitemap() error {
 }
 
 func (c *Component) theContentOfTheS3SitemapShouldBe(arg1 *godog.DocString) error {
-	if strings.Compare(arg1.Content, c.S3UploadedSitemap[config.English]) != 0 {
-		return fmt.Errorf("s3 sitemap file content mismatch actual [%s], expecting [%s]", c.S3UploadedSitemap[config.English], arg1.Content)
+	fileName := c.cfg.S3Config.SitemapFileKey[config.English]
+	if strings.Compare(arg1.Content, c.S3UploadedSitemap[fileName]) != 0 {
+		return fmt.Errorf("s3 sitemap file content mismatch actual [%s], expecting [%s]", c.S3UploadedSitemap[fileName], arg1.Content)
 	}
 	return nil
 }
