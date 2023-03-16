@@ -107,7 +107,7 @@ func TestRun(t *testing.T) {
 			return serverMock
 		}
 
-		funcDoGetS3ClientFunc := func(ctx context.Context, cfg *config.S3Config) (sitemap.S3Client, error) {
+		funcDoGetS3ClientFunc := func(cfg *config.S3Config) (sitemap.S3Client, error) {
 			return s3Mock, nil
 		}
 		funcDoGetESClientFunc := func(ctx context.Context, cfg *config.OpenSearchConfig) (dpEsClient.Client, *es710.Client, error) {
@@ -286,7 +286,7 @@ func TestClose(t *testing.T) {
 				DoGetKafkaConsumerFunc: func(ctx context.Context, kafkaCfg *config.KafkaConfig) (kafka.IConsumerGroup, error) {
 					return consumerMock, nil
 				},
-				DoGetS3ClientFunc: func(ctx context.Context, cfg *config.S3Config) (sitemap.S3Client, error) {
+				DoGetS3ClientFunc: func(cfg *config.S3Config) (sitemap.S3Client, error) {
 					return s3Mock, nil
 				},
 				DoGetESClientsFunc: func(ctx context.Context, cfg *config.OpenSearchConfig) (dpEsClient.Client, *es710.Client, error) {
@@ -325,7 +325,7 @@ func TestClose(t *testing.T) {
 				DoGetKafkaConsumerFunc: func(ctx context.Context, kafkaCfg *config.KafkaConfig) (kafka.IConsumerGroup, error) {
 					return consumerMock, nil
 				},
-				DoGetS3ClientFunc: func(ctx context.Context, cfg *config.S3Config) (sitemap.S3Client, error) {
+				DoGetS3ClientFunc: func(cfg *config.S3Config) (sitemap.S3Client, error) {
 					return s3Mock, nil
 				},
 				DoGetESClientsFunc: func(ctx context.Context, cfg *config.OpenSearchConfig) (dpEsClient.Client, *es710.Client, error) {

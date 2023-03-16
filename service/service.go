@@ -64,7 +64,7 @@ func Run(ctx context.Context, serviceList *ExternalServiceList, buildTime, gitCo
 	consumer.LogErrors(ctx)
 
 	// Get S3 Client
-	s3Client, err := serviceList.GetS3Client(ctx, cfg)
+	s3Client, err := serviceList.GetS3Client(cfg)
 	if err != nil {
 		log.Fatal(ctx, "failed to initialise s3 client", err)
 		return nil, err

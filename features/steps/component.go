@@ -58,7 +58,7 @@ func NewComponent() *Component {
 		DoGetKafkaConsumerFunc: c.DoGetConsumer,
 		DoGetHealthCheckFunc:   c.DoGetHealthCheck,
 		DoGetHTTPServerFunc:    c.DoGetHTTPServer,
-		DoGetS3ClientFunc: func(ctx context.Context, cfg *config.S3Config) (sitemap.S3Client, error) {
+		DoGetS3ClientFunc: func(cfg *config.S3Config) (sitemap.S3Client, error) {
 			return nil, nil
 		},
 		DoGetESClientsFunc: func(ctx context.Context, cfg *config.OpenSearchConfig) (dpEsClient.Client, *es710.Client, error) {

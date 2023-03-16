@@ -63,8 +63,8 @@ func (e *ExternalServiceList) GetKafkaConsumer(ctx context.Context, cfg *config.
 }
 
 // GetS3Client creates an S3Client and sets the S3Client flag to true
-func (e *ExternalServiceList) GetS3Client(ctx context.Context, cfg *config.Config) (sitemap.S3Client, error) {
-	consumer, err := e.Init.DoGetS3Client(ctx, &cfg.S3Config)
+func (e *ExternalServiceList) GetS3Client(cfg *config.Config) (sitemap.S3Client, error) {
+	consumer, err := e.Init.DoGetS3Client(&cfg.S3Config)
 	if err != nil {
 		return nil, err
 	}
@@ -145,7 +145,7 @@ func (e *Init) DoGetKafkaConsumer(ctx context.Context, kafkaCfg *config.KafkaCon
 }
 
 // DoGetS3Client returns a S3Client
-func (e *Init) DoGetS3Client(ctx context.Context, cfg *config.S3Config) (sitemap.S3Client, error) {
+func (e *Init) DoGetS3Client(cfg *config.S3Config) (sitemap.S3Client, error) {
 	if cfg.LocalstackHost != "" {
 		s, err := session.NewSession(&aws.Config{
 			Endpoint:         aws.String(cfg.LocalstackHost),
