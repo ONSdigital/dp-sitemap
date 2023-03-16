@@ -2,6 +2,7 @@ package steps
 
 import (
 	"context"
+	"log"
 	"net/http"
 	"os"
 
@@ -75,16 +76,28 @@ func NewComponent() *Component {
 }
 
 func (c *Component) Close() {
-	os.Remove(c.cfg.RobotsFilePath)
+	c.CleanFile(c.cfg.RobotsFilePath)
 	for _, file := range c.files {
-		os.Remove(file)
+		c.CleanFile(file)
 	}
 }
 
 func (c *Component) Reset() {
-	os.Remove(c.cfg.RobotsFilePath)
+	c.CleanFile(c.cfg.RobotsFilePath)
 	for _, file := range c.files {
-		os.Remove(file)
+		c.CleanFile(file)
+	}
+}
+
+func (c *Component) CleanFile(file string) {
+	_, err := os.Stat(file)
+	if err != nil {
+		// nothing to do
+		return
+	}
+	err = os.Remove(file)
+	if err != nil {
+		log.Fatal("failed to clean up file: " + err.Error())
 	}
 }
 
