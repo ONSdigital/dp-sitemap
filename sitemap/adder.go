@@ -22,12 +22,15 @@ func (a *DefaultAdder) Add(oldSitemap io.Reader, url URL) (fileName string, err 
 	fileName = file.Name()
 	log.Info(context.Background(), "created incremental sitemap file "+fileName)
 	defer func() {
-		file.Close()
+		closeErr := file.Close()
+		if closeErr != nil {
+			log.Error(context.Background(), "failed to close incremental sitemap file", closeErr)
+		}
 		// clean up the temporary file if we're returning with an error
 		if err != nil {
 			removeErr := os.Remove(fileName)
 			if removeErr != nil {
-				log.Error(context.Background(), "failed to remove incremental sitemap file", err)
+				log.Error(context.Background(), "failed to remove incremental sitemap file", removeErr)
 				return
 			}
 			log.Info(context.Background(), "removed incremental sitemap file "+fileName)
