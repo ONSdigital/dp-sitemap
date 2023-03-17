@@ -72,9 +72,9 @@ func TestFetcher(t *testing.T) {
 			So(err, ShouldBeNil)
 		})
 		Convey("Sitemap should be a valid xml and include no urls", func() {
-			sitemap, err := os.ReadFile(filenames[config.English])
+			sitemapContent, err := os.ReadFile(filenames[config.English])
 			So(err, ShouldBeNil)
-			So(string(sitemap), ShouldEqual, `<?xml version="1.0" encoding="UTF-8"?>
+			So(string(sitemapContent), ShouldEqual, `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
 </urlset>`)
@@ -139,9 +139,9 @@ func TestFetcher(t *testing.T) {
 			So(err, ShouldBeNil)
 		})
 		Convey("Sitemap should be valid and include all received urls", func() {
-			sitemap, err := os.ReadFile(filenames[config.English])
+			sitemapContent, err := os.ReadFile(filenames[config.English])
 			So(err, ShouldBeNil)
-			So(string(sitemap), ShouldEqual, `<?xml version="1.0" encoding="UTF-8"?>
+			So(string(sitemapContent), ShouldEqual, `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 <url>
   <loc>uri_1</loc>
@@ -204,6 +204,7 @@ func TestFetcher(t *testing.T) {
 		Convey("Temporary sitemap file should be created and then cleaned up", func() {
 			So(filename[config.English], ShouldContainSubstring, "sitemap")
 			_, err := os.Stat(filename[config.English])
+			So(err, ShouldNotBeNil)
 			So(err.Error(), ShouldContainSubstring, "no such file or directory")
 		})
 	})
@@ -292,9 +293,9 @@ func TestFetcher(t *testing.T) {
 			So(err, ShouldBeNil)
 		})
 		Convey("Sitemap should be valid and include all received urls", func() {
-			sitemap, err := os.ReadFile(filenames[config.English])
+			sitemapContent, err := os.ReadFile(filenames[config.English])
 			So(err, ShouldBeNil)
-			So(string(sitemap), ShouldEqual, `<?xml version="1.0" encoding="UTF-8"?>
+			So(string(sitemapContent), ShouldEqual, `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 <url>
   <loc>uri_1</loc>
@@ -414,9 +415,9 @@ func TestFetcher(t *testing.T) {
 			So(err, ShouldBeNil)
 		})
 		Convey("Sitemap should be valid and include all received urls", func() {
-			sitemap, err := os.ReadFile(filenames[config.English])
+			sitemapContent, err := os.ReadFile(filenames[config.English])
 			So(err, ShouldBeNil)
-			So(string(sitemap), ShouldEqual, `<?xml version="1.0" encoding="UTF-8"?>
+			So(string(sitemapContent), ShouldEqual, `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 <url>
   <loc>uri_1</loc>

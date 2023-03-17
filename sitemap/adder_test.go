@@ -23,6 +23,7 @@ func TestAdder(t *testing.T) {
 		Convey("Temporary sitemap file should be created and then cleaned up", func() {
 			So(filename, ShouldContainSubstring, "sitemap")
 			_, err := os.Stat(filename)
+			So(err, ShouldNotBeNil)
 			So(err.Error(), ShouldContainSubstring, "no such file or directory")
 		})
 	})
@@ -31,7 +32,10 @@ func TestAdder(t *testing.T) {
 
 		a := &sitemap.DefaultAdder{}
 		filename, err := a.Add(oldSitemap, sitemap.URL{Loc: "a", Lastmod: "b"})
-		defer os.Remove(filename)
+		defer func() {
+			removeErr := os.Remove(filename)
+			So(removeErr, ShouldBeNil)
+		}()
 
 		Convey("Adder should return with no error", func() {
 			So(err, ShouldBeNil)
@@ -42,9 +46,9 @@ func TestAdder(t *testing.T) {
 			So(err, ShouldBeNil)
 		})
 		Convey("Sitemap should be valid and include the received url", func() {
-			sitemap, err := os.ReadFile(filename)
+			sitemapContent, err := os.ReadFile(filename)
 			So(err, ShouldBeNil)
-			So(string(sitemap), ShouldEqual, `<?xml version="1.0" encoding="UTF-8"?>
+			So(string(sitemapContent), ShouldEqual, `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>a</loc>
@@ -68,7 +72,10 @@ func TestAdder(t *testing.T) {
 
 		a := &sitemap.DefaultAdder{}
 		filename, err := a.Add(oldSitemap, sitemap.URL{Loc: "e", Lastmod: "f"})
-		defer os.Remove(filename)
+		defer func() {
+			removeErr := os.Remove(filename)
+			So(removeErr, ShouldBeNil)
+		}()
 
 		Convey("Adder should return with no error", func() {
 			So(err, ShouldBeNil)

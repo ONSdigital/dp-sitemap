@@ -1,10 +1,13 @@
 package sitemap
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"os"
 	"strings"
+
+	"github.com/ONSdigital/log.go/v2/log"
 )
 
 type LocalStore struct{}
@@ -14,7 +17,12 @@ func (s *LocalStore) SaveFile(name string, body io.Reader) error {
 	if err != nil {
 		return fmt.Errorf("failed to open a local file: %w", err)
 	}
-	defer file.Close()
+	defer func() {
+		closeErr := file.Close()
+		if closeErr != nil {
+			log.Error(context.Background(), "failed to close a local file", closeErr)
+		}
+	}()
 
 	_, err = io.Copy(file, body)
 	if err != nil {

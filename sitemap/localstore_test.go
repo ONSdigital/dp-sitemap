@@ -33,7 +33,10 @@ func TestLocalStore(t *testing.T) {
 		s := &sitemap.LocalStore{}
 		invalidBody := iotest.ErrReader(errors.New("invalid body"))
 		err := s.SaveFile(randomFilename, invalidBody)
-		defer os.Remove(randomFilename)
+		defer func() {
+			removeErr := os.Remove(randomFilename)
+			So(removeErr, ShouldBeNil)
+		}()
 
 		Convey("LocalSaver should return correct error", func() {
 			So(err.Error(), ShouldContainSubstring, "failed to copy to a local file")
@@ -46,7 +49,10 @@ func TestLocalStore(t *testing.T) {
 
 		s := &sitemap.LocalStore{}
 		err := s.SaveFile(randomFilename, strings.NewReader("file content"))
-		defer os.Remove(randomFilename)
+		defer func() {
+			removeErr := os.Remove(randomFilename)
+			So(removeErr, ShouldBeNil)
+		}()
 
 		Convey("SaveFile should return no error", func() {
 			So(err, ShouldBeNil)
@@ -77,7 +83,10 @@ func TestLocalStore(t *testing.T) {
 	Convey("When local read succeeds", t, func() {
 		randomFilename := path.Join(dir, "sitemap-test-"+uuid.NewString())
 		err := os.WriteFile(randomFilename, []byte("file content"), 0o600)
-		defer os.Remove(randomFilename)
+		defer func() {
+			removeErr := os.Remove(randomFilename)
+			So(removeErr, ShouldBeNil)
+		}()
 
 		s := &sitemap.LocalStore{}
 		body, err := s.GetFile(randomFilename)

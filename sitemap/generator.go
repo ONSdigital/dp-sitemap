@@ -49,7 +49,12 @@ func (g *Generator) MakeIncrementalSitemap(ctx context.Context, name string, url
 	if err != nil {
 		return fmt.Errorf("failed to get current sitemap: %w", err)
 	}
-	defer currentSitemap.Close()
+	defer func() {
+		closeErr := currentSitemap.Close()
+		if closeErr != nil {
+			log.Error(ctx, "failed to close current sitemap file", closeErr)
+		}
+	}()
 
 	urlEn, _ := g.fetcher.URLVersions(
 		ctx,
@@ -78,7 +83,12 @@ func (g *Generator) AppendURL(ctx context.Context, sitemap io.ReadCloser, url UR
 	if err != nil {
 		return fmt.Errorf("failed to open incremental sitemap: %w", err)
 	}
-	defer file.Close()
+	defer func() {
+		closeErr := file.Close()
+		if closeErr != nil {
+			log.Error(ctx, "failed to close incremental sitemap file", closeErr)
+		}
+	}()
 
 	err = g.store.SaveFile(destination, file)
 	if err != nil {
