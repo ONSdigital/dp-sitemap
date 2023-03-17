@@ -86,9 +86,9 @@ func TestAdder(t *testing.T) {
 			So(err, ShouldBeNil)
 		})
 		Convey("Sitemap should be valid and include both old and new urls", func() {
-			sitemap, err := os.ReadFile(filename)
+			sitemapContent, err := os.ReadFile(filename)
 			So(err, ShouldBeNil)
-			So(string(sitemap), ShouldEqual, `<?xml version="1.0" encoding="UTF-8"?>
+			So(string(sitemapContent), ShouldEqual, `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>a</loc>
