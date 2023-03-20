@@ -75,13 +75,6 @@ func NewComponent() *Component {
 	return c
 }
 
-func (c *Component) Close() {
-	c.CleanFile(c.cfg.RobotsFilePath)
-	for _, file := range c.files {
-		c.CleanFile(file)
-	}
-}
-
 func (c *Component) Reset() {
 	c.CleanFile(c.cfg.RobotsFilePath)
 	for _, file := range c.files {
