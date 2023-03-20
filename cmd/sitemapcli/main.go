@@ -20,7 +20,6 @@ func main() {
 		fmt.Fprintf(flag.CommandLine.Output(), "\nOptions:\n")
 		flag.PrintDefaults()
 	}
-
 	flag.Parse()
 
 	fmt.Printf("Hello, %s!\n", strings.ToLower(*apiurl))
