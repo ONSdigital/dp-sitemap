@@ -90,7 +90,7 @@ func TestGenerateIncrementalSitemap(t *testing.T) {
 		}
 		var tempFile string
 		adder.AddFunc = func(oldSitemap io.Reader, url *sitemap.URL) (string, error) {
-			So(url, ShouldResemble, sitemap.URL{Loc: "a", Lastmod: "b"})
+			So(url, ShouldResemble, &sitemap.URL{Loc: "a", Lastmod: "b"})
 			file, err := os.CreateTemp("", "sitemap-incr")
 			So(err, ShouldBeNil)
 			file.WriteString("file content")
