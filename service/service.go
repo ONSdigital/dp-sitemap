@@ -27,7 +27,7 @@ type Service struct {
 	shutdownTimeout time.Duration
 	scheduler       *gocron.Scheduler
 	esClient        dpEsClient.Client
-	s3Client        sitemap.S3Uploader
+	s3Client        sitemap.S3Client
 }
 
 // Run the service
@@ -64,7 +64,7 @@ func Run(ctx context.Context, serviceList *ExternalServiceList, buildTime, gitCo
 	consumer.LogErrors(ctx)
 
 	// Get S3 Client
-	s3Client, err := serviceList.GetS3Client(ctx, cfg)
+	s3Client, err := serviceList.GetS3Client(cfg)
 	if err != nil {
 		log.Fatal(ctx, "failed to initialise s3 client", err)
 		return nil, err
@@ -100,16 +100,20 @@ func Run(ctx context.Context, serviceList *ExternalServiceList, buildTime, gitCo
 		}
 	}()
 
-	var saver sitemap.FileSaver
+	var (
+		saver            sitemap.FileStore
+		fullSitemapFiles sitemap.Files
+	)
 	switch cfg.SitemapSaveLocation {
 	case "s3":
-		saver = sitemap.NewS3Saver(
+		saver = sitemap.NewS3Store(
 			s3Client,
-			cfg.S3Config.UploadBucketName,
-			cfg.S3Config.SitemapFileKey,
 		)
+		fullSitemapFiles = cfg.S3Config.SitemapFileKey
+
 	default:
-		saver = sitemap.NewLocalSaver(cfg.SitemapLocalFile)
+		saver = &sitemap.LocalStore{}
+		fullSitemapFiles = cfg.SitemapLocalFile
 	}
 
 	generator := sitemap.NewGenerator(
@@ -118,6 +122,7 @@ func Run(ctx context.Context, serviceList *ExternalServiceList, buildTime, gitCo
 			cfg,
 			zebedeeClient,
 		),
+		&sitemap.DefaultAdder{},
 		saver,
 	)
 
@@ -125,7 +130,7 @@ func Run(ctx context.Context, serviceList *ExternalServiceList, buildTime, gitCo
 		ctx, cancel := context.WithTimeout(context.Background(), cfg.SitemapGenerationTimeout)
 		defer cancel()
 		log.Info(ctx, "sitemap generation job start", log.Data{"last_run": job.LastRun(), "next_run": job.NextRun(), "run_count": job.RunCount()})
-		genErr := generator.MakeFullSitemap(ctx)
+		genErr := generator.MakeFullSitemap(ctx, fullSitemapFiles)
 		if genErr != nil {
 			log.Error(ctx, "failed to generate sitemap", genErr)
 			return

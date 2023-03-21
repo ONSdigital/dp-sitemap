@@ -38,7 +38,7 @@ var _ service.Initialiser = &InitialiserMock{}
 // 			DoGetKafkaConsumerFunc: func(ctx context.Context, kafkaCfg *config.KafkaConfig) (kafka.IConsumerGroup, error) {
 // 				panic("mock out the DoGetKafkaConsumer method")
 // 			},
-// 			DoGetS3ClientFunc: func(ctx context.Context, cfg *config.S3Config) (sitemap.S3Uploader, error) {
+// 			DoGetS3ClientFunc: func(cfg *config.S3Config) (sitemap.S3Client, error) {
 // 				panic("mock out the DoGetS3Client method")
 // 			},
 // 			DoGetZebedeeClientFunc: func(cfg *config.Config) clients.ZebedeeClient {
@@ -64,7 +64,7 @@ type InitialiserMock struct {
 	DoGetKafkaConsumerFunc func(ctx context.Context, kafkaCfg *config.KafkaConfig) (kafka.IConsumerGroup, error)
 
 	// DoGetS3ClientFunc mocks the DoGetS3Client method.
-	DoGetS3ClientFunc func(ctx context.Context, cfg *config.S3Config) (sitemap.S3Uploader, error)
+	DoGetS3ClientFunc func(cfg *config.S3Config) (sitemap.S3Client, error)
 
 	// DoGetZebedeeClientFunc mocks the DoGetZebedeeClient method.
 	DoGetZebedeeClientFunc func(cfg *config.Config) clients.ZebedeeClient
@@ -105,8 +105,6 @@ type InitialiserMock struct {
 		}
 		// DoGetS3Client holds details about calls to the DoGetS3Client method.
 		DoGetS3Client []struct {
-			// Ctx is the ctx argument value.
-			Ctx context.Context
 			// Cfg is the cfg argument value.
 			Cfg *config.S3Config
 		}
@@ -273,32 +271,28 @@ func (mock *InitialiserMock) DoGetKafkaConsumerCalls() []struct {
 }
 
 // DoGetS3Client calls DoGetS3ClientFunc.
-func (mock *InitialiserMock) DoGetS3Client(ctx context.Context, cfg *config.S3Config) (sitemap.S3Uploader, error) {
+func (mock *InitialiserMock) DoGetS3Client(cfg *config.S3Config) (sitemap.S3Client, error) {
 	if mock.DoGetS3ClientFunc == nil {
 		panic("InitialiserMock.DoGetS3ClientFunc: method is nil but Initialiser.DoGetS3Client was just called")
 	}
 	callInfo := struct {
-		Ctx context.Context
 		Cfg *config.S3Config
 	}{
-		Ctx: ctx,
 		Cfg: cfg,
 	}
 	mock.lockDoGetS3Client.Lock()
 	mock.calls.DoGetS3Client = append(mock.calls.DoGetS3Client, callInfo)
 	mock.lockDoGetS3Client.Unlock()
-	return mock.DoGetS3ClientFunc(ctx, cfg)
+	return mock.DoGetS3ClientFunc(cfg)
 }
 
 // DoGetS3ClientCalls gets all the calls that were made to DoGetS3Client.
 // Check the length with:
 //     len(mockedInitialiser.DoGetS3ClientCalls())
 func (mock *InitialiserMock) DoGetS3ClientCalls() []struct {
-	Ctx context.Context
 	Cfg *config.S3Config
 } {
 	var calls []struct {
-		Ctx context.Context
 		Cfg *config.S3Config
 	}
 	mock.lockDoGetS3Client.RLock()
