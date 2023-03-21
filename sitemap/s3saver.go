@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"os"
+	"path/filepath"
 
 	"github.com/ONSdigital/dp-sitemap/config"
 	"github.com/ONSdigital/log.go/v2/log"
@@ -41,5 +43,25 @@ func (s *S3Saver) SaveFile(lang config.Language, body io.Reader) error {
 		return fmt.Errorf("failed to upload file to s3: %w", err)
 	}
 	log.Info(context.Background(), fmt.Sprintf("saved key [%s], bucket [%s]", k, s.bucket))
+	return nil
+}
+
+func (s *S3Saver) UploadFiles(paths []string) error {
+	for _, path := range paths {
+		body, err := os.Open(path)
+		if err != nil {
+			return fmt.Errorf("failed to open robots file: %w", err)
+		}
+		fileName := filepath.Base(path)
+		_, err = s.uploader.Upload(&s3manager.UploadInput{
+			Body:   body,
+			Bucket: &s.bucket,
+			Key:    &fileName,
+		})
+		if err != nil {
+			return fmt.Errorf("failed to upload file to s3: %w", err)
+		}
+		log.Info(context.Background(), fmt.Sprintf("saved key [%s], bucket [%s]", fileName, s.bucket))
+	}
 	return nil
 }

@@ -5,11 +5,13 @@ import (
 	"time"
 
 	dpEsClient "github.com/ONSdigital/dp-elasticsearch/v3/client"
+	"golang.org/x/exp/maps"
 
 	kafka "github.com/ONSdigital/dp-kafka/v3"
 	"github.com/ONSdigital/dp-sitemap/clients"
 	"github.com/ONSdigital/dp-sitemap/config"
 	"github.com/ONSdigital/dp-sitemap/event"
+	"github.com/ONSdigital/dp-sitemap/robotseo"
 	"github.com/ONSdigital/dp-sitemap/sitemap"
 	"github.com/ONSdigital/log.go/v2/log"
 	"github.com/go-co-op/gocron"
@@ -121,6 +123,8 @@ func Run(ctx context.Context, serviceList *ExternalServiceList, buildTime, gitCo
 		saver,
 	)
 
+	robotFileWriter := robotseo.RobotFileWriter{}
+
 	generateSitemapJob := func(job gocron.Job) {
 		ctx, cancel := context.WithTimeout(context.Background(), cfg.SitemapGenerationTimeout)
 		defer cancel()
@@ -131,6 +135,18 @@ func Run(ctx context.Context, serviceList *ExternalServiceList, buildTime, gitCo
 			return
 		}
 		log.Info(ctx, "sitemap generation job complete", log.Data{"last_run": job.LastRun(), "next_run": job.NextRun(), "run_count": job.RunCount()})
+
+		// write robots file
+		// TODO: pass sitemap file path (once URL is known)
+		if wErr := robotFileWriter.WriteRobotsFile(cfg, map[string]string{}); wErr != nil {
+			log.Error(ctx, "error writing robots file", wErr)
+			return
+		}
+		if uploadErr := saver.UploadFiles(maps.Values(cfg.RobotsFilePath)); uploadErr != nil {
+			log.Error(ctx, "error writing robots file", uploadErr)
+			return
+		}
+		log.Info(ctx, "wrote robots file")
 	}
 
 	scheduler := gocron.NewScheduler(time.UTC)

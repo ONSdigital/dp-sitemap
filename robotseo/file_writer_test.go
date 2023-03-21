@@ -9,21 +9,22 @@ import (
 )
 
 func TestRobotFileWriter_WriteRobotsFile(t *testing.T) {
+	robotList = map[string]map[string]asset.SeoRobotModel{}
 	var expectedError error
 	r := &RobotFileWriter{}
 	cfg, _ := config.Get()
 
 	Convey("no file path provided", t, func() {
-		robotList = map[string]asset.SeoRobotModel{}
+		robotList["en"] = map[string]asset.SeoRobotModel{}
 		expectedError = ErrNoRobotsFilePath
-		cfg.RobotsFilePath = ""
-		So(r.WriteRobotsFile(cfg, []string{}), ShouldEqual, expectedError)
+		cfg.RobotsFilePath["en"] = ""
+		So(r.WriteRobotsFile(cfg, map[string]string{}), ShouldEqual, expectedError)
 	})
 
 	Convey("no robots body", t, func() {
-		robotList = map[string]asset.SeoRobotModel{}
+		robotList["en"] = map[string]asset.SeoRobotModel{}
 		expectedError = ErrNoRobotsBody
-		cfg.RobotsFilePath = "/tmp/dp_robot.txt"
-		So(r.WriteRobotsFile(cfg, []string{}), ShouldEqual, expectedError)
+		cfg.RobotsFilePath["en"] = "/tmp/dp_robot.txt"
+		So(r.WriteRobotsFile(cfg, map[string]string{}), ShouldEqual, expectedError)
 	})
 }

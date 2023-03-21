@@ -16,6 +16,7 @@ import (
 
 type FileSaver interface {
 	SaveFile(lang config.Language, body io.Reader) error
+	UploadFiles(paths []string) error
 }
 
 type Fetcher interface {

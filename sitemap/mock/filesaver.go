@@ -23,6 +23,9 @@ var _ sitemap.FileSaver = &FileSaverMock{}
 // 			SaveFileFunc: func(lang config.Language, body io.Reader) error {
 // 				panic("mock out the SaveFile method")
 // 			},
+// 			UploadFilesFunc: func(paths []string) error {
+// 				panic("mock out the UploadFiles method")
+// 			},
 // 		}
 //
 // 		// use mockedFileSaver in code that requires sitemap.FileSaver
@@ -33,6 +36,9 @@ type FileSaverMock struct {
 	// SaveFileFunc mocks the SaveFile method.
 	SaveFileFunc func(lang config.Language, body io.Reader) error
 
+	// UploadFilesFunc mocks the UploadFiles method.
+	UploadFilesFunc func(paths []string) error
+
 	// calls tracks calls to the methods.
 	calls struct {
 		// SaveFile holds details about calls to the SaveFile method.
@@ -42,8 +48,14 @@ type FileSaverMock struct {
 			// Body is the body argument value.
 			Body io.Reader
 		}
+		// UploadFiles holds details about calls to the UploadFiles method.
+		UploadFiles []struct {
+			// Paths is the paths argument value.
+			Paths []string
+		}
 	}
-	lockSaveFile sync.RWMutex
+	lockSaveFile    sync.RWMutex
+	lockUploadFiles sync.RWMutex
 }
 
 // SaveFile calls SaveFileFunc.
@@ -78,5 +90,36 @@ func (mock *FileSaverMock) SaveFileCalls() []struct {
 	mock.lockSaveFile.RLock()
 	calls = mock.calls.SaveFile
 	mock.lockSaveFile.RUnlock()
+	return calls
+}
+
+// UploadFiles calls UploadFilesFunc.
+func (mock *FileSaverMock) UploadFiles(paths []string) error {
+	if mock.UploadFilesFunc == nil {
+		panic("FileSaverMock.UploadFilesFunc: method is nil but FileSaver.UploadFiles was just called")
+	}
+	callInfo := struct {
+		Paths []string
+	}{
+		Paths: paths,
+	}
+	mock.lockUploadFiles.Lock()
+	mock.calls.UploadFiles = append(mock.calls.UploadFiles, callInfo)
+	mock.lockUploadFiles.Unlock()
+	return mock.UploadFilesFunc(paths)
+}
+
+// UploadFilesCalls gets all the calls that were made to UploadFiles.
+// Check the length with:
+//     len(mockedFileSaver.UploadFilesCalls())
+func (mock *FileSaverMock) UploadFilesCalls() []struct {
+	Paths []string
+} {
+	var calls []struct {
+		Paths []string
+	}
+	mock.lockUploadFiles.RLock()
+	calls = mock.calls.UploadFiles
+	mock.lockUploadFiles.RUnlock()
 	return calls
 }

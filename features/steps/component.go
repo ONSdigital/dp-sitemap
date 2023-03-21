@@ -69,11 +69,13 @@ func NewComponent() *Component {
 }
 
 func (c *Component) Close() {
-	os.Remove(c.cfg.RobotsFilePath)
+	os.Remove(c.cfg.RobotsFilePath["en"])
+	os.Remove(c.cfg.RobotsFilePath["cy"])
 }
 
 func (c *Component) Reset() {
-	os.Remove(c.cfg.RobotsFilePath)
+	os.Remove(c.cfg.RobotsFilePath["en"])
+	os.Remove(c.cfg.RobotsFilePath["cy"])
 }
 
 func (c *Component) DoGetHealthCheck(cfg *config.Config, buildTime, gitCommit, version string) (service.HealthChecker, error) {

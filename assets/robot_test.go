@@ -12,7 +12,7 @@ import (
 
 func TestRobotFileValidity(t *testing.T) {
 	t.Parallel()
-	b, err := os.ReadFile("robot/robot.json")
+	b, err := os.ReadFile("robot/robot_en.json")
 	assert.Nil(t, err, "unable to read")
 	err = fastjson.Validate(string(b))
 	assert.Nil(t, err, "json file is invalid")
@@ -24,7 +24,7 @@ func TestMarshalUnmarshalRoundtrip(t *testing.T) {
 	robot := map[string]SeoRobotModel{}
 	cOne := &bytes.Buffer{}
 	cTwo := &bytes.Buffer{}
-	b, err := os.ReadFile("robot/robot.json")
+	b, err := os.ReadFile("robot/robot_en.json")
 	assert.Nil(t, err, "unable to read json file")
 	err = json.Unmarshal(b, &robot)
 	assert.Nil(t, err, "json file unmarshal error")

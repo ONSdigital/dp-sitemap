@@ -11,41 +11,46 @@ import (
 	"golang.org/x/exp/slices"
 )
 
-var robotList map[string]assets.SeoRobotModel
+var robotList map[string]map[string]assets.SeoRobotModel
 
 func Init(efs assets.FileSystemInterface) {
+	robotList = map[string]map[string]assets.SeoRobotModel{}
 	ctx := context.Background()
-	b, err := efs.Get(ctx, "robot.json")
-	if err != nil {
-		log.Error(ctx, "can't find robot.json", err)
-		panic("Can't find robot.json")
-	}
-	if err != nil {
-		log.Error(ctx, "error reading robot.json", err)
-		panic("Error reading robot.json")
-	}
+	for _, lang := range []string{"en", "cy"} {
+		fileName := "robot_" + lang + ".json"
+		b, err := efs.Get(ctx, fileName)
+		if err != nil {
+			log.Error(ctx, "can't find "+fileName, err)
+			panic("Can't find " + fileName)
+		}
 
-	robotList = map[string]assets.SeoRobotModel{}
-	err = json.Unmarshal(b, &robotList)
-	if err != nil {
-		log.Error(ctx, "error reading robot.json", err)
-		panic("Unable to read JSON")
+		rContent := map[string]assets.SeoRobotModel{}
+		err = json.Unmarshal(b, &rContent)
+		if err != nil {
+			log.Error(ctx, "error reading "+fileName, err)
+			panic("Unable to read JSON")
+		}
+		robotList[lang] = rContent
 	}
 
 	// Validation
 	// 1. Check there is at least 1 entry
 	// 2. Check that same allow/deny dont exist for a user-agent
-	if len(robotList) == 0 {
-		log.Error(ctx, "no entry in robot.json", errors.New("robots.json cant be empty"))
-		panic("robots.json cant be empty")
-	}
-	for ua, list := range robotList {
-		if len(list.AllowList) == 0 || len(list.DenyList) == 0 {
-			continue
+	for _, lang := range []string{"en", "cy"} {
+		fileName := "robot_" + lang + ".json"
+		rList := robotList[lang]
+		if len(rList) == 0 {
+			log.Error(ctx, "no entry in "+fileName, errors.New(fileName+" cant be empty"))
+			panic(fileName + " cant be empty")
 		}
-		for _, allow := range list.AllowList {
-			if slices.Contains(list.DenyList, allow) {
-				panic(fmt.Sprintf("user agent [%s], contains [%s] in both allow and deny", ua, allow))
+		for ua, list := range rList {
+			if len(list.AllowList) == 0 || len(list.DenyList) == 0 {
+				continue
+			}
+			for _, allow := range list.AllowList {
+				if slices.Contains(list.DenyList, allow) {
+					panic(fmt.Sprintf("user agent [%s], contains [%s] in both allow and deny", ua, allow))
+				}
 			}
 		}
 	}

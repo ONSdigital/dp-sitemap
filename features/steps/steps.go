@@ -26,7 +26,7 @@ import (
 
 func (c *Component) RegisterSteps(ctx *godog.ScenarioContext) {
 	ctx.Step(`^i have the following robot\.json:$`, iHaveTheFollowingRobotjson)
-	ctx.Step(`^i invoke writejson with the sitemaps "([^"]*)"$`, c.iInvokeWritejsonWithTheSitemaps)
+	ctx.Step(`^i invoke writejson with the sitemap "([^"]*)"$`, c.iInvokeWritejsonWithTheSitemap)
 	ctx.Step(`^the content of the resulting robots file must be$`, c.theContentOfTheResultingRobotsFileMustBe)
 	ctx.Step(`^I generate a local sitemap$`, c.iGenerateLocalSitemap)
 	ctx.Step(`^I index the following URLs:$`, c.iIndexTheFollowingURLs)
@@ -178,13 +178,13 @@ func iHaveTheFollowingRobotjson(arg1 *godog.DocString) error {
 	return nil
 }
 
-func (c *Component) iInvokeWritejsonWithTheSitemaps(arg1 string) error {
+func (c *Component) iInvokeWritejsonWithTheSitemap(arg1 string) error {
 	fw := robotseo.RobotFileWriter{}
-	return fw.WriteRobotsFile(c.cfg, strings.Split(arg1, ","))
+	return fw.WriteRobotsFile(c.cfg, map[string]string{"en": arg1})
 }
 
 func (c *Component) theContentOfTheResultingRobotsFileMustBe(arg1 *godog.DocString) error {
-	b, err := os.ReadFile(c.cfg.RobotsFilePath)
+	b, err := os.ReadFile(c.cfg.RobotsFilePath["en"])
 	if err != nil {
 		return err
 	}

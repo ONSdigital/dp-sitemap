@@ -35,3 +35,8 @@ func (s *LocalSaver) SaveFile(lang config.Language, body io.Reader) error {
 	log.Info(context.Background(), fmt.Sprintf("saved file [%s], language [%s]", s.fileNames[lang], lang.String()))
 	return nil
 }
+
+func (s *LocalSaver) UploadFiles(paths []string) error {
+	// nothing to be done for local storage
+	return nil
+}
