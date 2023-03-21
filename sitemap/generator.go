@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strings"
 
 	"github.com/ONSdigital/dp-sitemap/config"
 	"github.com/ONSdigital/log.go/v2/log"
@@ -27,7 +28,7 @@ type Fetcher interface {
 	URLVersions(ctx context.Context, path string, lastmod string) (en URL, cy *URL)
 }
 type Adder interface {
-	Add(oldSitemap io.Reader, url URL) (string, error)
+	Add(oldSitemap io.Reader, url *URL) (string, error)
 }
 
 type Generator struct {
@@ -62,10 +63,14 @@ func (g *Generator) MakeIncrementalSitemap(ctx context.Context, name string, url
 		url.Lastmod,
 	)
 
-	return g.AppendURL(ctx, currentSitemap, urlEn, name)
+	return g.AppendURL(ctx, currentSitemap, &urlEn, name)
 }
 
-func (g *Generator) AppendURL(ctx context.Context, sitemap io.ReadCloser, url URL, destination string) error {
+func (g *Generator) TruncateIncrementalSitemap(ctx context.Context, name string) error {
+	return g.AppendURL(ctx, io.NopCloser(strings.NewReader("")), nil, name)
+}
+
+func (g *Generator) AppendURL(ctx context.Context, sitemap io.ReadCloser, url *URL, destination string) error {
 	fileName, err := g.adder.Add(sitemap, url)
 	if err != nil {
 		return fmt.Errorf("failed to add to sitemap: %w", err)

@@ -19,7 +19,7 @@ var _ sitemap.Adder = &AdderMock{}
 //
 // 		// make and configure a mocked sitemap.Adder
 // 		mockedAdder := &AdderMock{
-// 			AddFunc: func(oldSitemap io.Reader, url sitemap.URL) (string, error) {
+// 			AddFunc: func(oldSitemap io.Reader, url *sitemap.URL) (string, error) {
 // 				panic("mock out the Add method")
 // 			},
 // 		}
@@ -30,7 +30,7 @@ var _ sitemap.Adder = &AdderMock{}
 // 	}
 type AdderMock struct {
 	// AddFunc mocks the Add method.
-	AddFunc func(oldSitemap io.Reader, url sitemap.URL) (string, error)
+	AddFunc func(oldSitemap io.Reader, url *sitemap.URL) (string, error)
 
 	// calls tracks calls to the methods.
 	calls struct {
@@ -39,20 +39,20 @@ type AdderMock struct {
 			// OldSitemap is the oldSitemap argument value.
 			OldSitemap io.Reader
 			// URL is the url argument value.
-			URL sitemap.URL
+			URL *sitemap.URL
 		}
 	}
 	lockAdd sync.RWMutex
 }
 
 // Add calls AddFunc.
-func (mock *AdderMock) Add(oldSitemap io.Reader, url sitemap.URL) (string, error) {
+func (mock *AdderMock) Add(oldSitemap io.Reader, url *sitemap.URL) (string, error) {
 	if mock.AddFunc == nil {
 		panic("AdderMock.AddFunc: method is nil but Adder.Add was just called")
 	}
 	callInfo := struct {
 		OldSitemap io.Reader
-		URL        sitemap.URL
+		URL        *sitemap.URL
 	}{
 		OldSitemap: oldSitemap,
 		URL:        url,
@@ -68,11 +68,11 @@ func (mock *AdderMock) Add(oldSitemap io.Reader, url sitemap.URL) (string, error
 //     len(mockedAdder.AddCalls())
 func (mock *AdderMock) AddCalls() []struct {
 	OldSitemap io.Reader
-	URL        sitemap.URL
+	URL        *sitemap.URL
 } {
 	var calls []struct {
 		OldSitemap io.Reader
-		URL        sitemap.URL
+		URL        *sitemap.URL
 	}
 	mock.lockAdd.RLock()
 	calls = mock.calls.Add

@@ -53,7 +53,7 @@ func TestGenerateIncrementalSitemap(t *testing.T) {
 		store.GetFileFunc = func(name string) (io.ReadCloser, error) {
 			return io.NopCloser(strings.NewReader("")), nil
 		}
-		adder.AddFunc = func(oldSitemap io.Reader, url sitemap.URL) (string, error) {
+		adder.AddFunc = func(oldSitemap io.Reader, url *sitemap.URL) (string, error) {
 			return "", errors.New("adder error")
 		}
 
@@ -70,7 +70,7 @@ func TestGenerateIncrementalSitemap(t *testing.T) {
 		store.GetFileFunc = func(name string) (io.ReadCloser, error) {
 			return io.NopCloser(strings.NewReader("")), nil
 		}
-		adder.AddFunc = func(oldSitemap io.Reader, url sitemap.URL) (string, error) {
+		adder.AddFunc = func(oldSitemap io.Reader, url *sitemap.URL) (string, error) {
 			return "filename", nil
 		}
 
@@ -89,7 +89,7 @@ func TestGenerateIncrementalSitemap(t *testing.T) {
 			return io.NopCloser(strings.NewReader("")), nil
 		}
 		var tempFile string
-		adder.AddFunc = func(oldSitemap io.Reader, url sitemap.URL) (string, error) {
+		adder.AddFunc = func(oldSitemap io.Reader, url *sitemap.URL) (string, error) {
 			So(url, ShouldResemble, sitemap.URL{Loc: "a", Lastmod: "b"})
 			file, err := os.CreateTemp("", "sitemap-incr")
 			So(err, ShouldBeNil)
@@ -129,7 +129,7 @@ func TestGenerateIncrementalSitemap(t *testing.T) {
 			return io.NopCloser(strings.NewReader("")), nil
 		}
 		var tempFile string
-		adder.AddFunc = func(oldSitemap io.Reader, url sitemap.URL) (string, error) {
+		adder.AddFunc = func(oldSitemap io.Reader, url *sitemap.URL) (string, error) {
 			file, err := os.CreateTemp("", "sitemap-incr")
 			So(err, ShouldBeNil)
 			file.WriteString("file content")
