@@ -42,8 +42,8 @@ func TestFetcher(t *testing.T) {
 			So(err.Error(), ShouldContainSubstring, "start scroll error")
 		})
 		Convey("Temporary sitemap file should be created and then cleaned up", func() {
-			So(filename[0], ShouldContainSubstring, "sitemap")
-			_, err := os.Stat(filename[0])
+			So(filename[config.English], ShouldContainSubstring, "sitemap")
+			_, err := os.Stat(filename[config.English])
 			So(err.Error(), ShouldContainSubstring, "no such file or directory")
 		})
 	})
@@ -67,14 +67,17 @@ func TestFetcher(t *testing.T) {
 			So(err, ShouldBeNil)
 		})
 		Convey("Temporary sitemap file should be created and available", func() {
-			So(filenames[0], ShouldContainSubstring, "sitemap")
-			_, err := os.Stat(filenames[0])
+			So(filenames[config.English], ShouldContainSubstring, "sitemap")
+			_, err := os.Stat(filenames[config.English])
 			So(err, ShouldBeNil)
 		})
 		Convey("Sitemap should be a valid xml and include no urls", func() {
-			sitemap, err := os.ReadFile(filenames[0])
+			sitemapContent, err := os.ReadFile(filenames[config.English])
 			So(err, ShouldBeNil)
-			So(string(sitemap), ShouldEqual, `<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"></urlset>`)
+			So(string(sitemapContent), ShouldEqual, `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+
+</urlset>`)
 		})
 	})
 	Convey("When elastic start scroll returns hits", t, func() {
@@ -131,21 +134,24 @@ func TestFetcher(t *testing.T) {
 			So(receivedScrollID, ShouldEqual, "scroll_id_1")
 		})
 		Convey("Temporary sitemap file should be created and available", func() {
-			So(filenames[0], ShouldContainSubstring, "sitemap")
-			_, err := os.Stat(filenames[0])
+			So(filenames[config.English], ShouldContainSubstring, "sitemap")
+			_, err := os.Stat(filenames[config.English])
 			So(err, ShouldBeNil)
 		})
 		Convey("Sitemap should be valid and include all received urls", func() {
-			sitemap, err := os.ReadFile(filenames[0])
+			sitemapContent, err := os.ReadFile(filenames[config.English])
 			So(err, ShouldBeNil)
-			So(string(sitemap), ShouldEqual, `<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url>
+			So(string(sitemapContent), ShouldEqual, `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<url>
   <loc>uri_1</loc>
   <lastmod>2014-12-10</lastmod>
 </url>
 <url>
   <loc>uri_2</loc>
   <lastmod>2023-03-31</lastmod>
-</url></urlset>`)
+</url>
+</urlset>`)
 		})
 	})
 	Convey("When subsequent scroll returns error", t, func() {
@@ -196,8 +202,9 @@ func TestFetcher(t *testing.T) {
 			So(receivedScrollID, ShouldEqual, "scroll_id_1")
 		})
 		Convey("Temporary sitemap file should be created and then cleaned up", func() {
-			So(filename[0], ShouldContainSubstring, "sitemap")
-			_, err := os.Stat(filename[0])
+			So(filename[config.English], ShouldContainSubstring, "sitemap")
+			_, err := os.Stat(filename[config.English])
+			So(err, ShouldNotBeNil)
 			So(err.Error(), ShouldContainSubstring, "no such file or directory")
 		})
 	})
@@ -281,14 +288,16 @@ func TestFetcher(t *testing.T) {
 			So(receivedScrollID, ShouldEqual, "scroll_id_1")
 		})
 		Convey("Temporary sitemap file should be created and available", func() {
-			So(filenames[0], ShouldContainSubstring, "sitemap")
-			_, err := os.Stat(filenames[0])
+			So(filenames[config.English], ShouldContainSubstring, "sitemap")
+			_, err := os.Stat(filenames[config.English])
 			So(err, ShouldBeNil)
 		})
 		Convey("Sitemap should be valid and include all received urls", func() {
-			sitemap, err := os.ReadFile(filenames[0])
+			sitemapContent, err := os.ReadFile(filenames[config.English])
 			So(err, ShouldBeNil)
-			So(string(sitemap), ShouldEqual, `<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url>
+			So(string(sitemapContent), ShouldEqual, `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<url>
   <loc>uri_1</loc>
   <lastmod>2014-12-10</lastmod>
 </url>
@@ -311,7 +320,8 @@ func TestFetcher(t *testing.T) {
 <url>
   <loc>uri_4</loc>
   <lastmod>2024-03-31</lastmod>
-</url></urlset>`)
+</url>
+</urlset>`)
 		})
 	})
 	Convey("When subsequent scrolls return hits (with welsh content)", t, func() {
@@ -400,14 +410,16 @@ func TestFetcher(t *testing.T) {
 			So(receivedScrollID, ShouldEqual, "scroll_id_1")
 		})
 		Convey("Temporary sitemap file should be created and available", func() {
-			So(filenames[0], ShouldContainSubstring, "sitemap")
-			_, err := os.Stat(filenames[0])
+			So(filenames[config.English], ShouldContainSubstring, "sitemap")
+			_, err := os.Stat(filenames[config.English])
 			So(err, ShouldBeNil)
 		})
 		Convey("Sitemap should be valid and include all received urls", func() {
-			sitemap, err := os.ReadFile(filenames[0])
+			sitemapContent, err := os.ReadFile(filenames[config.English])
 			So(err, ShouldBeNil)
-			So(string(sitemap), ShouldEqual, `<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url>
+			So(string(sitemapContent), ShouldEqual, `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<url>
   <loc>uri_1</loc>
   <lastmod>2014-12-10</lastmod>
   <xhtml:link>
@@ -460,7 +472,8 @@ func TestFetcher(t *testing.T) {
     <hreflang>cy</hreflang>
     <href>uri_4</href>
   </xhtml:link>
-</url></urlset>`)
+</url>
+</urlset>`)
 		})
 	})
 }
