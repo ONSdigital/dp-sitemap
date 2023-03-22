@@ -96,8 +96,8 @@ func Get() (*Config, error) {
 		SitemapGenerationFrequency: time.Hour,
 		SitemapGenerationTimeout:   10 * time.Minute,
 		RobotsFilePath: map[string]string{
-			"en": "/tmp/dp_robot_file_en.txt",
-			"cy": "/tmp/dp_robot_file_cy.txt"},
+			English.String(): "/tmp/dp_robot_file_en.txt",
+			Welsh.String():   "/tmp/dp_robot_file_cy.txt"},
 		KafkaConfig: KafkaConfig{
 			Brokers:             []string{"localhost:9092"},
 			Version:             "1.0.2",

@@ -15,16 +15,16 @@ func TestRobotFileWriter_WriteRobotsFile(t *testing.T) {
 	cfg, _ := config.Get()
 
 	Convey("no file path provided", t, func() {
-		robotList["en"] = map[string]asset.SeoRobotModel{}
+		robotList[config.English.String()] = map[string]asset.SeoRobotModel{}
 		expectedError = ErrNoRobotsFilePath
-		cfg.RobotsFilePath["en"] = ""
+		cfg.RobotsFilePath[config.English.String()] = ""
 		So(r.WriteRobotsFile(cfg, map[string]string{}), ShouldEqual, expectedError)
 	})
 
 	Convey("no robots body", t, func() {
-		robotList["en"] = map[string]asset.SeoRobotModel{}
+		robotList[config.English.String()] = map[string]asset.SeoRobotModel{}
 		expectedError = ErrNoRobotsBody
-		cfg.RobotsFilePath["en"] = "/tmp/dp_robot.txt"
+		cfg.RobotsFilePath[config.English.String()] = "/tmp/dp_robot.txt"
 		So(r.WriteRobotsFile(cfg, map[string]string{}), ShouldEqual, expectedError)
 	})
 }

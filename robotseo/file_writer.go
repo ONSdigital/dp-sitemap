@@ -22,7 +22,7 @@ var (
 )
 
 func (r *RobotFileWriter) WriteRobotsFile(cfg *config.Config, sitemap map[string]string) error {
-	for _, lang := range []string{"en", "cy"} {
+	for _, lang := range []string{config.English.String(), config.Welsh.String()} {
 		if cfg.RobotsFilePath[lang] == "" {
 			return ErrNoRobotsFilePath
 		}

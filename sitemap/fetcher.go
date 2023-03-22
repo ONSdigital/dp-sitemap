@@ -101,7 +101,7 @@ func NewElasticFetcher(elastic *es710.Client, cfg *config.Config, zc clients.Zeb
 func (f *ElasticFetcher) HasWelshContent(ctx context.Context, path string) bool {
 	welshPath := path + "/data_cy.json"
 	log.Info(ctx, "Checking welsh content for "+welshPath)
-	_, err := f.zClient.GetFileSize(ctx, "", "", "cy", welshPath)
+	_, err := f.zClient.GetFileSize(ctx, "", "", config.Welsh.String(), welshPath)
 	return err == nil
 }
 
@@ -118,7 +118,7 @@ func (f *ElasticFetcher) URLVersions(ctx context.Context, path, lastmod string) 
 		cyLoc, _ := url.JoinPath(f.cfg.DpOnsURLHostNameCy, path)
 		en.Alternate = &AlternateURL{
 			Rel:  "alternate",
-			Lang: "cy",
+			Lang: config.Welsh.String(),
 			Link: cyLoc,
 		}
 		cy = &URL{
@@ -126,7 +126,7 @@ func (f *ElasticFetcher) URLVersions(ctx context.Context, path, lastmod string) 
 			Lastmod: lastmod,
 			Alternate: &AlternateURL{
 				Rel:  "alternate",
-				Lang: "en",
+				Lang: config.English.String(),
 				Link: enLoc,
 			},
 		}

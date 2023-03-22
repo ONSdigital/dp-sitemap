@@ -251,11 +251,11 @@ func iHaveTheFollowingRobotjson(arg1 *godog.DocString) error {
 
 func (c *Component) iInvokeWritejsonWithTheSitemap(arg1 string) error {
 	fw := robotseo.RobotFileWriter{}
-	return fw.WriteRobotsFile(c.cfg, map[string]string{"en": arg1})
+	return fw.WriteRobotsFile(c.cfg, map[string]string{config.English.String(): arg1})
 }
 
 func (c *Component) theContentOfTheResultingRobotsFileMustBe(arg1 *godog.DocString) error {
-	b, err := os.ReadFile(c.cfg.RobotsFilePath["en"])
+	b, err := os.ReadFile(c.cfg.RobotsFilePath[config.English.String()])
 	if err != nil {
 		return err
 	}

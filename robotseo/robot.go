@@ -7,6 +7,7 @@ import (
 	"fmt"
 
 	"github.com/ONSdigital/dp-sitemap/assets"
+	"github.com/ONSdigital/dp-sitemap/config"
 	"github.com/ONSdigital/log.go/v2/log"
 	"golang.org/x/exp/slices"
 )
@@ -16,7 +17,7 @@ var robotList map[string]map[string]assets.SeoRobotModel
 func Init(efs assets.FileSystemInterface) {
 	robotList = map[string]map[string]assets.SeoRobotModel{}
 	ctx := context.Background()
-	for _, lang := range []string{"en", "cy"} {
+	for _, lang := range []string{config.English.String(), config.Welsh.String()} {
 		fileName := "robot_" + lang + ".json"
 		b, err := efs.Get(ctx, fileName)
 		if err != nil {
@@ -36,7 +37,7 @@ func Init(efs assets.FileSystemInterface) {
 	// Validation
 	// 1. Check there is at least 1 entry
 	// 2. Check that same allow/deny dont exist for a user-agent
-	for _, lang := range []string{"en", "cy"} {
+	for _, lang := range []string{config.English.String(), config.Welsh.String()} {
 		fileName := "robot_" + lang + ".json"
 		rList := robotList[lang]
 		if len(rList) == 0 {
