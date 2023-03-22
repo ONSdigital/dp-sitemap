@@ -25,9 +25,6 @@ var _ sitemap.FileStore = &FileStoreMock{}
 // 			SaveFileFunc: func(name string, body io.Reader) error {
 // 				panic("mock out the SaveFile method")
 // 			},
-// 			SaveFilesFunc: func(paths []string) error {
-// 				panic("mock out the SaveFiles method")
-// 			},
 // 		}
 //
 // 		// use mockedFileStore in code that requires sitemap.FileStore
@@ -40,9 +37,6 @@ type FileStoreMock struct {
 
 	// SaveFileFunc mocks the SaveFile method.
 	SaveFileFunc func(name string, body io.Reader) error
-
-	// SaveFilesFunc mocks the SaveFiles method.
-	SaveFilesFunc func(paths []string) error
 
 	// calls tracks calls to the methods.
 	calls struct {
@@ -58,15 +52,9 @@ type FileStoreMock struct {
 			// Body is the body argument value.
 			Body io.Reader
 		}
-		// SaveFiles holds details about calls to the SaveFiles method.
-		SaveFiles []struct {
-			// Paths is the paths argument value.
-			Paths []string
-		}
 	}
-	lockGetFile   sync.RWMutex
-	lockSaveFile  sync.RWMutex
-	lockSaveFiles sync.RWMutex
+	lockGetFile  sync.RWMutex
+	lockSaveFile sync.RWMutex
 }
 
 // GetFile calls GetFileFunc.
@@ -132,36 +120,5 @@ func (mock *FileStoreMock) SaveFileCalls() []struct {
 	mock.lockSaveFile.RLock()
 	calls = mock.calls.SaveFile
 	mock.lockSaveFile.RUnlock()
-	return calls
-}
-
-// SaveFiles calls SaveFilesFunc.
-func (mock *FileStoreMock) SaveFiles(paths []string) error {
-	if mock.SaveFilesFunc == nil {
-		panic("FileStoreMock.SaveFilesFunc: method is nil but FileStore.SaveFiles was just called")
-	}
-	callInfo := struct {
-		Paths []string
-	}{
-		Paths: paths,
-	}
-	mock.lockSaveFiles.Lock()
-	mock.calls.SaveFiles = append(mock.calls.SaveFiles, callInfo)
-	mock.lockSaveFiles.Unlock()
-	return mock.SaveFilesFunc(paths)
-}
-
-// SaveFilesCalls gets all the calls that were made to SaveFiles.
-// Check the length with:
-//     len(mockedFileStore.SaveFilesCalls())
-func (mock *FileStoreMock) SaveFilesCalls() []struct {
-	Paths []string
-} {
-	var calls []struct {
-		Paths []string
-	}
-	mock.lockSaveFiles.RLock()
-	calls = mock.calls.SaveFiles
-	mock.lockSaveFiles.RUnlock()
 	return calls
 }

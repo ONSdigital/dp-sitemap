@@ -2,6 +2,8 @@ package service
 
 import (
 	"context"
+	"os"
+	"path/filepath"
 	"time"
 
 	dpEsClient "github.com/ONSdigital/dp-elasticsearch/v3/client"
@@ -147,9 +149,21 @@ func Run(ctx context.Context, serviceList *ExternalServiceList, buildTime, gitCo
 			log.Error(ctx, "error writing robots file", wErr)
 			return
 		}
-		if sErr := saver.SaveFiles(maps.Values(cfg.RobotsFilePath)); sErr != nil {
-			log.Error(ctx, "error saving robot files", sErr)
-			return
+		// save (upload to s3)
+		// not needed for local (already written in the above call)
+		if cfg.SitemapSaveLocation == "s3" {
+			for _, path := range maps.Values(cfg.RobotsFilePath) {
+				file, saveErr := os.Open(path)
+				if saveErr != nil {
+					log.Error(ctx, "failed to open file: %w", saveErr)
+					return
+				}
+				saveErr = saver.SaveFile(filepath.Base(path), file)
+				if saveErr != nil {
+					log.Error(ctx, "failed to save file: %w", saveErr)
+					return
+				}
+			}
 		}
 		log.Info(ctx, "wrote robots file")
 	}
