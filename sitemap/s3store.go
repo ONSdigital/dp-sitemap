@@ -3,7 +3,6 @@ package sitemap
 import (
 	"fmt"
 	"io"
-	"os"
 	"strings"
 
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
@@ -46,18 +45,4 @@ func (s *S3Store) GetFile(name string) (body io.ReadCloser, err error) {
 		return io.NopCloser(strings.NewReader("")), nil
 	}
 	return file, nil
-}
-
-func (s *S3Store) SaveFiles(paths []string) error {
-	for _, path := range paths {
-		file, err := os.Open(path)
-		if err != nil {
-			return fmt.Errorf("failed to open file: %w", err)
-		}
-		err = s.SaveFile(path, file)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
 }
