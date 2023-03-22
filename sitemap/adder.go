@@ -13,7 +13,7 @@ import (
 
 type DefaultAdder struct{}
 
-func (a *DefaultAdder) Add(oldSitemap io.Reader, url URL) (fileName string, err error) {
+func (a *DefaultAdder) Add(oldSitemap io.Reader, url *URL) (fileName string, err error) {
 	// create a temporary file
 	file, err := os.CreateTemp("", "sitemap-incr")
 	if err != nil {
@@ -50,7 +50,9 @@ func (a *DefaultAdder) Add(oldSitemap io.Reader, url URL) (fileName string, err 
 	}
 
 	// add new URL
-	sitemap.URL = append(sitemap.URL, url)
+	if url != nil {
+		sitemap.URL = append(sitemap.URL, *url)
+	}
 
 	// output result into the file
 	_, err = file.WriteString(xml.Header)
