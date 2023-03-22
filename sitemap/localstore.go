@@ -39,3 +39,8 @@ func (s *LocalStore) GetFile(name string) (body io.ReadCloser, err error) {
 	}
 	return file, nil
 }
+
+func (s *LocalStore) SaveFiles(paths []string) error {
+	// nothing to be done
+	return nil
+}

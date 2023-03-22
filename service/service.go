@@ -147,8 +147,8 @@ func Run(ctx context.Context, serviceList *ExternalServiceList, buildTime, gitCo
 			log.Error(ctx, "error writing robots file", wErr)
 			return
 		}
-		if uploadErr := saver.UploadFiles(maps.Values(cfg.RobotsFilePath)); uploadErr != nil {
-			log.Error(ctx, "error writing robots file", uploadErr)
+		if sErr := saver.SaveFiles(maps.Values(cfg.RobotsFilePath)); sErr != nil {
+			log.Error(ctx, "error saving robot files", sErr)
 			return
 		}
 		log.Info(ctx, "wrote robots file")

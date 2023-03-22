@@ -19,6 +19,7 @@ type Files map[config.Language]string
 type FileStore interface {
 	SaveFile(name string, body io.Reader) error
 	GetFile(name string) (body io.ReadCloser, err error)
+	SaveFiles(paths []string) error
 }
 
 type Fetcher interface {
