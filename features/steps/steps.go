@@ -58,15 +58,16 @@ func (c *Component) iAddAURLDatedToSitemap(url, date, sitemapID string) error {
 		},
 	}
 	generator := sitemap.NewGenerator(
-		sitemap.NewElasticFetcher(
+		sitemap.WithFetcher(sitemap.NewElasticFetcher(
 			c.EsClient,
 			c.cfg,
 			&zc,
-		),
-		&sitemap.DefaultAdder{},
-		&sitemap.LocalStore{},
+		)),
+		sitemap.WithAdder(&sitemap.DefaultAdder{}),
+		sitemap.WithFileStore(&sitemap.LocalStore{}),
+		sitemap.WithPublishingSitemapFile(c.files[sitemapID]),
 	)
-	err := generator.MakeIncrementalSitemap(context.Background(), c.files[sitemapID], sitemap.URL{Loc: url, Lastmod: date})
+	err := generator.MakePublishingSitemap(context.Background(), sitemap.URL{Loc: url, Lastmod: date})
 	if err != nil {
 		return err
 	}
@@ -127,15 +128,15 @@ func (c *Component) iGenerateLocalSitemap() error {
 	}}
 
 	generator := sitemap.NewGenerator(
-		sitemap.NewElasticFetcher(
+		sitemap.WithFetcher(sitemap.NewElasticFetcher(
 			c.EsClient,
 			c.cfg,
 			&zc,
-		),
-		nil,
-		&sitemap.LocalStore{},
+		)),
+		sitemap.WithFileStore(&sitemap.LocalStore{}),
+		sitemap.WithFullSitemapFiles(c.cfg.SitemapLocalFile),
 	)
-	err = generator.MakeFullSitemap(context.Background(), c.cfg.SitemapLocalFile)
+	err = generator.MakeFullSitemap(context.Background())
 	if err != nil {
 		return err
 	}
@@ -218,15 +219,15 @@ func (c *Component) iGenerateS3Sitemap() error {
 	s3uploader.BucketNameFunc = func() string { return c.cfg.S3Config.UploadBucketName }
 
 	generator := sitemap.NewGenerator(
-		sitemap.NewElasticFetcher(
+		sitemap.WithFetcher(sitemap.NewElasticFetcher(
 			c.EsClient,
 			c.cfg,
 			&zc,
-		),
-		nil,
-		sitemap.NewS3Store(s3uploader),
+		)),
+		sitemap.WithFileStore(sitemap.NewS3Store(s3uploader)),
+		sitemap.WithFullSitemapFiles(c.cfg.S3Config.SitemapFileKey),
 	)
-	err = generator.MakeFullSitemap(context.Background(), c.cfg.S3Config.SitemapFileKey)
+	err = generator.MakeFullSitemap(context.Background())
 	if err != nil {
 		return err
 	}

@@ -17,23 +17,23 @@ func (a *DefaultAdder) Add(oldSitemap io.Reader, url *URL) (fileName string, err
 	// create a temporary file
 	file, err := os.CreateTemp("", "sitemap-incr")
 	if err != nil {
-		return "", fmt.Errorf("failed to create incremental sitemap file: %w", err)
+		return "", fmt.Errorf("failed to create publishing sitemap file: %w", err)
 	}
 	fileName = file.Name()
-	log.Info(context.Background(), "created incremental sitemap file "+fileName)
+	log.Info(context.Background(), "created publishing sitemap file "+fileName)
 	defer func() {
 		closeErr := file.Close()
 		if closeErr != nil {
-			log.Error(context.Background(), "failed to close incremental sitemap file", closeErr)
+			log.Error(context.Background(), "failed to close publishing sitemap file", closeErr)
 		}
 		// clean up the temporary file if we're returning with an error
 		if err != nil {
 			removeErr := os.Remove(fileName)
 			if removeErr != nil {
-				log.Error(context.Background(), "failed to remove incremental sitemap file", removeErr)
+				log.Error(context.Background(), "failed to remove publishing sitemap file", removeErr)
 				return
 			}
-			log.Info(context.Background(), "removed incremental sitemap file "+fileName)
+			log.Info(context.Background(), "removed publishing sitemap file "+fileName)
 		}
 	}()
 

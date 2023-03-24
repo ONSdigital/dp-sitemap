@@ -37,6 +37,7 @@ type Config struct {
 	OpenSearchConfig           OpenSearchConfig
 	SitemapSaveLocation        string              `envconfig:"SITEMAP_SAVE_LOCATION"` // "local" or "s3", default: "local"
 	SitemapLocalFile           map[Language]string `envconfig:"SITEMAP_LOCAL_FILE"`
+	PublishingSitemapLocalFile string              `envconfig:"PUBLISHING_SITEMAP_LOCAL_FILE"`
 	S3Config                   S3Config
 	ZebedeeURL                 string `envconfig:"ZEBEDEE_URL"`
 	DpOnsURLHostNameEn         string `envconfig:"DP_ONS_URL_HOSTNAME_ENGLISH"`
@@ -44,10 +45,11 @@ type Config struct {
 }
 
 type S3Config struct {
-	UploadBucketName string              `envconfig:"S3_UPLOAD_BUCKET_NAME"`
-	SitemapFileKey   map[Language]string `envconfig:"S3_SITEMAP_FILE_KEY"`
-	AwsRegion        string              `envconfig:"S3_AWS_REGION"`
-	LocalstackHost   string              `envconfig:"S3_LOCALSTACK_HOST"`
+	UploadBucketName         string              `envconfig:"S3_UPLOAD_BUCKET_NAME"`
+	SitemapFileKey           map[Language]string `envconfig:"S3_SITEMAP_FILE_KEY"`
+	PublishingSitemapFileKey string              `envconfig:"S3_PUBLISHING_SITEMAP_FILE_KEY"`
+	AwsRegion                string              `envconfig:"S3_AWS_REGION"`
+	LocalstackHost           string              `envconfig:"S3_LOCALSTACK_HOST"`
 }
 
 type OpenSearchConfig struct {
@@ -97,7 +99,8 @@ func Get() (*Config, error) {
 		SitemapGenerationTimeout:   10 * time.Minute,
 		RobotsFilePath: map[Language]string{
 			English: "/tmp/dp_robot_file_en.txt",
-			Welsh:   "/tmp/dp_robot_file_cy.txt"},
+			Welsh:   "/tmp/dp_robot_file_cy.txt",
+		},
 		KafkaConfig: KafkaConfig{
 			Brokers:             []string{"localhost:9092"},
 			Version:             "1.0.2",
@@ -106,11 +109,12 @@ func Get() (*Config, error) {
 			ContentUpdatedGroup: "dp-sitemap",
 			ContentUpdatedTopic: "content-updated",
 		},
-		SitemapSaveLocation: "local",
-		SitemapLocalFile:    map[Language]string{English: "/tmp/dp-sitemap-en.xml", Welsh: "/tmp/dp-sitemap-cy.xml"},
-		ZebedeeURL:          "http://localhost:8082",
-		DpOnsURLHostNameEn:  "https://dp.aws.onsdigital.uk/",
-		DpOnsURLHostNameCy:  "https://cy.dp.aws.onsdigital.uk/",
+		SitemapSaveLocation:        "local",
+		SitemapLocalFile:           map[Language]string{English: "/tmp/dp-sitemap-en.xml", Welsh: "/tmp/dp-sitemap-cy.xml"},
+		PublishingSitemapLocalFile: "/tmp/dp-publishing-sitemap.xml",
+		ZebedeeURL:                 "http://localhost:8082",
+		DpOnsURLHostNameEn:         "https://dp.aws.onsdigital.uk/",
+		DpOnsURLHostNameCy:         "https://cy.dp.aws.onsdigital.uk/",
 	}
 
 	cfg.OpenSearchConfig = OpenSearchConfig{
@@ -127,9 +131,10 @@ func Get() (*Config, error) {
 	}
 
 	cfg.S3Config = S3Config{
-		UploadBucketName: "dp-sitemap-bucket",
-		SitemapFileKey:   map[Language]string{English: "sitemap-en", Welsh: "sitemap-cy"},
-		AwsRegion:        "eu-west-1",
+		UploadBucketName:         "dp-sitemap-bucket",
+		SitemapFileKey:           map[Language]string{English: "sitemap-en", Welsh: "sitemap-cy"},
+		PublishingSitemapFileKey: "publishing-sitemap",
+		AwsRegion:                "eu-west-1",
 	}
 
 	return cfg, envconfig.Process("", cfg)

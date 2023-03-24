@@ -14,7 +14,7 @@ import (
 	. "github.com/smartystreets/goconvey/convey"
 )
 
-func TestGenerateIncrementalSitemap(t *testing.T) {
+func TestGeneratePublishingSitemap(t *testing.T) {
 	store := &mock.FileStoreMock{}
 	adder := &mock.AdderMock{}
 	fetcher := &mock.FetcherMock{}
@@ -27,8 +27,12 @@ func TestGenerateIncrementalSitemap(t *testing.T) {
 			return nil, errors.New("get file error")
 		}
 
-		g := sitemap.NewGenerator(nil, nil, store)
-		err := g.MakeIncrementalSitemap(context.Background(), "sitemap.xml", sitemap.URL{})
+		g := sitemap.NewGenerator(
+			sitemap.WithFileStore(store),
+			sitemap.WithPublishingSitemapFile("sitemap.xml"),
+		)
+
+		err := g.MakePublishingSitemap(context.Background(), sitemap.URL{})
 
 		Convey("Generator should return correct error", func() {
 			So(err.Error(), ShouldContainSubstring, "failed to get current sitemap")
@@ -41,8 +45,11 @@ func TestGenerateIncrementalSitemap(t *testing.T) {
 			return nil, errors.New("get file error")
 		}
 
-		g := sitemap.NewGenerator(nil, nil, store)
-		err := g.MakeIncrementalSitemap(context.Background(), "sitemap.xml", sitemap.URL{})
+		g := sitemap.NewGenerator(
+			sitemap.WithFileStore(store),
+			sitemap.WithPublishingSitemapFile("sitemap.xml"),
+		)
+		err := g.MakePublishingSitemap(context.Background(), sitemap.URL{})
 
 		Convey("Generator should return correct error", func() {
 			So(err.Error(), ShouldContainSubstring, "failed to get current sitemap")
@@ -57,8 +64,12 @@ func TestGenerateIncrementalSitemap(t *testing.T) {
 			return "", errors.New("adder error")
 		}
 
-		g := sitemap.NewGenerator(fetcher, adder, store)
-		err := g.MakeIncrementalSitemap(context.Background(), "", sitemap.URL{})
+		g := sitemap.NewGenerator(
+			sitemap.WithFetcher(fetcher),
+			sitemap.WithAdder(adder),
+			sitemap.WithFileStore(store),
+		)
+		err := g.MakePublishingSitemap(context.Background(), sitemap.URL{})
 
 		Convey("Generator should return correct error", func() {
 			So(err.Error(), ShouldContainSubstring, "failed to add to sitemap")
@@ -73,12 +84,15 @@ func TestGenerateIncrementalSitemap(t *testing.T) {
 		adder.AddFunc = func(oldSitemap io.Reader, url *sitemap.URL) (string, error) {
 			return "filename", nil
 		}
-
-		g := sitemap.NewGenerator(fetcher, adder, store)
-		err := g.MakeIncrementalSitemap(context.Background(), "", sitemap.URL{})
+		g := sitemap.NewGenerator(
+			sitemap.WithFetcher(fetcher),
+			sitemap.WithAdder(adder),
+			sitemap.WithFileStore(store),
+		)
+		err := g.MakePublishingSitemap(context.Background(), sitemap.URL{})
 
 		Convey("Generator should return correct error", func() {
-			So(err.Error(), ShouldContainSubstring, "failed to open incremental sitemap")
+			So(err.Error(), ShouldContainSubstring, "failed to open publishing sitemap")
 			So(err.Error(), ShouldContainSubstring, "no such file")
 		})
 	})
@@ -106,8 +120,13 @@ func TestGenerateIncrementalSitemap(t *testing.T) {
 			return nil
 		}
 
-		g := sitemap.NewGenerator(fetcher, adder, store)
-		err := g.MakeIncrementalSitemap(context.Background(), "sitemap.xml", sitemap.URL{Loc: "a", Lastmod: "b"})
+		g := sitemap.NewGenerator(
+			sitemap.WithFetcher(fetcher),
+			sitemap.WithAdder(adder),
+			sitemap.WithFileStore(store),
+			sitemap.WithPublishingSitemapFile("sitemap.xml"),
+		)
+		err := g.MakePublishingSitemap(context.Background(), sitemap.URL{Loc: "a", Lastmod: "b"})
 
 		Convey("Generator should return with no error", func() {
 			So(err, ShouldBeNil)
@@ -145,8 +164,13 @@ func TestGenerateIncrementalSitemap(t *testing.T) {
 			return errors.New("uploader error")
 		}
 
-		g := sitemap.NewGenerator(fetcher, adder, store)
-		err := g.MakeIncrementalSitemap(context.Background(), "sitemap.xml", sitemap.URL{})
+		g := sitemap.NewGenerator(
+			sitemap.WithFetcher(fetcher),
+			sitemap.WithAdder(adder),
+			sitemap.WithFileStore(store),
+			sitemap.WithPublishingSitemapFile("sitemap.xml"),
+		)
+		err := g.MakePublishingSitemap(context.Background(), sitemap.URL{})
 
 		Convey("Generator should call store", func() {
 			So(store.SaveFileCalls(), ShouldHaveLength, 1)
@@ -155,7 +179,7 @@ func TestGenerateIncrementalSitemap(t *testing.T) {
 			So(uploadedFile, ShouldEqual, "file content")
 		})
 		Convey("Generator should return correct error", func() {
-			So(err.Error(), ShouldContainSubstring, "failed to save incremental sitemap file")
+			So(err.Error(), ShouldContainSubstring, "failed to save publishing sitemap file")
 			So(err.Error(), ShouldContainSubstring, "uploader error")
 		})
 		Convey("Generator should remove the temporary file", func() {
@@ -175,8 +199,11 @@ func TestGenerateFullSitemap(t *testing.T) {
 			return nil, errors.New("fetcher error")
 		}
 
-		g := sitemap.NewGenerator(fetcher, nil, store)
-		err := g.MakeFullSitemap(context.Background(), nil)
+		g := sitemap.NewGenerator(
+			sitemap.WithFetcher(fetcher),
+			sitemap.WithFileStore(store),
+		)
+		err := g.MakeFullSitemap(context.Background())
 
 		Convey("Generator should return correct error", func() {
 			So(err.Error(), ShouldContainSubstring, "failed to fetch sitemap")
@@ -189,8 +216,11 @@ func TestGenerateFullSitemap(t *testing.T) {
 			return sitemap.Files{config.English: "filename"}, nil
 		}
 
-		g := sitemap.NewGenerator(fetcher, nil, store)
-		err := g.MakeFullSitemap(context.Background(), nil)
+		g := sitemap.NewGenerator(
+			sitemap.WithFetcher(fetcher),
+			sitemap.WithFileStore(store),
+		)
+		err := g.MakeFullSitemap(context.Background())
 
 		Convey("Generator should return correct error", func() {
 			So(err.Error(), ShouldContainSubstring, "failed to open sitemap")
@@ -217,8 +247,11 @@ func TestGenerateFullSitemap(t *testing.T) {
 			return nil
 		}
 
-		g := sitemap.NewGenerator(fetcher, nil, store)
-		err := g.MakeFullSitemap(context.Background(), sitemap.Files{config.English: "sitemap.xml"})
+		g := sitemap.NewGenerator(
+			sitemap.WithFetcher(fetcher),
+			sitemap.WithFileStore(store),
+		)
+		err := g.MakeFullSitemap(context.Background())
 
 		Convey("Generator should return with no error", func() {
 			So(err, ShouldBeNil)
@@ -255,8 +288,11 @@ func TestGenerateFullSitemap(t *testing.T) {
 			return errors.New("uploader error")
 		}
 
-		g := sitemap.NewGenerator(fetcher, nil, store)
-		err := g.MakeFullSitemap(context.Background(), sitemap.Files{config.English: "sitemap.xml"})
+		g := sitemap.NewGenerator(
+			sitemap.WithFetcher(fetcher),
+			sitemap.WithFileStore(store),
+		)
+		err := g.MakeFullSitemap(context.Background())
 
 		Convey("Generator should call store", func() {
 			So(store.SaveFileCalls(), ShouldHaveLength, 1)
