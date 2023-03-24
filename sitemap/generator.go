@@ -6,6 +6,7 @@ import (
 	"io"
 	"os"
 	"strings"
+	"sync"
 
 	"github.com/ONSdigital/dp-sitemap/config"
 	"github.com/ONSdigital/log.go/v2/log"
@@ -32,20 +33,65 @@ type Adder interface {
 }
 
 type Generator struct {
-	fetcher Fetcher
-	adder   Adder
-	store   FileStore
+	fetcher               Fetcher
+	adder                 Adder
+	store                 FileStore
+	publishingSitemapMx   sync.Mutex
+	fullSitemapFiles      Files
+	publishingSitemapFile string
+}
+type GeneratorOptions func(*Generator) *Generator
+
+func NewGenerator(opts ...GeneratorOptions) *Generator {
+	g := &Generator{
+		fullSitemapFiles:      Files{config.English: "sitemap.xml"},
+		publishingSitemapFile: "publishing-sitemap.xml",
+	}
+	for _, opt := range opts {
+		g = opt(g)
+	}
+	return g
 }
 
-func NewGenerator(fetcher Fetcher, adder Adder, store FileStore) *Generator {
-	return &Generator{
-		fetcher: fetcher,
-		adder:   adder,
-		store:   store,
+func WithFetcher(f Fetcher) GeneratorOptions {
+	return func(g *Generator) *Generator {
+		g.fetcher = f
+		return g
 	}
 }
 
-func (g *Generator) MakeIncrementalSitemap(ctx context.Context, name string, url URL) error {
+func WithAdder(a Adder) GeneratorOptions {
+	return func(g *Generator) *Generator {
+		g.adder = a
+		return g
+	}
+}
+
+func WithFileStore(s FileStore) GeneratorOptions {
+	return func(g *Generator) *Generator {
+		g.store = s
+		return g
+	}
+}
+
+func WithFullSitemapFiles(f Files) GeneratorOptions {
+	return func(g *Generator) *Generator {
+		g.fullSitemapFiles = f
+		return g
+	}
+}
+
+func WithPublishingSitemapFile(f string) GeneratorOptions {
+	return func(g *Generator) *Generator {
+		g.publishingSitemapFile = f
+		return g
+	}
+}
+
+func (g *Generator) MakePublishingSitemap(ctx context.Context, name string, url URL) error {
+	g.publishingSitemapMx.Lock()
+	defer g.publishingSitemapMx.Unlock()
+
 	currentSitemap, err := g.store.GetFile(name)
 	if err != nil {
 		return fmt.Errorf("failed to get current sitemap: %w", err)
@@ -66,7 +112,10 @@ func (g *Generator) MakeIncrementalSitemap(ctx context.Context, name string, url
 	return g.AppendURL(ctx, currentSitemap, &urlEn, name)
 }
 
-func (g *Generator) TruncateIncrementalSitemap(ctx context.Context, name string) error {
+func (g *Generator) TruncatePublishingSitemap(ctx context.Context, name string) error {
+	g.publishingSitemapMx.Lock()
+	defer g.publishingSitemapMx.Unlock()
+
 	return g.AppendURL(ctx, io.NopCloser(strings.NewReader("")), nil, name)
 }
 
@@ -86,23 +135,23 @@ func (g *Generator) AppendURL(ctx context.Context, sitemap io.ReadCloser, url *U
 
 	file, err := os.Open(fileName)
 	if err != nil {
-		return fmt.Errorf("failed to open incremental sitemap: %w", err)
+		return fmt.Errorf("failed to open publishing sitemap: %w", err)
 	}
 	defer func() {
 		closeErr := file.Close()
 		if closeErr != nil {
-			log.Error(ctx, "failed to close incremental sitemap file", closeErr)
+			log.Error(ctx, "failed to close publishing sitemap file", closeErr)
 		}
 	}()
 
 	err = g.store.SaveFile(destination, file)
 	if err != nil {
-		return fmt.Errorf("failed to save incremental sitemap file: %w", err)
+		return fmt.Errorf("failed to save publishing sitemap file: %w", err)
 	}
 	return nil
 }
 
-func (g *Generator) MakeFullSitemap(ctx context.Context, fileNames Files) error {
+func (g *Generator) MakeFullSitemap(ctx context.Context) error {
 	sitemaps, err := g.fetcher.GetFullSitemap(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to fetch sitemap: %w", err)
@@ -124,7 +173,7 @@ func (g *Generator) MakeFullSitemap(ctx context.Context, fileNames Files) error 
 			return fmt.Errorf("failed to open sitemap: %w", err)
 		}
 
-		err = g.store.SaveFile(fileNames[lang], file)
+		err = g.store.SaveFile(g.fullSitemapFiles[lang], file)
 		file.Close()
 		if err != nil {
 			return fmt.Errorf("failed to save sitemap file: %w", err)

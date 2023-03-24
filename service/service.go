@@ -103,29 +103,30 @@ func Run(ctx context.Context, serviceList *ExternalServiceList, buildTime, gitCo
 	}()
 
 	var (
-		saver            sitemap.FileStore
+		store            sitemap.FileStore
 		fullSitemapFiles sitemap.Files
 	)
 	switch cfg.SitemapSaveLocation {
 	case "s3":
-		saver = sitemap.NewS3Store(
+		store = sitemap.NewS3Store(
 			s3Client,
 		)
 		fullSitemapFiles = cfg.S3Config.SitemapFileKey
 
 	default:
-		saver = &sitemap.LocalStore{}
+		store = &sitemap.LocalStore{}
 		fullSitemapFiles = cfg.SitemapLocalFile
 	}
 
 	generator := sitemap.NewGenerator(
-		sitemap.NewElasticFetcher(
+		sitemap.WithFetcher(sitemap.NewElasticFetcher(
 			esRawClient,
 			cfg,
 			zebedeeClient,
-		),
-		&sitemap.DefaultAdder{},
-		saver,
+		)),
+		sitemap.WithAdder(&sitemap.DefaultAdder{}),
+		sitemap.WithFileStore(store),
+		sitemap.WithFullSitemapFiles(fullSitemapFiles),
 	)
 
 	robotFileWriter := robotseo.RobotFileWriter{}
@@ -134,7 +135,7 @@ func Run(ctx context.Context, serviceList *ExternalServiceList, buildTime, gitCo
 		ctx, cancel := context.WithTimeout(context.Background(), cfg.SitemapGenerationTimeout)
 		defer cancel()
 		log.Info(ctx, "sitemap generation job start", log.Data{"last_run": job.LastRun(), "next_run": job.NextRun(), "run_count": job.RunCount()})
-		genErr := generator.MakeFullSitemap(ctx, fullSitemapFiles)
+		genErr := generator.MakeFullSitemap(ctx)
 		if genErr != nil {
 			log.Error(ctx, "failed to generate sitemap", genErr)
 			return
@@ -145,7 +146,7 @@ func Run(ctx context.Context, serviceList *ExternalServiceList, buildTime, gitCo
 		// TODO: pass sitemap file path (once URL is known)
 		for _, lang := range []config.Language{config.English, config.Welsh} {
 			body := robotFileWriter.GetRobotsFileBody(lang, cfg.SitemapLocalFile)
-			saveErr := saver.SaveFile(cfg.RobotsFilePath[lang], strings.NewReader(body))
+			saveErr := store.SaveFile(cfg.RobotsFilePath[lang], strings.NewReader(body))
 			if saveErr != nil {
 				log.Error(ctx, "failed to save file: %w", saveErr)
 				return
