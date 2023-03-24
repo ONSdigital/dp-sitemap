@@ -103,8 +103,9 @@ func Run(ctx context.Context, serviceList *ExternalServiceList, buildTime, gitCo
 	}()
 
 	var (
-		store            sitemap.FileStore
-		fullSitemapFiles sitemap.Files
+		store                 sitemap.FileStore
+		fullSitemapFiles      sitemap.Files
+		publishingSitemapFile string
 	)
 	switch cfg.SitemapSaveLocation {
 	case "s3":
@@ -112,10 +113,12 @@ func Run(ctx context.Context, serviceList *ExternalServiceList, buildTime, gitCo
 			s3Client,
 		)
 		fullSitemapFiles = cfg.S3Config.SitemapFileKey
+		publishingSitemapFile = cfg.S3Config.PublishingSitemapFileKey
 
 	default:
 		store = &sitemap.LocalStore{}
 		fullSitemapFiles = cfg.SitemapLocalFile
+		publishingSitemapFile = cfg.PublishingSitemapLocalFile
 	}
 
 	generator := sitemap.NewGenerator(
@@ -127,6 +130,7 @@ func Run(ctx context.Context, serviceList *ExternalServiceList, buildTime, gitCo
 		sitemap.WithAdder(&sitemap.DefaultAdder{}),
 		sitemap.WithFileStore(store),
 		sitemap.WithFullSitemapFiles(fullSitemapFiles),
+		sitemap.WithPublishingSitemapFile(publishingSitemapFile),
 	)
 
 	robotFileWriter := robotseo.RobotFileWriter{}

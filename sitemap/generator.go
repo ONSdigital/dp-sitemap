@@ -88,11 +88,11 @@ func WithPublishingSitemapFile(f string) GeneratorOptions {
 	}
 }
 
-func (g *Generator) MakePublishingSitemap(ctx context.Context, name string, url URL) error {
+func (g *Generator) MakePublishingSitemap(ctx context.Context, url URL) error {
 	g.publishingSitemapMx.Lock()
 	defer g.publishingSitemapMx.Unlock()
 
-	currentSitemap, err := g.store.GetFile(name)
+	currentSitemap, err := g.store.GetFile(g.publishingSitemapFile)
 	if err != nil {
 		return fmt.Errorf("failed to get current sitemap: %w", err)
 	}
@@ -109,14 +109,14 @@ func (g *Generator) MakePublishingSitemap(ctx context.Context, name string, url 
 		url.Lastmod,
 	)
 
-	return g.AppendURL(ctx, currentSitemap, &urlEn, name)
+	return g.AppendURL(ctx, currentSitemap, &urlEn, g.publishingSitemapFile)
 }
 
-func (g *Generator) TruncatePublishingSitemap(ctx context.Context, name string) error {
+func (g *Generator) TruncatePublishingSitemap(ctx context.Context) error {
 	g.publishingSitemapMx.Lock()
 	defer g.publishingSitemapMx.Unlock()
 
-	return g.AppendURL(ctx, io.NopCloser(strings.NewReader("")), nil, name)
+	return g.AppendURL(ctx, io.NopCloser(strings.NewReader("")), nil, g.publishingSitemapFile)
 }
 
 func (g *Generator) AppendURL(ctx context.Context, sitemap io.ReadCloser, url *URL, destination string) error {

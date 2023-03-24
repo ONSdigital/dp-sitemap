@@ -65,8 +65,9 @@ func (c *Component) iAddAURLDatedToSitemap(url, date, sitemapID string) error {
 		)),
 		sitemap.WithAdder(&sitemap.DefaultAdder{}),
 		sitemap.WithFileStore(&sitemap.LocalStore{}),
+		sitemap.WithPublishingSitemapFile(c.files[sitemapID]),
 	)
-	err := generator.MakePublishingSitemap(context.Background(), c.files[sitemapID], sitemap.URL{Loc: url, Lastmod: date})
+	err := generator.MakePublishingSitemap(context.Background(), sitemap.URL{Loc: url, Lastmod: date})
 	if err != nil {
 		return err
 	}

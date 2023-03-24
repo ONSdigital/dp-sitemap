@@ -29,9 +29,10 @@ func TestGeneratePublishingSitemap(t *testing.T) {
 
 		g := sitemap.NewGenerator(
 			sitemap.WithFileStore(store),
+			sitemap.WithPublishingSitemapFile("sitemap.xml"),
 		)
 
-		err := g.MakePublishingSitemap(context.Background(), "sitemap.xml", sitemap.URL{})
+		err := g.MakePublishingSitemap(context.Background(), sitemap.URL{})
 
 		Convey("Generator should return correct error", func() {
 			So(err.Error(), ShouldContainSubstring, "failed to get current sitemap")
@@ -46,8 +47,9 @@ func TestGeneratePublishingSitemap(t *testing.T) {
 
 		g := sitemap.NewGenerator(
 			sitemap.WithFileStore(store),
+			sitemap.WithPublishingSitemapFile("sitemap.xml"),
 		)
-		err := g.MakePublishingSitemap(context.Background(), "sitemap.xml", sitemap.URL{})
+		err := g.MakePublishingSitemap(context.Background(), sitemap.URL{})
 
 		Convey("Generator should return correct error", func() {
 			So(err.Error(), ShouldContainSubstring, "failed to get current sitemap")
@@ -67,7 +69,7 @@ func TestGeneratePublishingSitemap(t *testing.T) {
 			sitemap.WithAdder(adder),
 			sitemap.WithFileStore(store),
 		)
-		err := g.MakePublishingSitemap(context.Background(), "", sitemap.URL{})
+		err := g.MakePublishingSitemap(context.Background(), sitemap.URL{})
 
 		Convey("Generator should return correct error", func() {
 			So(err.Error(), ShouldContainSubstring, "failed to add to sitemap")
@@ -87,7 +89,7 @@ func TestGeneratePublishingSitemap(t *testing.T) {
 			sitemap.WithAdder(adder),
 			sitemap.WithFileStore(store),
 		)
-		err := g.MakePublishingSitemap(context.Background(), "", sitemap.URL{})
+		err := g.MakePublishingSitemap(context.Background(), sitemap.URL{})
 
 		Convey("Generator should return correct error", func() {
 			So(err.Error(), ShouldContainSubstring, "failed to open publishing sitemap")
@@ -122,8 +124,9 @@ func TestGeneratePublishingSitemap(t *testing.T) {
 			sitemap.WithFetcher(fetcher),
 			sitemap.WithAdder(adder),
 			sitemap.WithFileStore(store),
+			sitemap.WithPublishingSitemapFile("sitemap.xml"),
 		)
-		err := g.MakePublishingSitemap(context.Background(), "sitemap.xml", sitemap.URL{Loc: "a", Lastmod: "b"})
+		err := g.MakePublishingSitemap(context.Background(), sitemap.URL{Loc: "a", Lastmod: "b"})
 
 		Convey("Generator should return with no error", func() {
 			So(err, ShouldBeNil)
@@ -165,8 +168,9 @@ func TestGeneratePublishingSitemap(t *testing.T) {
 			sitemap.WithFetcher(fetcher),
 			sitemap.WithAdder(adder),
 			sitemap.WithFileStore(store),
+			sitemap.WithPublishingSitemapFile("sitemap.xml"),
 		)
-		err := g.MakePublishingSitemap(context.Background(), "sitemap.xml", sitemap.URL{})
+		err := g.MakePublishingSitemap(context.Background(), sitemap.URL{})
 
 		Convey("Generator should call store", func() {
 			So(store.SaveFileCalls(), ShouldHaveLength, 1)
