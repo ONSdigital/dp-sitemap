@@ -251,11 +251,16 @@ func iHaveTheFollowingRobotjson(arg1 *godog.DocString) error {
 
 func (c *Component) iInvokeWritejsonWithTheSitemap(arg1 string) error {
 	fw := robotseo.RobotFileWriter{}
-	return fw.WriteRobotsFile(c.cfg, map[string]string{config.English.String(): arg1})
+	body := fw.GetRobotsFileBody(config.English, map[config.Language]string{config.English: arg1})
+	err := os.WriteFile(c.cfg.RobotsFilePath[config.English], []byte(body), 0o600)
+	if err != nil {
+		return fmt.Errorf("failed to write to robots file: %w", err)
+	}
+	return err
 }
 
 func (c *Component) theContentOfTheResultingRobotsFileMustBe(arg1 *godog.DocString) error {
-	b, err := os.ReadFile(c.cfg.RobotsFilePath[config.English.String()])
+	b, err := os.ReadFile(c.cfg.RobotsFilePath[config.English])
 	if err != nil {
 		return err
 	}

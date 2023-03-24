@@ -1,7 +1,6 @@
 package robotseo
 
 import (
-	"os"
 	"strings"
 
 	"github.com/ONSdigital/dp-sitemap/config"
@@ -10,8 +9,7 @@ import (
 
 //go:generate moq -out mock/robotFileWriter.go -pkg mock . RobotFileWriterInterface
 type RobotFileWriterInterface interface {
-	WriteRobotsFile(cfg *config.Config, sitemaps []string) error
-	GetRobotsFileBody() string
+	GetRobotsFileBody(lang string, sitemap map[config.Language]string) string
 }
 type RobotFileWriter struct {
 }
@@ -21,36 +19,7 @@ var (
 	ErrNoRobotsFilePath = errors.New("no robots file path given")
 )
 
-func (r *RobotFileWriter) WriteRobotsFile(cfg *config.Config, sitemap map[string]string) error {
-	for _, lang := range []string{config.English.String(), config.Welsh.String()} {
-		if cfg.RobotsFilePath[lang] == "" {
-			return ErrNoRobotsFilePath
-		}
-
-		robotFile := strings.Builder{}
-		body := r.GetRobotsFileBody(lang)
-		if body == "" {
-			return ErrNoRobotsBody
-		}
-		_, err := robotFile.WriteString(body)
-		if err != nil {
-			return errors.Wrap(err, "error writing to buffer")
-		}
-
-		robotFile.WriteString("\n")
-		if sm, ok := sitemap[lang]; ok {
-			robotFile.WriteString("sitemap: " + sm + "\n")
-		}
-
-		if err := os.WriteFile(cfg.RobotsFilePath[lang], []byte(robotFile.String()), 0600); err != nil {
-			return errors.Wrap(err, "error writing to file")
-		}
-	}
-
-	return nil
-}
-
-func (r *RobotFileWriter) GetRobotsFileBody(lang string) string {
+func (r *RobotFileWriter) GetRobotsFileBody(lang config.Language, sitemap map[config.Language]string) string {
 	robot := strings.Builder{}
 	for k, v := range robotList[lang] {
 		robot.WriteString("\nUser-agent: " + k)
@@ -59,6 +28,9 @@ func (r *RobotFileWriter) GetRobotsFileBody(lang string) string {
 		}
 		for _, deny := range v.DenyList {
 			robot.WriteString("\nDisallow: " + deny)
+		}
+		if sm, ok := sitemap[lang]; ok {
+			robot.WriteString("\n\nsitemap: " + sm)
 		}
 		robot.WriteString("\n")
 	}

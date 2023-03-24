@@ -12,13 +12,13 @@ import (
 	"golang.org/x/exp/slices"
 )
 
-var robotList map[string]map[string]assets.SeoRobotModel
+var robotList map[config.Language]map[string]assets.SeoRobotModel
 
 func Init(efs assets.FileSystemInterface) {
-	robotList = map[string]map[string]assets.SeoRobotModel{}
+	robotList = map[config.Language]map[string]assets.SeoRobotModel{}
 	ctx := context.Background()
-	for _, lang := range []string{config.English.String(), config.Welsh.String()} {
-		fileName := "robot_" + lang + ".json"
+	for _, lang := range []config.Language{config.English, config.Welsh} {
+		fileName := "robot_" + lang.String() + ".json"
 		b, err := efs.Get(ctx, fileName)
 		if err != nil {
 			log.Error(ctx, "can't find "+fileName, err)
@@ -37,8 +37,8 @@ func Init(efs assets.FileSystemInterface) {
 	// Validation
 	// 1. Check there is at least 1 entry
 	// 2. Check that same allow/deny dont exist for a user-agent
-	for _, lang := range []string{config.English.String(), config.Welsh.String()} {
-		fileName := "robot_" + lang + ".json"
+	for _, lang := range []config.Language{config.English, config.Welsh} {
+		fileName := "robot_" + lang.String() + ".json"
 		rList := robotList[lang]
 		if len(rList) == 0 {
 			log.Error(ctx, "no entry in "+fileName, errors.New(fileName+" cant be empty"))

@@ -26,13 +26,13 @@ func (l Language) String() string {
 
 // Config represents service configuration for dp-sitemap
 type Config struct {
-	BindAddr                   string            `envconfig:"BIND_ADDR"`
-	GracefulShutdownTimeout    time.Duration     `envconfig:"GRACEFUL_SHUTDOWN_TIMEOUT"`
-	HealthCheckInterval        time.Duration     `envconfig:"HEALTHCHECK_INTERVAL"`
-	HealthCheckCriticalTimeout time.Duration     `envconfig:"HEALTHCHECK_CRITICAL_TIMEOUT"`
-	SitemapGenerationFrequency time.Duration     `envconfig:"SITEMAP_GENERATION_FREQUENCY"`
-	SitemapGenerationTimeout   time.Duration     `envconfig:"SITEMAP_GENERATION_TIMEOUT"`
-	RobotsFilePath             map[string]string `envconfig:"ROBOTS_FILE_PATH"`
+	BindAddr                   string              `envconfig:"BIND_ADDR"`
+	GracefulShutdownTimeout    time.Duration       `envconfig:"GRACEFUL_SHUTDOWN_TIMEOUT"`
+	HealthCheckInterval        time.Duration       `envconfig:"HEALTHCHECK_INTERVAL"`
+	HealthCheckCriticalTimeout time.Duration       `envconfig:"HEALTHCHECK_CRITICAL_TIMEOUT"`
+	SitemapGenerationFrequency time.Duration       `envconfig:"SITEMAP_GENERATION_FREQUENCY"`
+	SitemapGenerationTimeout   time.Duration       `envconfig:"SITEMAP_GENERATION_TIMEOUT"`
+	RobotsFilePath             map[Language]string `envconfig:"ROBOTS_FILE_PATH"`
 	KafkaConfig                KafkaConfig
 	OpenSearchConfig           OpenSearchConfig
 	SitemapSaveLocation        string              `envconfig:"SITEMAP_SAVE_LOCATION"` // "local" or "s3", default: "local"
@@ -95,9 +95,9 @@ func Get() (*Config, error) {
 		HealthCheckCriticalTimeout: 90 * time.Second,
 		SitemapGenerationFrequency: time.Hour,
 		SitemapGenerationTimeout:   10 * time.Minute,
-		RobotsFilePath: map[string]string{
-			English.String(): "/tmp/dp_robot_file_en.txt",
-			Welsh.String():   "/tmp/dp_robot_file_cy.txt"},
+		RobotsFilePath: map[Language]string{
+			English: "/tmp/dp_robot_file_en.txt",
+			Welsh:   "/tmp/dp_robot_file_cy.txt"},
 		KafkaConfig: KafkaConfig{
 			Brokers:             []string{"localhost:9092"},
 			Version:             "1.0.2",

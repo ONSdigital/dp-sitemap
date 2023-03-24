@@ -3,6 +3,7 @@ package sitemap
 import (
 	"fmt"
 	"io"
+	"path/filepath"
 	"strings"
 
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
@@ -27,11 +28,12 @@ func NewS3Store(client S3Client) *S3Store {
 }
 
 func (s *S3Store) SaveFile(name string, body io.Reader) error {
+	key := filepath.Base(name) // trim the path
 	bucket := s.client.BucketName()
 	_, err := s.client.Upload(&s3manager.UploadInput{
 		Body:   body,
 		Bucket: &bucket,
-		Key:    &name,
+		Key:    &key,
 	})
 	if err != nil {
 		return fmt.Errorf("failed to upload file to s3: %w", err)

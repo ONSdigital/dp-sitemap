@@ -2,12 +2,10 @@ package service
 
 import (
 	"context"
-	"os"
-	"path/filepath"
+	"strings"
 	"time"
 
 	dpEsClient "github.com/ONSdigital/dp-elasticsearch/v3/client"
-	"golang.org/x/exp/maps"
 
 	kafka "github.com/ONSdigital/dp-kafka/v3"
 	"github.com/ONSdigital/dp-sitemap/clients"
@@ -145,24 +143,12 @@ func Run(ctx context.Context, serviceList *ExternalServiceList, buildTime, gitCo
 
 		// write robots file
 		// TODO: pass sitemap file path (once URL is known)
-		if wErr := robotFileWriter.WriteRobotsFile(cfg, map[string]string{}); wErr != nil {
-			log.Error(ctx, "error writing robots file", wErr)
-			return
-		}
-		// save (upload to s3)
-		// not needed for local (already written in the above call)
-		if cfg.SitemapSaveLocation == "s3" {
-			for _, path := range maps.Values(cfg.RobotsFilePath) {
-				file, saveErr := os.Open(path)
-				if saveErr != nil {
-					log.Error(ctx, "failed to open file: %w", saveErr)
-					return
-				}
-				saveErr = saver.SaveFile(filepath.Base(path), file)
-				if saveErr != nil {
-					log.Error(ctx, "failed to save file: %w", saveErr)
-					return
-				}
+		for _, lang := range []config.Language{config.English, config.Welsh} {
+			body := robotFileWriter.GetRobotsFileBody(lang, cfg.SitemapLocalFile)
+			saveErr := saver.SaveFile(cfg.RobotsFilePath[lang], strings.NewReader(body))
+			if saveErr != nil {
+				log.Error(ctx, "failed to save file: %w", saveErr)
+				return
 			}
 		}
 		log.Info(ctx, "wrote robots file")

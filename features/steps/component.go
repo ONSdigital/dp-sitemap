@@ -76,8 +76,8 @@ func NewComponent() *Component {
 }
 
 func (c *Component) Reset() {
-	c.CleanFile(c.cfg.RobotsFilePath[config.English.String()])
-	c.CleanFile(c.cfg.RobotsFilePath[config.Welsh.String()])
+	c.CleanFile(c.cfg.RobotsFilePath[config.English])
+	c.CleanFile(c.cfg.RobotsFilePath[config.Welsh])
 	for _, file := range c.files {
 		c.CleanFile(file)
 	}
