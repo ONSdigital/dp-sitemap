@@ -95,7 +95,7 @@ func Get() (*Config, error) {
 		GracefulShutdownTimeout:    5 * time.Second,
 		HealthCheckInterval:        30 * time.Second,
 		HealthCheckCriticalTimeout: 90 * time.Second,
-		SitemapGenerationFrequency: time.Hour,
+		SitemapGenerationFrequency: time.Hour * 24,
 		SitemapGenerationTimeout:   10 * time.Minute,
 		RobotsFilePath: map[Language]string{
 			English: "/tmp/dp_robot_file_en.txt",
