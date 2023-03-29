@@ -13,11 +13,11 @@ import (
 
 type DefaultAdder struct{}
 
-func (a *DefaultAdder) Add(oldSitemap io.Reader, url *URL) (fileName string, err error) {
+func (a *DefaultAdder) Add(oldSitemap io.Reader, url *URL) (fileName string, size int, err error) {
 	// create a temporary file
 	file, err := os.CreateTemp("", "sitemap-incr")
 	if err != nil {
-		return "", fmt.Errorf("failed to create publishing sitemap file: %w", err)
+		return "", 0, fmt.Errorf("failed to create publishing sitemap file: %w", err)
 	}
 	fileName = file.Name()
 	log.Info(context.Background(), "created publishing sitemap file "+fileName)
@@ -45,7 +45,7 @@ func (a *DefaultAdder) Add(oldSitemap io.Reader, url *URL) (fileName string, err
 	err = decoder.Decode(&sitemap)
 	if err != nil {
 		if !errors.Is(err, io.EOF) {
-			return fileName, fmt.Errorf("failed to decode old sitemap: %w", err)
+			return fileName, 0, fmt.Errorf("failed to decode old sitemap: %w", err)
 		}
 	}
 
@@ -57,14 +57,14 @@ func (a *DefaultAdder) Add(oldSitemap io.Reader, url *URL) (fileName string, err
 	// output result into the file
 	_, err = file.WriteString(xml.Header)
 	if err != nil {
-		return fileName, fmt.Errorf("failed to write xml doctype: %w", err)
+		return fileName, 0, fmt.Errorf("failed to write xml doctype: %w", err)
 	}
 	enc := xml.NewEncoder(file)
 	enc.Indent("", "  ")
 	err = enc.Encode(sitemap)
 	if err != nil {
-		return fileName, fmt.Errorf("failed to encode sitemap: %w", err)
+		return fileName, 0, fmt.Errorf("failed to encode sitemap: %w", err)
 	}
 
-	return fileName, nil
+	return fileName, len(sitemap.URL), nil
 }

@@ -43,6 +43,7 @@ func TestConfig(t *testing.T) {
 				So(cfg.SitemapLocalFile[English], ShouldEqual, "/tmp/dp-sitemap-en.xml")
 				So(cfg.SitemapLocalFile[Welsh], ShouldEqual, "/tmp/dp-sitemap-cy.xml")
 				So(cfg.PublishingSitemapLocalFile, ShouldEqual, "/tmp/dp-publishing-sitemap.xml")
+				So(cfg.PublishingSitemapMaxSize, ShouldEqual, 500)
 				So(cfg.S3Config.SitemapFileKey[English], ShouldEqual, "sitemap-en")
 				So(cfg.S3Config.SitemapFileKey[Welsh], ShouldEqual, "sitemap-cy")
 				So(cfg.S3Config.PublishingSitemapFileKey, ShouldEqual, "publishing-sitemap")

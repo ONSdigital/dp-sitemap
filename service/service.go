@@ -121,6 +121,32 @@ func Run(ctx context.Context, serviceList *ExternalServiceList, buildTime, gitCo
 		publishingSitemapFile = cfg.PublishingSitemapLocalFile
 	}
 
+	scheduler := gocron.NewScheduler(time.UTC)
+	scheduler.SingletonModeAll()
+
+	runSitemapGeneration := func() {
+		log.Info(ctx, "full sitemap generation from callback start")
+		jobs, findErr := scheduler.FindJobsByTag("full-sitemap")
+		if findErr != nil {
+			log.Error(ctx, "failed to find full sitemap generation job", findErr)
+			return
+		}
+		if len(jobs) != 1 {
+			log.Error(ctx, "unexpected jobs found", findErr)
+			return
+		}
+		if jobs[0].IsRunning() {
+			log.Info(ctx, "full sitemap generation from callback - job is already running")
+			return
+		}
+		runErr := scheduler.RunByTag("full-sitemap")
+		if runErr != nil {
+			log.Error(ctx, "failed to run full sitemap generation job", runErr)
+			return
+		}
+		log.Info(ctx, "full sitemap generation from callback complete")
+	}
+
 	generator := sitemap.NewGenerator(
 		sitemap.WithFetcher(sitemap.NewElasticFetcher(
 			esRawClient,
@@ -131,6 +157,7 @@ func Run(ctx context.Context, serviceList *ExternalServiceList, buildTime, gitCo
 		sitemap.WithFileStore(store),
 		sitemap.WithFullSitemapFiles(fullSitemapFiles),
 		sitemap.WithPublishingSitemapFile(publishingSitemapFile),
+		sitemap.WithPublishingSitemapMaxSize(cfg.PublishingSitemapMaxSize, runSitemapGeneration),
 	)
 
 	robotFileWriter := robotseo.RobotFileWriter{}
@@ -159,9 +186,7 @@ func Run(ctx context.Context, serviceList *ExternalServiceList, buildTime, gitCo
 		log.Info(ctx, "wrote robots file")
 	}
 
-	scheduler := gocron.NewScheduler(time.UTC)
-	scheduler.SingletonModeAll()
-	_, err = scheduler.Every(cfg.SitemapGenerationFrequency).DoWithJobDetails(generateSitemapJob)
+	_, err = scheduler.Every(cfg.SitemapGenerationFrequency).Tag("full-sitemap").DoWithJobDetails(generateSitemapJob)
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to run scheduler")
 	}

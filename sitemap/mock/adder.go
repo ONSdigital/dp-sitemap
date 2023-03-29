@@ -19,7 +19,7 @@ var _ sitemap.Adder = &AdderMock{}
 //
 // 		// make and configure a mocked sitemap.Adder
 // 		mockedAdder := &AdderMock{
-// 			AddFunc: func(oldSitemap io.Reader, url *sitemap.URL) (string, error) {
+// 			AddFunc: func(oldSitemap io.Reader, url *sitemap.URL) (string, int, error) {
 // 				panic("mock out the Add method")
 // 			},
 // 		}
@@ -30,7 +30,7 @@ var _ sitemap.Adder = &AdderMock{}
 // 	}
 type AdderMock struct {
 	// AddFunc mocks the Add method.
-	AddFunc func(oldSitemap io.Reader, url *sitemap.URL) (string, error)
+	AddFunc func(oldSitemap io.Reader, url *sitemap.URL) (string, int, error)
 
 	// calls tracks calls to the methods.
 	calls struct {
@@ -46,7 +46,7 @@ type AdderMock struct {
 }
 
 // Add calls AddFunc.
-func (mock *AdderMock) Add(oldSitemap io.Reader, url *sitemap.URL) (string, error) {
+func (mock *AdderMock) Add(oldSitemap io.Reader, url *sitemap.URL) (string, int, error) {
 	if mock.AddFunc == nil {
 		panic("AdderMock.AddFunc: method is nil but Adder.Add was just called")
 	}

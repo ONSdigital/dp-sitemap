@@ -29,7 +29,7 @@ type Fetcher interface {
 	URLVersions(ctx context.Context, path string, lastmod string) (en URL, cy *URL)
 }
 type Adder interface {
-	Add(oldSitemap io.Reader, url *URL) (string, error)
+	Add(oldSitemap io.Reader, url *URL) (file string, size int, err error)
 }
 
 type Generator struct {
@@ -37,6 +37,8 @@ type Generator struct {
 	adder                 Adder
 	store                 FileStore
 	publishingSitemapMx   sync.Mutex
+	maxSize               int
+	maxSizeCallback       func()
 	fullSitemapFiles      Files
 	publishingSitemapFile string
 }
@@ -88,6 +90,14 @@ func WithPublishingSitemapFile(f string) GeneratorOptions {
 	}
 }
 
+func WithPublishingSitemapMaxSize(size int, callback func()) GeneratorOptions {
+	return func(g *Generator) *Generator {
+		g.maxSize = size
+		g.maxSizeCallback = callback
+		return g
+	}
+}
+
 func (g *Generator) MakePublishingSitemap(ctx context.Context, url URL) error {
 	g.publishingSitemapMx.Lock()
 	defer g.publishingSitemapMx.Unlock()
@@ -109,20 +119,30 @@ func (g *Generator) MakePublishingSitemap(ctx context.Context, url URL) error {
 		url.Lastmod,
 	)
 
-	return g.AppendURL(ctx, currentSitemap, &urlEn, g.publishingSitemapFile)
+	size, err := g.AppendURL(ctx, currentSitemap, &urlEn, g.publishingSitemapFile)
+	if err != nil {
+		return err
+	}
+
+	if g.maxSize > 0 && size > g.maxSize {
+		go g.maxSizeCallback()
+	}
+
+	return nil
 }
 
 func (g *Generator) TruncatePublishingSitemap(ctx context.Context) error {
 	g.publishingSitemapMx.Lock()
 	defer g.publishingSitemapMx.Unlock()
 
-	return g.AppendURL(ctx, io.NopCloser(strings.NewReader("")), nil, g.publishingSitemapFile)
+	_, err := g.AppendURL(ctx, io.NopCloser(strings.NewReader("")), nil, g.publishingSitemapFile)
+	return err
 }
 
-func (g *Generator) AppendURL(ctx context.Context, sitemap io.ReadCloser, url *URL, destination string) error {
-	fileName, err := g.adder.Add(sitemap, url)
+func (g *Generator) AppendURL(ctx context.Context, sitemap io.ReadCloser, url *URL, destination string) (int, error) {
+	fileName, size, err := g.adder.Add(sitemap, url)
 	if err != nil {
-		return fmt.Errorf("failed to add to sitemap: %w", err)
+		return 0, fmt.Errorf("failed to add to sitemap: %w", err)
 	}
 	defer func() {
 		err = os.Remove(fileName)
@@ -135,7 +155,7 @@ func (g *Generator) AppendURL(ctx context.Context, sitemap io.ReadCloser, url *U
 
 	file, err := os.Open(fileName)
 	if err != nil {
-		return fmt.Errorf("failed to open publishing sitemap: %w", err)
+		return 0, fmt.Errorf("failed to open publishing sitemap: %w", err)
 	}
 	defer func() {
 		closeErr := file.Close()
@@ -146,12 +166,19 @@ func (g *Generator) AppendURL(ctx context.Context, sitemap io.ReadCloser, url *U
 
 	err = g.store.SaveFile(destination, file)
 	if err != nil {
-		return fmt.Errorf("failed to save publishing sitemap file: %w", err)
+		return 0, fmt.Errorf("failed to save publishing sitemap file: %w", err)
 	}
-	return nil
+	return size, nil
 }
 
 func (g *Generator) MakeFullSitemap(ctx context.Context) error {
+	// first truncate the publishing sitemap as all URLs that are
+	// currently there will be automatically included in the full sitemap
+	err := g.TruncatePublishingSitemap(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to truncate publishing sitemap: %w", err)
+	}
+
 	sitemaps, err := g.fetcher.GetFullSitemap(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to fetch sitemap: %w", err)

@@ -135,6 +135,7 @@ func (c *Component) iGenerateLocalSitemap() error {
 		)),
 		sitemap.WithFileStore(&sitemap.LocalStore{}),
 		sitemap.WithFullSitemapFiles(c.cfg.SitemapLocalFile),
+		sitemap.WithAdder(&sitemap.DefaultAdder{}),
 	)
 	err = generator.MakeFullSitemap(context.Background())
 	if err != nil {
@@ -226,6 +227,7 @@ func (c *Component) iGenerateS3Sitemap() error {
 		)),
 		sitemap.WithFileStore(sitemap.NewS3Store(s3uploader)),
 		sitemap.WithFullSitemapFiles(c.cfg.S3Config.SitemapFileKey),
+		sitemap.WithAdder(&sitemap.DefaultAdder{}),
 	)
 	err = generator.MakeFullSitemap(context.Background())
 	if err != nil {

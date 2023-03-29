@@ -38,6 +38,7 @@ type Config struct {
 	SitemapSaveLocation        string              `envconfig:"SITEMAP_SAVE_LOCATION"` // "local" or "s3", default: "local"
 	SitemapLocalFile           map[Language]string `envconfig:"SITEMAP_LOCAL_FILE"`
 	PublishingSitemapLocalFile string              `envconfig:"PUBLISHING_SITEMAP_LOCAL_FILE"`
+	PublishingSitemapMaxSize   int                 `envconfig:"PUBLISHING_SITEMAP_MAX_SIZE"`
 	S3Config                   S3Config
 	ZebedeeURL                 string `envconfig:"ZEBEDEE_URL"`
 	DpOnsURLHostNameEn         string `envconfig:"DP_ONS_URL_HOSTNAME_ENGLISH"`
@@ -112,6 +113,7 @@ func Get() (*Config, error) {
 		SitemapSaveLocation:        "local",
 		SitemapLocalFile:           map[Language]string{English: "/tmp/dp-sitemap-en.xml", Welsh: "/tmp/dp-sitemap-cy.xml"},
 		PublishingSitemapLocalFile: "/tmp/dp-publishing-sitemap.xml",
+		PublishingSitemapMaxSize:   500,
 		ZebedeeURL:                 "http://localhost:8082",
 		DpOnsURLHostNameEn:         "https://dp.aws.onsdigital.uk/",
 		DpOnsURLHostNameCy:         "https://cy.dp.aws.onsdigital.uk/",
