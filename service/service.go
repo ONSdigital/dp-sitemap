@@ -19,6 +19,8 @@ import (
 	"github.com/pkg/errors"
 )
 
+const schedulerTagFullSitemap = "full-sitemap"
+
 // Service contains all the configs, server and clients to run the event handler service
 type Service struct {
 	server          HTTPServer
@@ -126,7 +128,7 @@ func Run(ctx context.Context, serviceList *ExternalServiceList, buildTime, gitCo
 
 	runSitemapGeneration := func() {
 		log.Info(ctx, "full sitemap generation from callback start")
-		jobs, findErr := scheduler.FindJobsByTag("full-sitemap")
+		jobs, findErr := scheduler.FindJobsByTag(schedulerTagFullSitemap)
 		if findErr != nil {
 			log.Error(ctx, "failed to find full sitemap generation job", findErr)
 			return
@@ -139,7 +141,7 @@ func Run(ctx context.Context, serviceList *ExternalServiceList, buildTime, gitCo
 			log.Info(ctx, "full sitemap generation from callback - job is already running")
 			return
 		}
-		runErr := scheduler.RunByTag("full-sitemap")
+		runErr := scheduler.RunByTag(schedulerTagFullSitemap)
 		if runErr != nil {
 			log.Error(ctx, "failed to run full sitemap generation job", runErr)
 			return
@@ -186,7 +188,7 @@ func Run(ctx context.Context, serviceList *ExternalServiceList, buildTime, gitCo
 		log.Info(ctx, "wrote robots file")
 	}
 
-	_, err = scheduler.Every(cfg.SitemapGenerationFrequency).Tag("full-sitemap").DoWithJobDetails(generateSitemapJob)
+	_, err = scheduler.Every(cfg.SitemapGenerationFrequency).Tag(schedulerTagFullSitemap).DoWithJobDetails(generateSitemapJob)
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to run scheduler")
 	}
