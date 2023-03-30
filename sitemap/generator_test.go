@@ -60,8 +60,8 @@ func TestGeneratePublishingSitemap(t *testing.T) {
 		store.GetFileFunc = func(name string) (io.ReadCloser, error) {
 			return io.NopCloser(strings.NewReader("")), nil
 		}
-		adder.AddFunc = func(oldSitemap io.Reader, url *sitemap.URL) (string, error) {
-			return "", errors.New("adder error")
+		adder.AddFunc = func(oldSitemap io.Reader, url *sitemap.URL) (string, int, error) {
+			return "", 0, errors.New("adder error")
 		}
 
 		g := sitemap.NewGenerator(
@@ -81,8 +81,8 @@ func TestGeneratePublishingSitemap(t *testing.T) {
 		store.GetFileFunc = func(name string) (io.ReadCloser, error) {
 			return io.NopCloser(strings.NewReader("")), nil
 		}
-		adder.AddFunc = func(oldSitemap io.Reader, url *sitemap.URL) (string, error) {
-			return "filename", nil
+		adder.AddFunc = func(oldSitemap io.Reader, url *sitemap.URL) (string, int, error) {
+			return "filename", 0, nil
 		}
 		g := sitemap.NewGenerator(
 			sitemap.WithFetcher(fetcher),
@@ -103,13 +103,13 @@ func TestGeneratePublishingSitemap(t *testing.T) {
 			return io.NopCloser(strings.NewReader("")), nil
 		}
 		var tempFile string
-		adder.AddFunc = func(oldSitemap io.Reader, url *sitemap.URL) (string, error) {
+		adder.AddFunc = func(oldSitemap io.Reader, url *sitemap.URL) (string, int, error) {
 			So(url, ShouldResemble, &sitemap.URL{Loc: "a", Lastmod: "b"})
 			file, err := os.CreateTemp("", "sitemap-incr")
 			So(err, ShouldBeNil)
 			file.WriteString("file content")
 			tempFile = file.Name()
-			return tempFile, nil
+			return tempFile, 1, nil
 		}
 		var uploadedFile string
 		store.SaveFileFunc = func(name string, reader io.Reader) error {
@@ -148,12 +148,12 @@ func TestGeneratePublishingSitemap(t *testing.T) {
 			return io.NopCloser(strings.NewReader("")), nil
 		}
 		var tempFile string
-		adder.AddFunc = func(oldSitemap io.Reader, url *sitemap.URL) (string, error) {
+		adder.AddFunc = func(oldSitemap io.Reader, url *sitemap.URL) (string, int, error) {
 			file, err := os.CreateTemp("", "sitemap-incr")
 			So(err, ShouldBeNil)
 			file.WriteString("file content")
 			tempFile = file.Name()
-			return tempFile, nil
+			return tempFile, 1, nil
 		}
 		var uploadedFile string
 		store.SaveFileFunc = func(name string, reader io.Reader) error {
@@ -198,10 +198,14 @@ func TestGenerateFullSitemap(t *testing.T) {
 		fetcher.GetFullSitemapFunc = func(ctx context.Context) (sitemap.Files, error) {
 			return nil, errors.New("fetcher error")
 		}
-
+		store.SaveFileFunc = func(name string, reader io.Reader) error {
+			So(name, ShouldEqual, "publishing-sitemap.xml")
+			return nil
+		}
 		g := sitemap.NewGenerator(
 			sitemap.WithFetcher(fetcher),
 			sitemap.WithFileStore(store),
+			sitemap.WithAdder(&sitemap.DefaultAdder{}),
 		)
 		err := g.MakeFullSitemap(context.Background())
 
@@ -219,6 +223,7 @@ func TestGenerateFullSitemap(t *testing.T) {
 		g := sitemap.NewGenerator(
 			sitemap.WithFetcher(fetcher),
 			sitemap.WithFileStore(store),
+			sitemap.WithAdder(&sitemap.DefaultAdder{}),
 		)
 		err := g.MakeFullSitemap(context.Background())
 
@@ -240,7 +245,6 @@ func TestGenerateFullSitemap(t *testing.T) {
 		var uploadedFile string
 		store := &mock.FileStoreMock{}
 		store.SaveFileFunc = func(name string, reader io.Reader) error {
-			So(name, ShouldEqual, "sitemap.xml")
 			body, err := io.ReadAll(reader)
 			So(err, ShouldBeNil)
 			uploadedFile = string(body)
@@ -250,6 +254,7 @@ func TestGenerateFullSitemap(t *testing.T) {
 		g := sitemap.NewGenerator(
 			sitemap.WithFetcher(fetcher),
 			sitemap.WithFileStore(store),
+			sitemap.WithAdder(&sitemap.DefaultAdder{}),
 		)
 		err := g.MakeFullSitemap(context.Background())
 
@@ -257,7 +262,11 @@ func TestGenerateFullSitemap(t *testing.T) {
 			So(err, ShouldBeNil)
 		})
 		Convey("Generator should call store", func() {
-			So(store.SaveFileCalls(), ShouldHaveLength, 1)
+			So(store.SaveFileCalls(), ShouldHaveLength, 2)
+		})
+		Convey("Generator should truncate publishing file and write the main file", func() {
+			So(store.SaveFileCalls()[0].Name, ShouldEqual, "publishing-sitemap.xml")
+			So(store.SaveFileCalls()[1].Name, ShouldEqual, "sitemap.xml")
 		})
 		Convey("Generator should pass correct file content to store", func() {
 			So(uploadedFile, ShouldEqual, "file content")
@@ -277,31 +286,25 @@ func TestGenerateFullSitemap(t *testing.T) {
 			tempFile = file.Name()
 			return sitemap.Files{config.English: tempFile}, nil
 		}
-		var uploadedFile string
 		store := &mock.FileStoreMock{}
 
 		store.SaveFileFunc = func(name string, reader io.Reader) error {
-			So(name, ShouldEqual, "sitemap.xml")
-			body, err := io.ReadAll(reader)
-			So(err, ShouldBeNil)
-			uploadedFile = string(body)
+			So(name, ShouldEqual, "publishing-sitemap.xml")
 			return errors.New("uploader error")
 		}
 
 		g := sitemap.NewGenerator(
 			sitemap.WithFetcher(fetcher),
 			sitemap.WithFileStore(store),
+			sitemap.WithAdder(&sitemap.DefaultAdder{}),
 		)
 		err := g.MakeFullSitemap(context.Background())
 
 		Convey("Generator should call store", func() {
 			So(store.SaveFileCalls(), ShouldHaveLength, 1)
 		})
-		Convey("Generator should pass correct file content to store", func() {
-			So(uploadedFile, ShouldEqual, "file content")
-		})
 		Convey("Generator should return correct error", func() {
-			So(err.Error(), ShouldContainSubstring, "failed to save sitemap file")
+			So(err.Error(), ShouldContainSubstring, "failed to save publishing sitemap file")
 			So(err.Error(), ShouldContainSubstring, "uploader error")
 		})
 		Convey("Generator should remove the temporary file", func() {

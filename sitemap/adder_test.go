@@ -14,7 +14,7 @@ func TestAdder(t *testing.T) {
 		oldSitemap := strings.NewReader("<<<")
 
 		a := &sitemap.DefaultAdder{}
-		filename, err := a.Add(oldSitemap, nil)
+		filename, _, err := a.Add(oldSitemap, nil)
 
 		Convey("Adder should return correct error", func() {
 			So(err.Error(), ShouldContainSubstring, "failed to decode old sitemap")
@@ -31,7 +31,7 @@ func TestAdder(t *testing.T) {
 		oldSitemap := strings.NewReader("")
 
 		a := &sitemap.DefaultAdder{}
-		filename, err := a.Add(oldSitemap, &sitemap.URL{Loc: "a", Lastmod: "b"})
+		filename, size, err := a.Add(oldSitemap, &sitemap.URL{Loc: "a", Lastmod: "b"})
 		defer func() {
 			removeErr := os.Remove(filename)
 			So(removeErr, ShouldBeNil)
@@ -39,6 +39,9 @@ func TestAdder(t *testing.T) {
 
 		Convey("Adder should return with no error", func() {
 			So(err, ShouldBeNil)
+		})
+		Convey("Sitemap size should be correct", func() {
+			So(size, ShouldEqual, 1)
 		})
 		Convey("Temporary sitemap file should be created and available", func() {
 			So(filename, ShouldContainSubstring, "sitemap")
@@ -71,7 +74,7 @@ func TestAdder(t *testing.T) {
 		</urlset>`)
 
 		a := &sitemap.DefaultAdder{}
-		filename, err := a.Add(oldSitemap, &sitemap.URL{Loc: "e", Lastmod: "f"})
+		filename, size, err := a.Add(oldSitemap, &sitemap.URL{Loc: "e", Lastmod: "f"})
 		defer func() {
 			removeErr := os.Remove(filename)
 			So(removeErr, ShouldBeNil)
@@ -79,6 +82,9 @@ func TestAdder(t *testing.T) {
 
 		Convey("Adder should return with no error", func() {
 			So(err, ShouldBeNil)
+		})
+		Convey("Sitemap size should be correct", func() {
+			So(size, ShouldEqual, 3)
 		})
 		Convey("Temporary sitemap file should be created and available", func() {
 			So(filename, ShouldContainSubstring, "sitemap")
@@ -119,7 +125,7 @@ func TestAdder(t *testing.T) {
 		</urlset>`)
 
 		a := &sitemap.DefaultAdder{}
-		filename, err := a.Add(oldSitemap, nil)
+		filename, size, err := a.Add(oldSitemap, nil)
 		defer func() {
 			removeErr := os.Remove(filename)
 			So(removeErr, ShouldBeNil)
@@ -127,6 +133,9 @@ func TestAdder(t *testing.T) {
 
 		Convey("Adder should return with no error", func() {
 			So(err, ShouldBeNil)
+		})
+		Convey("Sitemap size should be correct", func() {
+			So(size, ShouldEqual, 2)
 		})
 		Convey("Temporary sitemap file should be created and available", func() {
 			So(filename, ShouldContainSubstring, "sitemap")
