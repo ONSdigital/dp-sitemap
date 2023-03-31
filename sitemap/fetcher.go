@@ -64,6 +64,11 @@ type ElasticHitSource struct {
 	Published       bool        `json:"published"`
 	CanonicalTopic  string      `json:"canonical_topic"`
 }
+type Urlset struct {
+	XMLName xml.Name `xml:"urlset"`
+	Xmlns   string   `xml:"xmlns,attr"`
+	URL     []URL    `xml:"url"`
+}
 
 type URL struct {
 	XMLName   xml.Name      `xml:"url"`
@@ -96,8 +101,37 @@ func NewElasticFetcher(elastic *es710.Client, cfg *config.Config, zc clients.Zeb
 func (f *ElasticFetcher) HasWelshContent(ctx context.Context, path string) bool {
 	welshPath := path + "/data_cy.json"
 	log.Info(ctx, "Checking welsh content for "+welshPath)
-	_, err := f.zClient.GetFileSize(ctx, "", "", "cy", welshPath)
+	_, err := f.zClient.GetFileSize(ctx, "", "", config.Welsh.String(), welshPath)
 	return err == nil
+}
+
+func (f *ElasticFetcher) URLVersions(ctx context.Context, path, lastmod string) (en URL, cy *URL) {
+	enLoc, _ := url.JoinPath(f.cfg.DpOnsURLHostNameEn, path)
+	en = URL{
+		Loc:     enLoc,
+		Lastmod: lastmod,
+	}
+	if f.HasWelshContent(ctx, path) {
+		// has equivalent welsh content
+		// 1. Add the welsh as and alternate in english sitemap
+		// 2. Add the english link as alternate in the welsh sitemap
+		cyLoc, _ := url.JoinPath(f.cfg.DpOnsURLHostNameCy, path)
+		en.Alternate = &AlternateURL{
+			Rel:  "alternate",
+			Lang: config.Welsh.String(),
+			Link: cyLoc,
+		}
+		cy = &URL{
+			Loc:     cyLoc,
+			Lastmod: lastmod,
+			Alternate: &AlternateURL{
+				Rel:  "alternate",
+				Lang: config.English.String(),
+				Link: enLoc,
+			},
+		}
+	}
+	return
 }
 
 var (
@@ -105,7 +139,7 @@ var (
 	tempSitemapFileCy = "sitemap_cy"
 )
 
-func (f *ElasticFetcher) GetFullSitemap(ctx context.Context) (fileNames []string, err error) {
+func (f *ElasticFetcher) GetFullSitemap(ctx context.Context) (fileNames Files, err error) {
 	fileEn, err := os.CreateTemp("", tempSitemapFileEn)
 	if err != nil {
 		return fileNames, fmt.Errorf("failed to create sitemap_en file: %w", err)
@@ -117,8 +151,8 @@ func (f *ElasticFetcher) GetFullSitemap(ctx context.Context) (fileNames []string
 	fileNameEn := fileEn.Name()
 	fileNameCy := fileCy.Name()
 
-	fileNames = []string{fileNameEn, fileNameCy}
-	files := []*os.File{fileEn, fileCy}
+	fileNames = Files{config.English: fileNameEn, config.Welsh: fileNameCy}
+	files := map[config.Language]*os.File{config.English: fileEn, config.Welsh: fileCy}
 
 	log.Info(ctx, "created sitemap files "+fileNameEn+", "+fileNameCy)
 	defer func() {
@@ -146,8 +180,7 @@ func (f *ElasticFetcher) GetFullSitemap(ctx context.Context) (fileNames []string
 	encCy := xml.NewEncoder(bufferedFileCy)
 	encCy.Indent("", "  ")
 
-	sitemapHdContent := `<?xml version="1.0" encoding="UTF-8"?>` +
-		`<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">`
+	sitemapHdContent := xml.Header + `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">` + "\n"
 	_, err = bufferedFileEn.WriteString(sitemapHdContent)
 	if err != nil {
 		return fileNames, fmt.Errorf("sitemap_en page xml header write error: %w", err)
@@ -166,46 +199,20 @@ func (f *ElasticFetcher) GetFullSitemap(ctx context.Context) (fileNames []string
 	scrollID := result.ScrollID
 	for len(result.Hits.Hits) > 0 {
 		for i := range result.Hits.Hits {
-			uriEn, _ := url.JoinPath(f.cfg.DpOnsURLHostNameEn, result.Hits.Hits[i].Source.URI)
+			urlEn, urlCy := f.URLVersions(
+				ctx,
+				result.Hits.Hits[i].Source.URI,
+				result.Hits.Hits[i].Source.ReleaseDate.Format("2006-01-02"),
+			)
 
-			if f.HasWelshContent(ctx, result.Hits.Hits[i].Source.URI) {
-				// has equivalent welsh content
-				// 1. Add the welsh as and alternate in english sitemap
-				// 2. Add the english link as alternate in the welsh sitemap
-				uriCy, _ := url.JoinPath(f.cfg.DpOnsURLHostNameCy, result.Hits.Hits[i].Source.URI)
-
-				err = encEn.Encode(URL{
-					Loc:     uriEn,
-					Lastmod: result.Hits.Hits[i].Source.ReleaseDate.Format("2006-01-02"),
-					Alternate: &AlternateURL{
-						Rel:  "alternate",
-						Lang: "cy",
-						Link: uriCy,
-					},
-				})
-				if err != nil {
-					return fileNames, fmt.Errorf("sitemap_en page xml encode error: %w", err)
-				}
-
-				err = encCy.Encode(URL{
-					Loc:     uriCy,
-					Lastmod: result.Hits.Hits[i].Source.ReleaseDate.Format("2006-01-02"),
-					Alternate: &AlternateURL{
-						Rel:  "alternate",
-						Lang: "en",
-						Link: uriEn,
-					},
-				})
+			err = encEn.Encode(urlEn)
+			if err != nil {
+				return fileNames, fmt.Errorf("sitemap_en page xml encode error: %w", err)
+			}
+			if urlCy != nil {
+				err = encCy.Encode(urlCy)
 				if err != nil {
 					return fileNames, fmt.Errorf("sitemap_cy page xml encode error: %w", err)
-				}
-			} else { // no welsh content
-				err = encEn.Encode(URL{
-					Loc:     uriEn,
-					Lastmod: result.Hits.Hits[i].Source.ReleaseDate.Format("2006-01-02"),
-				})
-				if err != nil {
-					return fileNames, fmt.Errorf("sitemap_en page xml encode error: %w", err)
 				}
 			}
 		}
@@ -216,11 +223,11 @@ func (f *ElasticFetcher) GetFullSitemap(ctx context.Context) (fileNames []string
 		}
 	}
 
-	_, err = bufferedFileEn.WriteString(`</urlset>`)
+	_, err = bufferedFileEn.WriteString("\n" + `</urlset>`)
 	if err != nil {
 		return fileNames, fmt.Errorf("sitemap_en page xml footer write error: %w", err)
 	}
-	_, err = bufferedFileCy.WriteString(`</urlset>`)
+	_, err = bufferedFileCy.WriteString("\n" + `</urlset>`)
 	if err != nil {
 		return fileNames, fmt.Errorf("sitemap_cy page xml footer write error: %w", err)
 	}

@@ -19,11 +19,8 @@ var _ robotseo.RobotFileWriterInterface = &RobotFileWriterInterfaceMock{}
 //
 // 		// make and configure a mocked robotseo.RobotFileWriterInterface
 // 		mockedRobotFileWriterInterface := &RobotFileWriterInterfaceMock{
-// 			GetRobotsFileBodyFunc: func() string {
+// 			GetRobotsFileBodyFunc: func(lang string, sitemap map[config.Language]string) string {
 // 				panic("mock out the GetRobotsFileBody method")
-// 			},
-// 			WriteRobotsFileFunc: func(cfg *config.Config, sitemaps []string) error {
-// 				panic("mock out the WriteRobotsFile method")
 // 			},
 // 		}
 //
@@ -33,85 +30,52 @@ var _ robotseo.RobotFileWriterInterface = &RobotFileWriterInterfaceMock{}
 // 	}
 type RobotFileWriterInterfaceMock struct {
 	// GetRobotsFileBodyFunc mocks the GetRobotsFileBody method.
-	GetRobotsFileBodyFunc func() string
-
-	// WriteRobotsFileFunc mocks the WriteRobotsFile method.
-	WriteRobotsFileFunc func(cfg *config.Config, sitemaps []string) error
+	GetRobotsFileBodyFunc func(lang string, sitemap map[config.Language]string) string
 
 	// calls tracks calls to the methods.
 	calls struct {
 		// GetRobotsFileBody holds details about calls to the GetRobotsFileBody method.
 		GetRobotsFileBody []struct {
-		}
-		// WriteRobotsFile holds details about calls to the WriteRobotsFile method.
-		WriteRobotsFile []struct {
-			// Cfg is the cfg argument value.
-			Cfg *config.Config
-			// Sitemaps is the sitemaps argument value.
-			Sitemaps []string
+			// Lang is the lang argument value.
+			Lang string
+			// Sitemap is the sitemap argument value.
+			Sitemap map[config.Language]string
 		}
 	}
 	lockGetRobotsFileBody sync.RWMutex
-	lockWriteRobotsFile   sync.RWMutex
 }
 
 // GetRobotsFileBody calls GetRobotsFileBodyFunc.
-func (mock *RobotFileWriterInterfaceMock) GetRobotsFileBody() string {
+func (mock *RobotFileWriterInterfaceMock) GetRobotsFileBody(lang string, sitemap map[config.Language]string) string {
 	if mock.GetRobotsFileBodyFunc == nil {
 		panic("RobotFileWriterInterfaceMock.GetRobotsFileBodyFunc: method is nil but RobotFileWriterInterface.GetRobotsFileBody was just called")
 	}
 	callInfo := struct {
-	}{}
+		Lang    string
+		Sitemap map[config.Language]string
+	}{
+		Lang:    lang,
+		Sitemap: sitemap,
+	}
 	mock.lockGetRobotsFileBody.Lock()
 	mock.calls.GetRobotsFileBody = append(mock.calls.GetRobotsFileBody, callInfo)
 	mock.lockGetRobotsFileBody.Unlock()
-	return mock.GetRobotsFileBodyFunc()
+	return mock.GetRobotsFileBodyFunc(lang, sitemap)
 }
 
 // GetRobotsFileBodyCalls gets all the calls that were made to GetRobotsFileBody.
 // Check the length with:
 //     len(mockedRobotFileWriterInterface.GetRobotsFileBodyCalls())
 func (mock *RobotFileWriterInterfaceMock) GetRobotsFileBodyCalls() []struct {
+	Lang    string
+	Sitemap map[config.Language]string
 } {
 	var calls []struct {
+		Lang    string
+		Sitemap map[config.Language]string
 	}
 	mock.lockGetRobotsFileBody.RLock()
 	calls = mock.calls.GetRobotsFileBody
 	mock.lockGetRobotsFileBody.RUnlock()
-	return calls
-}
-
-// WriteRobotsFile calls WriteRobotsFileFunc.
-func (mock *RobotFileWriterInterfaceMock) WriteRobotsFile(cfg *config.Config, sitemaps []string) error {
-	if mock.WriteRobotsFileFunc == nil {
-		panic("RobotFileWriterInterfaceMock.WriteRobotsFileFunc: method is nil but RobotFileWriterInterface.WriteRobotsFile was just called")
-	}
-	callInfo := struct {
-		Cfg      *config.Config
-		Sitemaps []string
-	}{
-		Cfg:      cfg,
-		Sitemaps: sitemaps,
-	}
-	mock.lockWriteRobotsFile.Lock()
-	mock.calls.WriteRobotsFile = append(mock.calls.WriteRobotsFile, callInfo)
-	mock.lockWriteRobotsFile.Unlock()
-	return mock.WriteRobotsFileFunc(cfg, sitemaps)
-}
-
-// WriteRobotsFileCalls gets all the calls that were made to WriteRobotsFile.
-// Check the length with:
-//     len(mockedRobotFileWriterInterface.WriteRobotsFileCalls())
-func (mock *RobotFileWriterInterfaceMock) WriteRobotsFileCalls() []struct {
-	Cfg      *config.Config
-	Sitemaps []string
-} {
-	var calls []struct {
-		Cfg      *config.Config
-		Sitemaps []string
-	}
-	mock.lockWriteRobotsFile.RLock()
-	calls = mock.calls.WriteRobotsFile
-	mock.lockWriteRobotsFile.RUnlock()
 	return calls
 }

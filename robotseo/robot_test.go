@@ -7,6 +7,7 @@ import (
 
 	asset "github.com/ONSdigital/dp-sitemap/assets"
 	mockassets "github.com/ONSdigital/dp-sitemap/assets/mock"
+	"github.com/ONSdigital/dp-sitemap/config"
 	. "github.com/smartystreets/goconvey/convey"
 )
 
@@ -25,7 +26,7 @@ func TestInit(t *testing.T) {
 
 	Convey("Init calls asset function and panics on error", t, func() {
 		shouldError = true
-		So(func() { Init(&fsMock) }, ShouldPanicWith, "Can't find robot.json")
+		So(func() { Init(&fsMock) }, ShouldPanicWith, "Can't find robot_en.json")
 		So(called, ShouldBeTrue)
 	})
 
@@ -39,7 +40,7 @@ func TestInit(t *testing.T) {
 	Convey("bad data in json panics on error", t, func() {
 		shouldError = false
 		returnBytes = []byte(`{}`)
-		So(func() { Init(&fsMock) }, ShouldPanicWith, "robots.json cant be empty")
+		So(func() { Init(&fsMock) }, ShouldPanicWith, "robot_en.json cant be empty")
 		So(called, ShouldBeTrue)
 	})
 
@@ -73,33 +74,34 @@ func TestInit(t *testing.T) {
 		}`)
 		So(func() { Init(&fsMock) }, ShouldNotPanic)
 		So(called, ShouldBeTrue)
-		So(len(robotList), ShouldEqual, 3)
+		So(len(robotList[config.English]), ShouldEqual, 3)
 	})
 }
 
 func TestGetRobotsFileBody(t *testing.T) {
+	robotList = map[config.Language]map[string]asset.SeoRobotModel{}
 	var expectedRobotsBody string
 	r := RobotFileWriter{}
 
 	Convey("no robots data", t, func() {
-		robotList = map[string]asset.SeoRobotModel{}
+		robotList[config.English] = map[string]asset.SeoRobotModel{}
 		expectedRobotsBody = ""
-		So(r.GetRobotsFileBody(), ShouldEqual, expectedRobotsBody)
+		So(r.GetRobotsFileBody(config.English, map[config.Language]string{}), ShouldEqual, expectedRobotsBody)
 	})
 
 	Convey("simple allow/deny with one user-agent", t, func() {
-		robotList = map[string]asset.SeoRobotModel{
+		robotList[config.English] = map[string]asset.SeoRobotModel{
 			"GoogleBot": {AllowList: []string{"/googleallow"}, DenyList: []string{"/googledeny"}}}
 		expectedRobotsBody = `
 User-agent: GoogleBot
 Allow: /googleallow
 Disallow: /googledeny
 `
-		So(r.GetRobotsFileBody(), ShouldEqual, expectedRobotsBody)
+		So(r.GetRobotsFileBody(config.English, map[config.Language]string{}), ShouldEqual, expectedRobotsBody)
 	})
 
 	Convey("multiple allow/deny with one user-agent", t, func() {
-		robotList = map[string]asset.SeoRobotModel{
+		robotList[config.English] = map[string]asset.SeoRobotModel{
 			"GoogleBot": {AllowList: []string{"/googleallow1", "/googleallow2"}, DenyList: []string{"/googledeny1", "/googledeny2"}}}
 		expectedRobotsBody = `
 User-agent: GoogleBot
@@ -108,11 +110,11 @@ Allow: /googleallow2
 Disallow: /googledeny1
 Disallow: /googledeny2
 `
-		So(r.GetRobotsFileBody(), ShouldEqual, expectedRobotsBody)
+		So(r.GetRobotsFileBody(config.English, map[config.Language]string{}), ShouldEqual, expectedRobotsBody)
 	})
 
 	Convey("multiple allow/deny with multiple user-agents", t, func() {
-		robotList = map[string]asset.SeoRobotModel{
+		robotList[config.English] = map[string]asset.SeoRobotModel{
 			"BingBot":   {AllowList: []string{"/bingallow1", "/bingallow2"}, DenyList: []string{"/bingdeny1", "/bingdeny2"}},
 			"GoogleBot": {AllowList: []string{"/googleallow1", "/googleallow2"}, DenyList: []string{"/googledeny1", "/googledeny2"}}}
 		bot1 := `
@@ -129,7 +131,7 @@ Allow: /googleallow2
 Disallow: /googledeny1
 Disallow: /googledeny2
 `
-		robotFile := r.GetRobotsFileBody()
+		robotFile := r.GetRobotsFileBody(config.English, map[config.Language]string{})
 		So(robotFile, ShouldContainSubstring, bot1)
 		So(robotFile, ShouldContainSubstring, bot2)
 	})

@@ -25,21 +25,20 @@ func (f *ComponentTest) InitializeScenario(ctx *godog.ScenarioContext) {
 	})
 
 	ctx.AfterScenario(func(*godog.Scenario, error) {
-		component.Close()
+		component.Reset()
 	})
 
 	component.RegisterSteps(ctx)
 }
 
 func (f *ComponentTest) InitializeTestSuite(ctx *godog.TestSuiteContext) {
-
 }
 
 func TestComponent(t *testing.T) {
 	if *componentFlag {
 		status := 0
 
-		var opts = godog.Options{
+		opts := godog.Options{
 			Output: colors.Colored(os.Stdout),
 			Format: "pretty",
 			Paths:  flag.Args(),

@@ -1,2 +1,13 @@
-build/dp-sitemap
-.vscode/launch.json
+/build
+
+# Mac
+.DS_Store
+
+#VSCode
+.vscode
+
+# Intellij
+.idea/
+*.iml
+*.iws
+vendor/

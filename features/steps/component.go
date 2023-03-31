@@ -2,6 +2,7 @@ package steps
 
 import (
 	"context"
+	"log"
 	"net/http"
 	"os"
 
@@ -27,12 +28,14 @@ type Component struct {
 	KafkaConsumer     kafka.IConsumerGroup
 	EsClient          *es710.Client
 	EsIndex           *godog.Table
-	S3UploadedSitemap map[config.Language]string
+	S3UploadedSitemap map[string]string
 	killChannel       chan os.Signal
 	apiFeature        *componenttest.APIFeature
 	errorChan         chan error
 	svc               *service.Service
 	cfg               *config.Config
+	files             map[string]string
+	welshVersion      map[string]bool
 }
 
 func NewComponent() *Component {
@@ -55,7 +58,7 @@ func NewComponent() *Component {
 		DoGetKafkaConsumerFunc: c.DoGetConsumer,
 		DoGetHealthCheckFunc:   c.DoGetHealthCheck,
 		DoGetHTTPServerFunc:    c.DoGetHTTPServer,
-		DoGetS3ClientFunc: func(ctx context.Context, cfg *config.S3Config) (sitemap.S3Uploader, error) {
+		DoGetS3ClientFunc: func(cfg *config.S3Config) (sitemap.S3Client, error) {
 			return nil, nil
 		},
 		DoGetESClientsFunc: func(ctx context.Context, cfg *config.OpenSearchConfig) (dpEsClient.Client, *es710.Client, error) {
@@ -64,16 +67,32 @@ func NewComponent() *Component {
 	}
 
 	c.serviceList = service.NewServiceList(initMock)
-	c.S3UploadedSitemap = make(map[config.Language]string)
+
+	c.files = make(map[string]string)
+	c.S3UploadedSitemap = make(map[string]string)
+	c.welshVersion = make(map[string]bool)
+
 	return c
 }
 
-func (c *Component) Close() {
-	os.Remove(c.cfg.RobotsFilePath)
+func (c *Component) Reset() {
+	c.CleanFile(c.cfg.RobotsFilePath[config.English])
+	c.CleanFile(c.cfg.RobotsFilePath[config.Welsh])
+	for _, file := range c.files {
+		c.CleanFile(file)
+	}
 }
 
-func (c *Component) Reset() {
-	os.Remove(c.cfg.RobotsFilePath)
+func (c *Component) CleanFile(file string) {
+	_, err := os.Stat(file)
+	if err != nil {
+		// nothing to do
+		return
+	}
+	err = os.Remove(file)
+	if err != nil {
+		log.Fatal("failed to clean up file: " + err.Error())
+	}
 }
 
 func (c *Component) DoGetHealthCheck(cfg *config.Config, buildTime, gitCommit, version string) (service.HealthChecker, error) {

@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"strings"
 	"time"
 
 	dpEsClient "github.com/ONSdigital/dp-elasticsearch/v3/client"
@@ -10,12 +11,15 @@ import (
 	"github.com/ONSdigital/dp-sitemap/clients"
 	"github.com/ONSdigital/dp-sitemap/config"
 	"github.com/ONSdigital/dp-sitemap/event"
+	"github.com/ONSdigital/dp-sitemap/robotseo"
 	"github.com/ONSdigital/dp-sitemap/sitemap"
 	"github.com/ONSdigital/log.go/v2/log"
 	"github.com/go-co-op/gocron"
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
 )
+
+const schedulerTagFullSitemap = "full-sitemap"
 
 // Service contains all the configs, server and clients to run the event handler service
 type Service struct {
@@ -27,7 +31,7 @@ type Service struct {
 	shutdownTimeout time.Duration
 	scheduler       *gocron.Scheduler
 	esClient        dpEsClient.Client
-	s3Client        sitemap.S3Uploader
+	s3Client        sitemap.S3Client
 }
 
 // Run the service
@@ -64,7 +68,7 @@ func Run(ctx context.Context, serviceList *ExternalServiceList, buildTime, gitCo
 	consumer.LogErrors(ctx)
 
 	// Get S3 Client
-	s3Client, err := serviceList.GetS3Client(ctx, cfg)
+	s3Client, err := serviceList.GetS3Client(cfg)
 	if err != nil {
 		log.Fatal(ctx, "failed to initialise s3 client", err)
 		return nil, err
@@ -100,26 +104,65 @@ func Run(ctx context.Context, serviceList *ExternalServiceList, buildTime, gitCo
 		}
 	}()
 
-	var saver sitemap.FileSaver
+	var (
+		store                 sitemap.FileStore
+		fullSitemapFiles      sitemap.Files
+		publishingSitemapFile string
+	)
 	switch cfg.SitemapSaveLocation {
 	case "s3":
-		saver = sitemap.NewS3Saver(
+		store = sitemap.NewS3Store(
 			s3Client,
-			cfg.S3Config.UploadBucketName,
-			cfg.S3Config.SitemapFileKey,
 		)
+		fullSitemapFiles = cfg.S3Config.SitemapFileKey
+		publishingSitemapFile = cfg.S3Config.PublishingSitemapFileKey
+
 	default:
-		saver = sitemap.NewLocalSaver(cfg.SitemapLocalFile)
+		store = &sitemap.LocalStore{}
+		fullSitemapFiles = cfg.SitemapLocalFile
+		publishingSitemapFile = cfg.PublishingSitemapLocalFile
+	}
+
+	scheduler := gocron.NewScheduler(time.UTC)
+	scheduler.SingletonModeAll()
+
+	runSitemapGeneration := func() {
+		log.Info(ctx, "full sitemap generation from callback start")
+		jobs, findErr := scheduler.FindJobsByTag(schedulerTagFullSitemap)
+		if findErr != nil {
+			log.Error(ctx, "failed to find full sitemap generation job", findErr)
+			return
+		}
+		if len(jobs) != 1 {
+			log.Error(ctx, "unexpected jobs found", findErr)
+			return
+		}
+		if jobs[0].IsRunning() {
+			log.Info(ctx, "full sitemap generation from callback - job is already running")
+			return
+		}
+		runErr := scheduler.RunByTag(schedulerTagFullSitemap)
+		if runErr != nil {
+			log.Error(ctx, "failed to run full sitemap generation job", runErr)
+			return
+		}
+		log.Info(ctx, "full sitemap generation from callback complete")
 	}
 
 	generator := sitemap.NewGenerator(
-		sitemap.NewElasticFetcher(
+		sitemap.WithFetcher(sitemap.NewElasticFetcher(
 			esRawClient,
 			cfg,
 			zebedeeClient,
-		),
-		saver,
+		)),
+		sitemap.WithAdder(&sitemap.DefaultAdder{}),
+		sitemap.WithFileStore(store),
+		sitemap.WithFullSitemapFiles(fullSitemapFiles),
+		sitemap.WithPublishingSitemapFile(publishingSitemapFile),
+		sitemap.WithPublishingSitemapMaxSize(cfg.PublishingSitemapMaxSize, runSitemapGeneration),
 	)
+
+	robotFileWriter := robotseo.RobotFileWriter{}
 
 	generateSitemapJob := func(job gocron.Job) {
 		ctx, cancel := context.WithTimeout(context.Background(), cfg.SitemapGenerationTimeout)
@@ -131,11 +174,21 @@ func Run(ctx context.Context, serviceList *ExternalServiceList, buildTime, gitCo
 			return
 		}
 		log.Info(ctx, "sitemap generation job complete", log.Data{"last_run": job.LastRun(), "next_run": job.NextRun(), "run_count": job.RunCount()})
+
+		// write robots file
+		// TODO: pass sitemap file path (once URL is known)
+		for _, lang := range []config.Language{config.English, config.Welsh} {
+			body := robotFileWriter.GetRobotsFileBody(lang, cfg.SitemapLocalFile)
+			saveErr := store.SaveFile(cfg.RobotsFilePath[lang], strings.NewReader(body))
+			if saveErr != nil {
+				log.Error(ctx, "failed to save file: %w", saveErr)
+				return
+			}
+		}
+		log.Info(ctx, "wrote robots file")
 	}
 
-	scheduler := gocron.NewScheduler(time.UTC)
-	scheduler.SingletonModeAll()
-	_, err = scheduler.Every(cfg.SitemapGenerationFrequency).DoWithJobDetails(generateSitemapJob)
+	_, err = scheduler.Every(cfg.SitemapGenerationFrequency).Tag(schedulerTagFullSitemap).DoWithJobDetails(generateSitemapJob)
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to run scheduler")
 	}
