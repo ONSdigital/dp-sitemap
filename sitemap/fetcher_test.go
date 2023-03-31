@@ -154,6 +154,71 @@ func TestFetcher(t *testing.T) {
 </urlset>`)
 		})
 	})
+	Convey("When debug feature enabled to only return first page", t, func() {
+		cfg := &config.Config{
+			OpenSearchConfig: config.OpenSearchConfig{
+				DebugFirstPageOnly: true,
+			},
+		}
+		esMock := &es710.Client{API: &esapi710.API{
+			Search: func(o ...func(*esapi710.SearchRequest)) (*esapi710.Response, error) {
+				return &esapi710.Response{
+					Body: io.NopCloser(strings.NewReader(`
+					{
+						"_scroll_id": "scroll_id_1",
+						"hits": {
+							"hits": [
+								{
+									"_source": {
+										"uri": "uri_1",
+										"release_date": "2014-12-10T00:00:00.000Z"
+									}
+								},
+								{
+									"_source": {
+										"uri": "uri_2",
+										"release_date": "2023-03-31T00:00:00.000Z"
+									}
+								}
+							]
+						}
+					}
+					`)),
+				}, nil
+			},
+		}}
+		f := sitemap.NewElasticFetcher(esMock, cfg, &zc)
+		filenames, err := f.GetFullSitemap(context.Background())
+		defer func() {
+			for _, fl := range filenames {
+				os.Remove(fl)
+			}
+		}()
+
+		Convey("Fetcher should return with no error", func() {
+			So(err, ShouldBeNil)
+		})
+		Convey("Temporary sitemap file should be created and available", func() {
+			So(filenames[config.English], ShouldContainSubstring, "sitemap")
+			_, err := os.Stat(filenames[config.English])
+			So(err, ShouldBeNil)
+		})
+		Convey("Sitemap should be valid and include all received urls", func() {
+			sitemapContent, err := os.ReadFile(filenames[config.English])
+			So(err, ShouldBeNil)
+			So(string(sitemapContent), ShouldEqual, `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<url>
+  <loc>uri_1</loc>
+  <lastmod>2014-12-10</lastmod>
+</url>
+<url>
+  <loc>uri_2</loc>
+  <lastmod>2023-03-31</lastmod>
+</url>
+</urlset>`)
+		})
+	})
 	Convey("When subsequent scroll returns error", t, func() {
 		var receivedScrollID string
 		esMock := &es710.Client{API: &esapi710.API{
