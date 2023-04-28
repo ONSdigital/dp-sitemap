@@ -30,6 +30,7 @@ type FlagFields struct {
 	scroll_size      int
 	sitemap_path     string
 	zebedee_url      string
+	fake_scroll      bool
 }
 
 // test function for FlagFields
@@ -53,29 +54,6 @@ func validConfig(flagfields *FlagFields) bool {
 
 }
 
-func validateCommandLines() bool {
-
-	commandline := FlagFields{}
-	flag.StringVar(&commandline.robots_file_path, "robots-file-path", "robot_file.txt", "robotfile.txt")
-	flag.StringVar(&commandline.sitemap_path, "sitemap-file-path", "sitemap.xml", "sitemap.xml")
-	flag.StringVar(&commandline.api_url, "api-url", "", "")
-	flag.StringVar(&commandline.zebedee_url, "zebedee-url", "", "")
-	flag.StringVar(&commandline.sitemap_index, "sitemap-index", "", "OPENSEARCH_SITEMAP_INDEX")
-	flag.StringVar(&commandline.scroll_timeout, "scroll-timeout", "", "OPENSEARCH_SCROLL_TIMEOUT")
-	flag.IntVar(&commandline.scroll_size, "scroll-size", 10, "OPENSEARCH_SCROLL_SIZE")
-
-	flag.Parse()
-	if !validConfig(&commandline) {
-		flag.Usage = func() {
-			fmt.Fprintf(flag.CommandLine.Output(), "Usage: %s [options]\n", os.Args[0])
-			fmt.Fprintf(flag.CommandLine.Output(), "\nOptions:\n")
-			flag.PrintDefaults()
-		}
-		return false
-	} else {
-		return true
-	}
-}
 func main() {
 	//validate commandline - reduce this part as well
 	commandline := FlagFields{}
@@ -86,7 +64,7 @@ func main() {
 	flag.StringVar(&commandline.sitemap_index, "sitemap-index", "", "OPENSEARCH_SITEMAP_INDEX")
 	flag.StringVar(&commandline.scroll_timeout, "scroll-timeout", "", "OPENSEARCH_SCROLL_TIMEOUT")
 	flag.IntVar(&commandline.scroll_size, "scroll-size", 10, "OPENSEARCH_SCROLL_SIZE")
-
+	flag.BoolVar(&commandline.fake_scroll, "enable-fake-scroll", true, "enable fake scroll")
 	flag.Parse()
 	if !validConfig(&commandline) {
 		flag.Usage = func() {
@@ -102,16 +80,14 @@ func main() {
 		fmt.Println("Error retrieving config" + err.Error())
 		os.Exit(1)
 	} else {
-
-		GenerateSitemap(cfg, err, commandline)
-
+		GenerateSitemap(cfg, commandline)
 		//create robot.txt file
 		GenerateRobotFile(cfg, commandline)
 	}
 
 }
 
-func GenerateSitemap(cfg *config.Config, err error, commandline FlagFields) {
+func GenerateSitemap(cfg *config.Config, commandline FlagFields) {
 	//Create local file store
 	store := &sitemap.LocalStore{}
 
@@ -119,6 +95,7 @@ func GenerateSitemap(cfg *config.Config, err error, commandline FlagFields) {
 	var transport http.RoundTripper = dphttp.DefaultTransport
 	if cfg.OpenSearchConfig.Signer {
 		//add SignerRegion,SignerService
+		var err error
 		transport, err = awsauth.NewAWSSignerRoundTripper(cfg.OpenSearchConfig.APIURL, cfg.OpenSearchConfig.SignerFilename, cfg.OpenSearchConfig.SignerRegion, cfg.OpenSearchConfig.SignerService, awsauth.Options{TlsInsecureSkipVerify: cfg.OpenSearchConfig.TLSInsecureSkipVerify})
 		if err != nil {
 			fmt.Printf("failed to save file")
@@ -138,9 +115,19 @@ func GenerateSitemap(cfg *config.Config, err error, commandline FlagFields) {
 	//Get zebedeeClient using arg -zebedee-url
 	zebedeeClient := zebedee.New(commandline.zebedee_url)
 
+	var scroll sitemap.Scroll
+	if commandline.fake_scroll {
+		scroll = NewFakeScroll()
+	} else {
+		scroll = sitemap.NewElasticScroll(
+			rawClient,
+			cfg,
+		)
+	}
+
 	generator := sitemap.NewGenerator(
 		sitemap.WithFetcher(sitemap.NewElasticFetcher(
-			rawClient,
+			scroll,
 			cfg,
 			zebedeeClient,
 		)),
