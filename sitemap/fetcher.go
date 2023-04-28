@@ -3,18 +3,15 @@ package sitemap
 import (
 	"bufio"
 	"context"
-	"encoding/json"
 	"encoding/xml"
 	"fmt"
 	"net/url"
 	"os"
-	"strings"
 	"time"
 
 	"github.com/ONSdigital/dp-sitemap/clients"
 	"github.com/ONSdigital/dp-sitemap/config"
 	"github.com/ONSdigital/log.go/v2/log"
-	es710 "github.com/elastic/go-elasticsearch/v7"
 )
 
 type ElasticResult struct {
@@ -85,14 +82,14 @@ type AlternateURL struct {
 }
 
 type ElasticFetcher struct {
-	elastic *es710.Client
+	scroll  Scroll
 	cfg     *config.Config
 	zClient clients.ZebedeeClient
 }
 
-func NewElasticFetcher(elastic *es710.Client, cfg *config.Config, zc clients.ZebedeeClient) *ElasticFetcher {
+func NewElasticFetcher(scroll Scroll, cfg *config.Config, zc clients.ZebedeeClient) *ElasticFetcher {
 	return &ElasticFetcher{
-		elastic: elastic,
+		scroll:  scroll,
 		cfg:     cfg,
 		zClient: zc,
 	}
@@ -191,7 +188,7 @@ func (f *ElasticFetcher) GetFullSitemap(ctx context.Context) (fileNames Files, e
 	}
 
 	var result ElasticResult
-	err = f.StartScroll(ctx, &result)
+	err = f.scroll.StartScroll(ctx, &result)
 	if err != nil {
 		return fileNames, fmt.Errorf("failed to start scroll: %w", err)
 	}
@@ -217,7 +214,7 @@ func (f *ElasticFetcher) GetFullSitemap(ctx context.Context) (fileNames Files, e
 			}
 		}
 		result = ElasticResult{}
-		err = f.GetScroll(ctx, scrollID, &result)
+		err = f.scroll.GetScroll(ctx, scrollID, &result)
 		if err != nil {
 			return fileNames, fmt.Errorf("failed to get scroll: %w", err)
 		}
@@ -233,51 +230,4 @@ func (f *ElasticFetcher) GetFullSitemap(ctx context.Context) (fileNames Files, e
 	}
 
 	return fileNames, nil
-}
-
-func (f *ElasticFetcher) StartScroll(ctx context.Context, result interface{}) error {
-	res, err := f.elastic.Search(
-		f.elastic.Search.WithIndex(f.cfg.OpenSearchConfig.SitemapIndex),
-		f.elastic.Search.WithScroll(f.cfg.OpenSearchConfig.ScrollTimeout),
-		f.elastic.Search.WithSize(f.cfg.OpenSearchConfig.ScrollSize),
-		f.elastic.Search.WithContext(ctx),
-		f.elastic.Search.WithBody(strings.NewReader(`
-		{
-			"query": {
-				"match_all": {}
-			},
-			"sort": [
-				{"_id": "asc"}
-			]
-		}`),
-		),
-	)
-	if err != nil {
-		return err
-	}
-	defer res.Body.Close()
-
-	err = json.NewDecoder(res.Body).Decode(result)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func (f *ElasticFetcher) GetScroll(ctx context.Context, id string, result interface{}) error {
-	res, err := f.elastic.Scroll(
-		f.elastic.Scroll.WithScroll(f.cfg.OpenSearchConfig.ScrollTimeout),
-		f.elastic.Scroll.WithScrollID(id),
-		f.elastic.Scroll.WithContext(ctx),
-	)
-	if err != nil {
-		return err
-	}
-	defer res.Body.Close()
-
-	err = json.NewDecoder(res.Body).Decode(result)
-	if err != nil {
-		return err
-	}
-	return nil
 }

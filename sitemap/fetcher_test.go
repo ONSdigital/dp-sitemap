@@ -34,7 +34,9 @@ func TestFetcher(t *testing.T) {
 			},
 		}}
 
-		f := sitemap.NewElasticFetcher(esMock, cfg, &zc)
+		es := sitemap.NewElasticScroll(esMock, cfg)
+
+		f := sitemap.NewElasticFetcher(es, cfg, &zc)
 		filename, err := f.GetFullSitemap(context.Background())
 
 		Convey("Generator should return correct error", func() {
@@ -55,7 +57,10 @@ func TestFetcher(t *testing.T) {
 				}, nil
 			},
 		}}
-		f := sitemap.NewElasticFetcher(esMock, cfg, &zc)
+
+		es := sitemap.NewElasticScroll(esMock, cfg)
+
+		f := sitemap.NewElasticFetcher(es, cfg, &zc)
 		filenames, err := f.GetFullSitemap(context.Background())
 		defer func() {
 			for _, fl := range filenames {
@@ -119,7 +124,10 @@ func TestFetcher(t *testing.T) {
 				}, nil
 			},
 		}}
-		f := sitemap.NewElasticFetcher(esMock, cfg, &zc)
+
+		es := sitemap.NewElasticScroll(esMock, cfg)
+
+		f := sitemap.NewElasticFetcher(es, cfg, &zc)
 		filenames, err := f.GetFullSitemap(context.Background())
 		defer func() {
 			for _, fl := range filenames {
@@ -191,7 +199,10 @@ func TestFetcher(t *testing.T) {
 				return nil, errors.New("subsequent scroll error")
 			},
 		}}
-		f := sitemap.NewElasticFetcher(esMock, cfg, &zc)
+
+		es := sitemap.NewElasticScroll(esMock, cfg)
+
+		f := sitemap.NewElasticFetcher(es, cfg, &zc)
 		filename, err := f.GetFullSitemap(context.Background())
 
 		Convey("Generator should return correct error", func() {
@@ -273,7 +284,10 @@ func TestFetcher(t *testing.T) {
 				}, nil
 			},
 		}}
-		f := sitemap.NewElasticFetcher(esMock, cfg, &zc)
+
+		es := sitemap.NewElasticScroll(esMock, cfg)
+
+		f := sitemap.NewElasticFetcher(es, cfg, &zc)
 		filenames, err := f.GetFullSitemap(context.Background())
 		defer func() {
 			for _, fl := range filenames {
@@ -395,7 +409,10 @@ func TestFetcher(t *testing.T) {
 				}, nil
 			},
 		}}
-		f := sitemap.NewElasticFetcher(esMock, cfg, &zcWithWelsh)
+
+		es := sitemap.NewElasticScroll(esMock, cfg)
+
+		f := sitemap.NewElasticFetcher(es, cfg, &zcWithWelsh)
 		filenames, err := f.GetFullSitemap(context.Background())
 		defer func() {
 			for _, fl := range filenames {
