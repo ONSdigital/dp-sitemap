@@ -54,8 +54,8 @@ func validConfig(flagfields *FlagFields) bool {
 
 }
 
-func main() {
-	//validate commandline - reduce this part as well
+func validateCommandLines() (bool, *FlagFields) {
+
 	commandline := FlagFields{}
 	flag.StringVar(&commandline.robots_file_path, "robots-file-path", "robot_file.txt", "robotfile.txt")
 	flag.StringVar(&commandline.sitemap_path, "sitemap-file-path", "sitemap.xml", "sitemap.xml")
@@ -65,6 +65,7 @@ func main() {
 	flag.StringVar(&commandline.scroll_timeout, "scroll-timeout", "", "OPENSEARCH_SCROLL_TIMEOUT")
 	flag.IntVar(&commandline.scroll_size, "scroll-size", 10, "OPENSEARCH_SCROLL_SIZE")
 	flag.BoolVar(&commandline.fake_scroll, "enable-fake-scroll", true, "enable fake scroll")
+
 	flag.Parse()
 	if !validConfig(&commandline) {
 		flag.Usage = func() {
@@ -72,22 +73,31 @@ func main() {
 			fmt.Fprintf(flag.CommandLine.Output(), "\nOptions:\n")
 			flag.PrintDefaults()
 		}
-		return
+		return false, nil
 	}
+	return true, &commandline
+}
+
+func main() {
+	valid, commandLine := validateCommandLines()
+	if !valid {
+		os.Exit(1)
+	}
+
 	cfg, err := config.Get()
 
 	if err != nil {
 		fmt.Println("Error retrieving config" + err.Error())
 		os.Exit(1)
 	} else {
-		GenerateSitemap(cfg, commandline)
+		GenerateSitemap(cfg, commandLine)
 		//create robot.txt file
-		GenerateRobotFile(cfg, commandline)
+		GenerateRobotFile(cfg, commandLine)
 	}
 
 }
 
-func GenerateSitemap(cfg *config.Config, commandline FlagFields) {
+func GenerateSitemap(cfg *config.Config, commandline *FlagFields) {
 	//Create local file store
 	store := &sitemap.LocalStore{}
 
@@ -148,7 +158,7 @@ func GenerateSitemap(cfg *config.Config, commandline FlagFields) {
 	fmt.Println("sitemap generation job complete")
 }
 
-func GenerateRobotFile(cfg *config.Config, commandline FlagFields) {
+func GenerateRobotFile(cfg *config.Config, commandline *FlagFields) {
 
 	robotseo.Init(assets.NewFromEmbeddedFilesystem())
 	robotFileWriter := robotseo.RobotFileWriter{}
