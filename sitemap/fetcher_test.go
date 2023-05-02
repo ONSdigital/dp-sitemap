@@ -34,9 +34,9 @@ func TestFetcher(t *testing.T) {
 			},
 		}}
 
-		es := sitemap.NewElasticScroll(esMock, cfg)
+		scroller := sitemap.NewElasticScroll(esMock, cfg)
 
-		f := sitemap.NewElasticFetcher(es, cfg, &zc)
+		f := sitemap.NewElasticFetcher(scroller, cfg, &zc)
 		filename, err := f.GetFullSitemap(context.Background())
 
 		Convey("Generator should return correct error", func() {
@@ -58,9 +58,9 @@ func TestFetcher(t *testing.T) {
 			},
 		}}
 
-		es := sitemap.NewElasticScroll(esMock, cfg)
+		scroller := sitemap.NewElasticScroll(esMock, cfg)
 
-		f := sitemap.NewElasticFetcher(es, cfg, &zc)
+		f := sitemap.NewElasticFetcher(scroller, cfg, &zc)
 		filenames, err := f.GetFullSitemap(context.Background())
 		defer func() {
 			for _, fl := range filenames {
@@ -125,9 +125,9 @@ func TestFetcher(t *testing.T) {
 			},
 		}}
 
-		es := sitemap.NewElasticScroll(esMock, cfg)
+		scroller := sitemap.NewElasticScroll(esMock, cfg)
 
-		f := sitemap.NewElasticFetcher(es, cfg, &zc)
+		f := sitemap.NewElasticFetcher(scroller, cfg, &zc)
 		filenames, err := f.GetFullSitemap(context.Background())
 		defer func() {
 			for _, fl := range filenames {
@@ -200,9 +200,9 @@ func TestFetcher(t *testing.T) {
 			},
 		}}
 
-		es := sitemap.NewElasticScroll(esMock, cfg)
+		scroller := sitemap.NewElasticScroll(esMock, cfg)
 
-		f := sitemap.NewElasticFetcher(es, cfg, &zc)
+		f := sitemap.NewElasticFetcher(scroller, cfg, &zc)
 		filename, err := f.GetFullSitemap(context.Background())
 
 		Convey("Generator should return correct error", func() {
@@ -285,9 +285,9 @@ func TestFetcher(t *testing.T) {
 			},
 		}}
 
-		es := sitemap.NewElasticScroll(esMock, cfg)
+		scroller := sitemap.NewElasticScroll(esMock, cfg)
 
-		f := sitemap.NewElasticFetcher(es, cfg, &zc)
+		f := sitemap.NewElasticFetcher(scroller, cfg, &zc)
 		filenames, err := f.GetFullSitemap(context.Background())
 		defer func() {
 			for _, fl := range filenames {
@@ -410,9 +410,9 @@ func TestFetcher(t *testing.T) {
 			},
 		}}
 
-		es := sitemap.NewElasticScroll(esMock, cfg)
+		scroller := sitemap.NewElasticScroll(esMock, cfg)
 
-		f := sitemap.NewElasticFetcher(es, cfg, &zcWithWelsh)
+		f := sitemap.NewElasticFetcher(scroller, cfg, &zcWithWelsh)
 		filenames, err := f.GetFullSitemap(context.Background())
 		defer func() {
 			for _, fl := range filenames {

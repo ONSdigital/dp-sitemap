@@ -149,11 +149,11 @@ func Run(ctx context.Context, serviceList *ExternalServiceList, buildTime, gitCo
 		log.Info(ctx, "full sitemap generation from callback complete")
 	}
 
-	es := sitemap.NewElasticScroll(esRawClient, cfg)
+	scroller := sitemap.NewElasticScroll(esRawClient, cfg)
 
 	generator := sitemap.NewGenerator(
 		sitemap.WithFetcher(sitemap.NewElasticFetcher(
-			es,
+			scroller,
 			cfg,
 			zebedeeClient,
 		)),

@@ -89,12 +89,10 @@ func main() {
 	if err != nil {
 		fmt.Println("Error retrieving config" + err.Error())
 		os.Exit(1)
-	} else {
-		GenerateSitemap(cfg, commandLine)
-		//create robot.txt file
-		GenerateRobotFile(cfg, commandLine)
 	}
 
+	GenerateSitemap(cfg, commandLine)
+	GenerateRobotFile(cfg, commandLine)
 }
 
 func GenerateSitemap(cfg *config.Config, commandline *FlagFields) {

@@ -58,11 +58,11 @@ func (c *Component) iAddAURLDatedToSitemap(url, date, sitemapID string) error {
 		},
 	}
 
-	es := sitemap.NewElasticScroll(c.EsClient, c.cfg)
+	scroller := sitemap.NewElasticScroll(c.EsClient, c.cfg)
 
 	generator := sitemap.NewGenerator(
 		sitemap.WithFetcher(sitemap.NewElasticFetcher(
-			es,
+			scroller,
 			c.cfg,
 			&zc,
 		)),
@@ -130,11 +130,11 @@ func (c *Component) iGenerateLocalSitemap() error {
 		},
 	}}
 
-	es := sitemap.NewElasticScroll(c.EsClient, c.cfg)
+	scroller := sitemap.NewElasticScroll(c.EsClient, c.cfg)
 
 	generator := sitemap.NewGenerator(
 		sitemap.WithFetcher(sitemap.NewElasticFetcher(
-			es,
+			scroller,
 			c.cfg,
 			&zc,
 		)),
@@ -224,11 +224,11 @@ func (c *Component) iGenerateS3Sitemap() error {
 	}
 	s3uploader.BucketNameFunc = func() string { return c.cfg.S3Config.UploadBucketName }
 
-	es := sitemap.NewElasticScroll(c.EsClient, c.cfg)
+	scroller := sitemap.NewElasticScroll(c.EsClient, c.cfg)
 
 	generator := sitemap.NewGenerator(
 		sitemap.WithFetcher(sitemap.NewElasticFetcher(
-			es,
+			scroller,
 			c.cfg,
 			&zc,
 		)),
