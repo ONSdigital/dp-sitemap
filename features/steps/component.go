@@ -9,7 +9,6 @@ import (
 	componenttest "github.com/ONSdigital/dp-component-test"
 	"github.com/ONSdigital/dp-healthcheck/healthcheck"
 	kafka "github.com/ONSdigital/dp-kafka/v3"
-	"github.com/ONSdigital/dp-kafka/v3/kafkatest"
 	dphttp "github.com/ONSdigital/dp-net/v2/http"
 	"github.com/ONSdigital/dp-sitemap/config"
 	"github.com/ONSdigital/dp-sitemap/service"
@@ -38,21 +37,39 @@ type Component struct {
 	welshVersion      map[string]bool
 }
 
-func NewComponent() *Component {
-	c := &Component{errorChan: make(chan error)}
+func testCfg() config.Config {
+	return config.Config{
+		KafkaConfig: config.KafkaConfig{
+			Brokers:             []string{"localhost:9092", "localhost:9093"},
+			ContentUpdatedGroup: "dp-sitemap",
+			ContentUpdatedTopic: "content-updated",
+		},
+	}
+}
 
-	consumer := kafkatest.NewMessageConsumer(false)
-	consumer.CheckerFunc = funcCheck
-	consumer.StartFunc = func() error { return nil }
-	consumer.LogErrorsFunc = func(ctx context.Context) {}
-	c.KafkaConsumer = consumer
+func NewComponent(ctx context.Context) *Component {
+	c := &Component{errorChan: make(chan error)}
 
 	cfg, err := config.Get()
 	if err != nil {
 		return nil
 	}
 
-	c.cfg = cfg
+	kafkaOffset := kafka.OffsetOldest
+	consumer, err := kafka.NewConsumerGroup(
+		ctx,
+		&kafka.ConsumerGroupConfig{
+			BrokerAddrs:  cfg.KafkaConfig.Brokers,
+			Topic:        cfg.KafkaConfig.ContentUpdatedTopic,
+			GroupName:    cfg.KafkaConfig.ContentUpdatedGroup,
+			KafkaVersion: &cfg.KafkaConfig.Version,
+			Offset:       &kafkaOffset,
+		},
+	)
+	if err != nil {
+		return nil
+	}
+	c.KafkaConsumer = consumer
 
 	initMock := &mock.InitialiserMock{
 		DoGetKafkaConsumerFunc: c.DoGetConsumer,
