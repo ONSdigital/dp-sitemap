@@ -2,8 +2,8 @@ package main
 
 import (
 	"context"
-	"log"
-	"strconv"
+	"fmt"
+	"os"
 	"time"
 
 	"github.com/ONSdigital/dp-sitemap/sitemap"
@@ -17,8 +17,7 @@ func NewFakeScroll() sitemap.Scroll {
 }
 
 func (fs *FakeScroll) StartScroll(ctx context.Context, result interface{}) error {
-	res := fakeStartScroll()
-	log.Println(res)
+	fakeStartScroll(result)
 	return nil
 }
 
@@ -26,18 +25,18 @@ func (fs *FakeScroll) GetScroll(ctx context.Context, id string, result interface
 	return nil
 }
 
-func fakeStartScroll() sitemap.ElasticResult {
-	res := sitemap.ElasticResult{}
-
-	for i := 0; i < 3; i++ {
-		hit := sitemap.ElasticHit{
-			Source: sitemap.ElasticHitSource{
-				URI:         "https://localhost/test" + strconv.Itoa(i),
-				ReleaseDate: time.Now(),
-			},
-		}
-		res.Hits.Hits = append(res.Hits.Hits, hit)
+func fakeStartScroll(res interface{}) {
+	r, ok := res.(*sitemap.ElasticResult)
+	if !ok {
+		fmt.Printf("Type assertion for %v failed.\n", res)
+		os.Exit(1)
 	}
 
-	return res
+	hit := sitemap.ElasticHit{
+		Source: sitemap.ElasticHitSource{
+			URI:         "/economy/environmentalaccounts/articles/testarticle",
+			ReleaseDate: time.Now(),
+		},
+	}
+	r.Hits.Hits = append(r.Hits.Hits, hit)
 }

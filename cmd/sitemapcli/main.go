@@ -57,12 +57,12 @@ func validConfig(flagfields *FlagFields) bool {
 func validateCommandLines() (bool, *FlagFields) {
 
 	commandline := FlagFields{}
-	flag.StringVar(&commandline.robots_file_path, "robots-file-path", "robot_file.txt", "robotfile.txt")
-	flag.StringVar(&commandline.sitemap_path, "sitemap-file-path", "sitemap.xml", "sitemap.xml")
-	flag.StringVar(&commandline.api_url, "api-url", "", "")
-	flag.StringVar(&commandline.zebedee_url, "zebedee-url", "", "")
-	flag.StringVar(&commandline.sitemap_index, "sitemap-index", "", "OPENSEARCH_SITEMAP_INDEX")
-	flag.StringVar(&commandline.scroll_timeout, "scroll-timeout", "", "OPENSEARCH_SCROLL_TIMEOUT")
+	flag.StringVar(&commandline.robots_file_path, "robots-file-path", "test_robots.txt", "robotfile.txt")
+	flag.StringVar(&commandline.sitemap_path, "sitemap-file-path", "test_sitemap.xml", "sitemap.xml")
+	flag.StringVar(&commandline.api_url, "api-url", "http://localhost", "")
+	flag.StringVar(&commandline.zebedee_url, "zebedee-url", "http://localhost:8082", "")
+	flag.StringVar(&commandline.sitemap_index, "sitemap-index", "1", "OPENSEARCH_SITEMAP_INDEX")
+	flag.StringVar(&commandline.scroll_timeout, "scroll-timeout", "2000", "OPENSEARCH_SCROLL_TIMEOUT")
 	flag.IntVar(&commandline.scroll_size, "scroll-size", 10, "OPENSEARCH_SCROLL_SIZE")
 	flag.BoolVar(&commandline.fake_scroll, "enable-fake-scroll", true, "enable fake scroll")
 

@@ -115,12 +115,12 @@ func Get() (*Config, error) {
 		PublishingSitemapLocalFile: "/tmp/dp-publishing-sitemap.xml",
 		PublishingSitemapMaxSize:   500,
 		ZebedeeURL:                 "http://localhost:8082",
-		DpOnsURLHostNameEn:         "https://dp.aws.onsdigital.uk/",
-		DpOnsURLHostNameCy:         "https://cy.dp.aws.onsdigital.uk/",
+		DpOnsURLHostNameEn:         "https://localhost/",
+		DpOnsURLHostNameCy:         "https://cy.localhost/",
 	}
 
 	cfg.OpenSearchConfig = OpenSearchConfig{
-		APIURL:                "http://localhost:11200",
+		APIURL:                "http://localhost",
 		SitemapIndex:          "ons",
 		ScrollTimeout:         time.Minute,
 		ScrollSize:            10000,
