@@ -9,6 +9,7 @@ import (
 	componenttest "github.com/ONSdigital/dp-component-test"
 	"github.com/ONSdigital/dp-healthcheck/healthcheck"
 	kafka "github.com/ONSdigital/dp-kafka/v3"
+	"github.com/ONSdigital/dp-kafka/v3/kafkatest"
 	dphttp "github.com/ONSdigital/dp-net/v2/http"
 	"github.com/ONSdigital/dp-sitemap/config"
 	"github.com/ONSdigital/dp-sitemap/service"
@@ -55,22 +56,25 @@ func NewComponent(ctx context.Context) *Component {
 		return nil
 	}
 
-	kafkaOffset := kafka.OffsetOldest
-	consumer, err := kafka.NewConsumerGroup(
+	consumer, err := kafkatest.NewConsumer(
 		ctx,
 		&kafka.ConsumerGroupConfig{
-			BrokerAddrs:  cfg.KafkaConfig.Brokers,
-			Topic:        cfg.KafkaConfig.ContentUpdatedTopic,
-			GroupName:    cfg.KafkaConfig.ContentUpdatedGroup,
-			KafkaVersion: &cfg.KafkaConfig.Version,
-			Offset:       &kafkaOffset,
+			BrokerAddrs: cfg.KafkaConfig.Brokers,
+			Topic:       cfg.KafkaConfig.ContentUpdatedTopic,
+			GroupName:   cfg.KafkaConfig.ContentUpdatedGroup,
+		},
+		&kafkatest.ConsumerConfig{
+			NumPartitions:     10,
+			ChannelBufferSize: 10,
+			InitAtCreation:    false,
 		},
 	)
-	if err != nil {
-		return nil
-	}
+	consumer.Mock.CheckerFunc = funcCheck
+	consumer.Mock.StartFunc = func() error { return nil }
+	consumer.Mock.LogErrorsFunc = func(ctx context.Context) {}
+	c.KafkaConsumer = consumer.Mock
 
-	c.KafkaConsumer = consumer
+	c.cfg = cfg
 
 	initMock := &mock.InitialiserMock{
 		DoGetKafkaConsumerFunc: c.DoGetConsumer,
