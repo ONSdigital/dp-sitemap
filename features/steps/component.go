@@ -38,16 +38,6 @@ type Component struct {
 	welshVersion      map[string]bool
 }
 
-func testCfg() config.Config {
-	return config.Config{
-		KafkaConfig: config.KafkaConfig{
-			Brokers:             []string{"localhost:9092", "localhost:9093"},
-			ContentUpdatedGroup: "dp-sitemap",
-			ContentUpdatedTopic: "content-updated",
-		},
-	}
-}
-
 func NewComponent(ctx context.Context) *Component {
 	c := &Component{errorChan: make(chan error)}
 
