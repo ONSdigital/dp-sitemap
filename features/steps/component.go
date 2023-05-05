@@ -69,6 +69,7 @@ func NewComponent(ctx context.Context) *Component {
 	if err != nil {
 		return nil
 	}
+
 	c.KafkaConsumer = consumer
 
 	initMock := &mock.InitialiserMock{
