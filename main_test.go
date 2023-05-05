@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"flag"
 	"os"
 	"testing"
@@ -19,7 +18,7 @@ type ComponentTest struct {
 }
 
 func (f *ComponentTest) InitializeScenario(ctx *godog.ScenarioContext) {
-	component := steps.NewComponent(context.Background())
+	component := steps.NewComponent()
 
 	ctx.BeforeScenario(func(*godog.Scenario) {
 		component.Reset()

@@ -38,8 +38,9 @@ type Component struct {
 	welshVersion      map[string]bool
 }
 
-func NewComponent(ctx context.Context) *Component {
+func NewComponent() *Component {
 	c := &Component{errorChan: make(chan error)}
+	ctx := context.Background()
 
 	cfg, err := config.Get()
 	if err != nil {
