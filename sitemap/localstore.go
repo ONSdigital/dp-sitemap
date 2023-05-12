@@ -39,3 +39,16 @@ func (s *LocalStore) GetFile(name string) (body io.ReadCloser, err error) {
 	}
 	return file, nil
 }
+
+func (s *LocalStore) CopyFile(src io.Reader, dest io.Writer) error {
+	_, err := io.Copy(dest, src)
+	if err != nil {
+		return fmt.Errorf("failed to copy file : %w", err)
+	}
+	return nil
+}
+
+func (s *LocalStore) CreateFile(name string) error {
+	// TODO
+	return nil
+}

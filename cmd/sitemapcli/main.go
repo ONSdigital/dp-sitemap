@@ -101,7 +101,10 @@ func main() {
 	case 1:
 		GenerateSitemap(cfg, commandLine)
 	case 2:
-		handler := event.ContentPublishedHandler{}
+
+		handler := event.ContentPublishedHandler{
+			FileStore: &sitemap.LocalStore{},
+		}
 		content := &event.ContentPublished{
 			URI:          "economy/environmentalaccounts/articles/testarticle3",
 			DataType:     "theDateType",

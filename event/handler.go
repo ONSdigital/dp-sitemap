@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"github.com/ONSdigital/dp-sitemap/sitemap"
-	"io"
 	"os"
 	"time"
 
@@ -13,6 +12,7 @@ import (
 )
 
 type ContentPublishedHandler struct {
+	FileStore sitemap.FileStore
 }
 
 // Handle takes a single event.
@@ -31,7 +31,7 @@ func (h *ContentPublishedHandler) Handle(ctx context.Context, cfg *config.Config
 		y, m, d := time.Now().Date()
 		date := fmt.Sprintf("%d-%d-%d", y, m, d)
 		var url = &sitemap.URL{Loc: event.URI, Lastmod: date}
-		currentSitemap, err := os.Open(currentSitemapName)
+		currentSitemap, err := h.FileStore.GetFile(currentSitemapName)
 		if err != nil {
 			fmt.Println("Error opening current sitemap", err)
 			os.Exit(1)
@@ -61,7 +61,7 @@ func (h *ContentPublishedHandler) Handle(ctx context.Context, cfg *config.Config
 		os.Exit(1)
 	}
 	defer tmpSitemap.Close()
-	io.Copy(currentSitemap, tmpSitemap)
+	h.FileStore.CopyFile(tmpSitemap, currentSitemap)
 
 	return nil
 }
