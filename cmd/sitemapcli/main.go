@@ -4,6 +4,7 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"github.com/ONSdigital/dp-sitemap/event"
 	"net/http"
 	"os"
 	"reflect"
@@ -58,7 +59,7 @@ func validateCommandLines() (bool, *FlagFields) {
 
 	commandline := FlagFields{}
 	flag.StringVar(&commandline.robots_file_path, "robots-file-path", "test_robots.txt", "robotfile.txt")
-	flag.StringVar(&commandline.sitemap_path, "sitemap-file-path", "test_sitemap.xml", "sitemap.xml")
+	flag.StringVar(&commandline.sitemap_path, "sitemap-file-path", "test_sitemap", "sitemap.xml")
 	flag.StringVar(&commandline.api_url, "api-url", "http://localhost", "")
 	flag.StringVar(&commandline.zebedee_url, "zebedee-url", "http://localhost:8082", "")
 	flag.StringVar(&commandline.sitemap_index, "sitemap-index", "1", "OPENSEARCH_SITEMAP_INDEX")
@@ -100,7 +101,21 @@ func main() {
 	case 1:
 		GenerateSitemap(cfg, commandLine)
 	case 2:
-		UpdateSitemap(cfg, commandLine)
+		handler := event.ContentPublishedHandler{}
+		content := &event.ContentPublished{
+			URI:          "economy/environmentalaccounts/articles/testarticle3",
+			DataType:     "theDateType",
+			CollectionID: "theCollectionId",
+			JobID:        "theJobId",
+			SearchIndex:  "theSearchIndex",
+			TraceID:      "theTraceId",
+		}
+
+		err := handler.Handle(context.Background(), cfg, content)
+		if err != nil {
+			fmt.Println("Failed to handle event:", err)
+			return
+		}
 	}
 	GenerateRobotFile(cfg, commandLine)
 }
@@ -203,8 +218,4 @@ func menu() (int, error) {
 		}
 	}
 	return i, nil
-}
-
-func UpdateSitemap(cfg *config.Config, commandline *FlagFields) {
-
 }
