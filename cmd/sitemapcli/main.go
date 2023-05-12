@@ -91,7 +91,17 @@ func main() {
 		os.Exit(1)
 	}
 
-	GenerateSitemap(cfg, commandLine)
+	choice, err := menu()
+	if err != nil {
+		fmt.Println("Error retrieving user choice:", err)
+		os.Exit(1)
+	}
+	switch choice {
+	case 1:
+		GenerateSitemap(cfg, commandLine)
+	case 2:
+		UpdateSitemap(cfg, commandLine)
+	}
 	GenerateRobotFile(cfg, commandLine)
 }
 
@@ -179,4 +189,22 @@ func GenerateRobotFile(cfg *config.Config, commandline *FlagFields) {
 		fmt.Println("failed to save file")
 		return
 	}
+}
+
+func menu() (int, error) {
+	var i = 0
+	for i < 1 || i > 2 {
+		fmt.Println("*** Menu ***")
+		fmt.Println("1. Generate sitemap")
+		fmt.Println("2. Update sitemap")
+		fmt.Print("Choice: ")
+		if _, err := fmt.Scan(&i); err != nil {
+			return 0, err
+		}
+	}
+	return i, nil
+}
+
+func UpdateSitemap(cfg *config.Config, commandline *FlagFields) {
+
 }
