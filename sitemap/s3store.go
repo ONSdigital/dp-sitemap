@@ -52,7 +52,7 @@ func (s *S3Store) CopyFile(src io.Reader, dest io.Writer) error {
 	return nil
 }
 
-func (s *S3Store) CreateFile(name string) error {
+func (s *S3Store) CreateFile(name string) (io.ReadWriteCloser, error) {
 	// TODO
-	return nil
+	return nil, nil
 }

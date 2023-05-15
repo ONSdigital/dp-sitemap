@@ -48,7 +48,7 @@ func (h *ContentPublishedHandler) Handle(ctx context.Context, cfg *config.Config
 
 	generateTempSitemap()
 
-	currentSitemap, err := os.Create(currentSitemapName)
+	currentSitemap, err := h.FileStore.CreateFile(currentSitemapName)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)

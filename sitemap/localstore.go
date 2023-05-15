@@ -48,7 +48,10 @@ func (s *LocalStore) CopyFile(src io.Reader, dest io.Writer) error {
 	return nil
 }
 
-func (s *LocalStore) CreateFile(name string) error {
-	// TODO
-	return nil
+func (s *LocalStore) CreateFile(name string) (io.ReadWriteCloser, error) {
+	file, err := os.Create(name)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create file : %w", err)
+	}
+	return file, nil
 }
