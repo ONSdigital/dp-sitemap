@@ -55,9 +55,9 @@ func (h *ContentPublishedHandler) Handle(ctx context.Context, cfg *config.Config
 	}
 	defer currentSitemap.Close()
 
-	tmpSitemap, err := os.Open(tmpSitemapName)
+	tmpSitemap, err := h.FileStore.GetFile(tmpSitemapName)
 	if err != nil {
-		fmt.Println("open temp sitemap", err)
+		fmt.Println("Error opening temp sitemap", err)
 		os.Exit(1)
 	}
 	defer tmpSitemap.Close()
