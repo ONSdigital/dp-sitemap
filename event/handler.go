@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/ONSdigital/dp-sitemap/sitemap"
+	"net/url"
 	"os"
 	"time"
 
@@ -30,7 +31,8 @@ func (h *ContentPublishedHandler) Handle(ctx context.Context, cfg *config.Config
 
 		y, m, d := time.Now().Date()
 		date := fmt.Sprintf("%d-%d-%d", y, m, d)
-		var url = &sitemap.URL{Loc: event.URI, Lastmod: date}
+		enLoc, _ := url.JoinPath(cfg.DpOnsURLHostNameEn, event.URI)
+		var url = &sitemap.URL{Loc: enLoc, Lastmod: date}
 		currentSitemap, err := h.FileStore.GetFile(currentSitemapName)
 		if err != nil {
 			fmt.Println("Error opening current sitemap", err)
