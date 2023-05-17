@@ -6,6 +6,12 @@ VERSION ?= $(shell git tag --points-at HEAD | grep ^v | head -n 1)
 
 LDFLAGS = -ldflags "-X main.BuildTime=$(BUILD_TIME) -X main.GitCommit=$(GIT_COMMIT) -X main.Version=$(VERSION)"
 
+SITEMAP_CLI_PATH= cmd/sitemapcli
+
+.PHONY: run
+run:
+	go run ${SITEMAP_CLI_PATH}/main.go ${SITEMAP_CLI_PATH}/fake_scroll.go
+
 .PHONY: all
 all: audit test build
 
@@ -37,7 +43,7 @@ produce:
 .PHONY: convey
 convey:
 	goconvey ./...
-
+ 
 .PHONY: test-component
 test-component:
 	go test -cover -coverpkg=github.com/ONSdigital/dp-sitemap/... -component
