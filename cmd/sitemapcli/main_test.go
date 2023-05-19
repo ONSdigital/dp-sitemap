@@ -81,36 +81,3 @@ func TestValidConfig(t *testing.T) {
 		})
 	})
 }
-
-// func TestGenerateSitemap(t *testing.T) {
-// 	t.Log("test")
-// 	Convey("When config settings are given", func() {
-// 		// Create a dummy config object
-// 		cfg := &config.Config{
-// 			OpenSearchConfig: config.OpenSearchConfig{
-// 				APIURL: "http://localhost:9200",
-// 			},
-// 		}
-
-// 		// Create dummy commandline flags
-// 		commandline := &FlagFields{
-// 			api_url:      "http://localhost:9200",
-// 			zebedee_url:  "http://localhost:8082",
-// 			sitemap_path: "/tmp/sitemap",
-// 			fake_scroll:  true,
-// 		}
-
-// 		// Run the test using the Convey package
-// 		convey.Convey("Generate sitemap", t, func() {
-// 			convey.Convey("When given valid input", func() {
-
-// 				convey.Convey("Then it should generate sitemap", func() {
-// 					GenerateSitemap(cfg, commandline)
-// 					expectedOutput := "sitemap generation job complete\n"
-// 					convey.So(output, convey.ShouldEqual, expectedOutput)
-// 				})
-// 			})
-// 		})
-// 	})
-
-//Check if return is needed for the function GenerateSitemap

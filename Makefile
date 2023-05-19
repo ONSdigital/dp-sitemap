@@ -8,9 +8,9 @@ LDFLAGS = -ldflags "-X main.BuildTime=$(BUILD_TIME) -X main.GitCommit=$(GIT_COMM
 
 SITEMAP_CLI_PATH= cmd/sitemapcli
 
-.PHONY: run
-run:
-	go run ${SITEMAP_CLI_PATH}/main.go ${SITEMAP_CLI_PATH}/fake_scroll.go
+.PHONY: cli
+cli:
+	go run ${SITEMAP_CLI_PATH}/main.go ${SITEMAP_CLI_PATH}/fake_scroll.go 
 
 .PHONY: all
 all: audit test build
