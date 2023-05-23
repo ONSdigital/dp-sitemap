@@ -59,9 +59,11 @@ func (a *DefaultAdder) Add(oldSitemap io.Reader, url *URL) (fileName string, siz
 		u.Loc = url.Loc
 		u.Lastmod = url.Lastmod
 		u.Alternate = &AlternateURL{}
-		u.Alternate.Rel = url.Alternate.Rel
-		u.Alternate.Link = url.Alternate.Link
-		u.Alternate.Lang = url.Alternate.Lang
+		if url.Alternate != nil {
+			u.Alternate.Rel = url.Alternate.Rel
+			u.Alternate.Link = url.Alternate.Link
+			u.Alternate.Lang = url.Alternate.Lang
+		}
 		sitemap.URL = append(sitemap.URL, u)
 	}
 

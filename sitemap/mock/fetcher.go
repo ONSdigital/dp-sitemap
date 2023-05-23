@@ -15,25 +15,25 @@ var _ sitemap.Fetcher = &FetcherMock{}
 
 // FetcherMock is a mock implementation of sitemap.Fetcher.
 //
-// 	func TestSomethingThatUsesFetcher(t *testing.T) {
+//	func TestSomethingThatUsesFetcher(t *testing.T) {
 //
-// 		// make and configure a mocked sitemap.Fetcher
-// 		mockedFetcher := &FetcherMock{
-// 			GetFullSitemapFunc: func(ctx context.Context) (sitemap.Files, error) {
-// 				panic("mock out the GetFullSitemap method")
-// 			},
-// 			HasWelshContentFunc: func(ctx context.Context, path string) bool {
-// 				panic("mock out the HasWelshContent method")
-// 			},
-// 			URLVersionsFunc: func(ctx context.Context, path string, lastmod string) (sitemap.URL, *sitemap.URL) {
-// 				panic("mock out the URLVersions method")
-// 			},
-// 		}
+//		// make and configure a mocked sitemap.Fetcher
+//		mockedFetcher := &FetcherMock{
+//			GetFullSitemapFunc: func(ctx context.Context) (sitemap.Files, error) {
+//				panic("mock out the GetFullSitemap method")
+//			},
+//			HasWelshContentFunc: func(ctx context.Context, path string) bool {
+//				panic("mock out the HasWelshContent method")
+//			},
+//			URLVersionsFunc: func(ctx context.Context, path string, lastmod string) (sitemap.URL, *sitemap.URL) {
+//				panic("mock out the URLVersions method")
+//			},
+//		}
 //
-// 		// use mockedFetcher in code that requires sitemap.Fetcher
-// 		// and then make assertions.
+//		// use mockedFetcher in code that requires sitemap.Fetcher
+//		// and then make assertions.
 //
-// 	}
+//	}
 type FetcherMock struct {
 	// GetFullSitemapFunc mocks the GetFullSitemap method.
 	GetFullSitemapFunc func(ctx context.Context) (sitemap.Files, error)
@@ -91,7 +91,8 @@ func (mock *FetcherMock) GetFullSitemap(ctx context.Context) (sitemap.Files, err
 
 // GetFullSitemapCalls gets all the calls that were made to GetFullSitemap.
 // Check the length with:
-//     len(mockedFetcher.GetFullSitemapCalls())
+//
+//	len(mockedFetcher.GetFullSitemapCalls())
 func (mock *FetcherMock) GetFullSitemapCalls() []struct {
 	Ctx context.Context
 } {
@@ -124,7 +125,8 @@ func (mock *FetcherMock) HasWelshContent(ctx context.Context, path string) bool 
 
 // HasWelshContentCalls gets all the calls that were made to HasWelshContent.
 // Check the length with:
-//     len(mockedFetcher.HasWelshContentCalls())
+//
+//	len(mockedFetcher.HasWelshContentCalls())
 func (mock *FetcherMock) HasWelshContentCalls() []struct {
 	Ctx  context.Context
 	Path string
@@ -161,7 +163,8 @@ func (mock *FetcherMock) URLVersions(ctx context.Context, path string, lastmod s
 
 // URLVersionsCalls gets all the calls that were made to URLVersions.
 // Check the length with:
-//     len(mockedFetcher.URLVersionsCalls())
+//
+//	len(mockedFetcher.URLVersionsCalls())
 func (mock *FetcherMock) URLVersionsCalls() []struct {
 	Ctx     context.Context
 	Path    string

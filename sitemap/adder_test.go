@@ -62,19 +62,29 @@ func TestAdder(t *testing.T) {
 	})
 	Convey("When old sitemap contains urls", t, func() {
 		oldSitemap := strings.NewReader(`<?xml version="1.0" encoding="UTF-8"?>
-		<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-		  <url>
-			<loc>a</loc>
-			<lastmod>b</lastmod>
-		  </url>
-		  <url>
-		  <loc>c</loc>
-		  <lastmod>d</lastmod>
-		</url>
-		</urlset>`)
+  <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+    <url>
+      <loc>a</loc>
+      <lastmod>b</lastmod>
+      <xhtml:link>
+        <rel>A</rel>
+        <hreflang>B</hreflang>
+        <href>C</href>
+      </xhtml:link>
+    </url>
+    <url>
+      <loc>c</loc>
+      <lastmod>d</lastmod>
+      <xhtml:link>
+        <rel>D</rel>
+        <hreflang>E</hreflang>
+        <href>F</href>
+      </xhtml:link>
+    </url>
+  </urlset>`)
 
 		a := &sitemap.DefaultAdder{}
-		filename, size, err := a.Add(oldSitemap, &sitemap.URL{Loc: "e", Lastmod: "f"})
+		filename, size, err := a.Add(oldSitemap, &sitemap.URL{Loc: "e", Lastmod: "f", Alternate: &sitemap.AlternateURL{Rel: "G", Lang: "H", Link: "I"}})
 		defer func() {
 			removeErr := os.Remove(filename)
 			So(removeErr, ShouldBeNil)
@@ -99,14 +109,29 @@ func TestAdder(t *testing.T) {
   <url>
     <loc>a</loc>
     <lastmod>b</lastmod>
+    <xhtml:link>
+      <rel>A</rel>
+      <hreflang>B</hreflang>
+      <href>C</href>
+    </xhtml:link>
   </url>
   <url>
     <loc>c</loc>
     <lastmod>d</lastmod>
+    <xhtml:link>
+      <rel>D</rel>
+      <hreflang>E</hreflang>
+      <href>F</href>
+    </xhtml:link>
   </url>
   <url>
     <loc>e</loc>
     <lastmod>f</lastmod>
+    <xhtml:link>
+      <rel>G</rel>
+      <hreflang>H</hreflang>
+      <href>I</href>
+    </xhtml:link>
   </url>
 </urlset>`)
 		})
@@ -117,10 +142,20 @@ func TestAdder(t *testing.T) {
 		  <url>
 			<loc>a</loc>
 			<lastmod>b</lastmod>
+			<xhtml:link>
+      			<rel>A</rel>
+      			<hreflang>B</hreflang>
+      			<href>C</href>
+    		</xhtml:link>
 		  </url>
-		  <url>
-		  <loc>c</loc>
-		  <lastmod>d</lastmod>
+		  	<url>
+		  	<loc>c</loc>
+		  	<lastmod>d</lastmod>
+			<xhtml:link>
+      			<rel>D</rel>
+      			<hreflang>E</hreflang>
+      			<href>F</href>
+    		</xhtml:link>
 		</url>
 		</urlset>`)
 
@@ -150,10 +185,20 @@ func TestAdder(t *testing.T) {
   <url>
     <loc>a</loc>
     <lastmod>b</lastmod>
+    <xhtml:link>
+      <rel>A</rel>
+      <hreflang>B</hreflang>
+      <href>C</href>
+    </xhtml:link>
   </url>
   <url>
     <loc>c</loc>
     <lastmod>d</lastmod>
+    <xhtml:link>
+      <rel>D</rel>
+      <hreflang>E</hreflang>
+      <href>F</href>
+    </xhtml:link>
   </url>
 </urlset>`)
 		})

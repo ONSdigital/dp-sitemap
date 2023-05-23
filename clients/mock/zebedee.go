@@ -17,28 +17,34 @@ var _ clients.ZebedeeClient = &ZebedeeClientMock{}
 
 // ZebedeeClientMock is a mock implementation of clients.ZebedeeClient.
 //
-// 	func TestSomethingThatUsesZebedeeClient(t *testing.T) {
+//	func TestSomethingThatUsesZebedeeClient(t *testing.T) {
 //
-// 		// make and configure a mocked clients.ZebedeeClient
-// 		mockedZebedeeClient := &ZebedeeClientMock{
-// 			CheckerFunc: func(contextMoqParam context.Context, checkState *healthcheck.CheckState) error {
-// 				panic("mock out the Checker method")
-// 			},
-// 			GetFileSizeFunc: func(ctx context.Context, userAccessToken string, collectionID string, lang string, uri string) (zebedee.FileSize, error) {
-// 				panic("mock out the GetFileSize method")
-// 			},
-// 		}
+//		// make and configure a mocked clients.ZebedeeClient
+//		mockedZebedeeClient := &ZebedeeClientMock{
+//			CheckerFunc: func(contextMoqParam context.Context, checkState *healthcheck.CheckState) error {
+//				panic("mock out the Checker method")
+//			},
+//			GetFileSizeFunc: func(ctx context.Context, userAccessToken string, collectionID string, lang string, uri string) (zebedee.FileSize, error) {
+//				panic("mock out the GetFileSize method")
+//			},
+//			GetPageDescriptionFunc: func(ctx context.Context, userAccessToken string, collectionID string, lang string, uri string) (zebedee.PageDescription, error) {
+//				panic("mock out the GetPageDescription method")
+//			},
+//		}
 //
-// 		// use mockedZebedeeClient in code that requires clients.ZebedeeClient
-// 		// and then make assertions.
+//		// use mockedZebedeeClient in code that requires clients.ZebedeeClient
+//		// and then make assertions.
 //
-// 	}
+//	}
 type ZebedeeClientMock struct {
 	// CheckerFunc mocks the Checker method.
 	CheckerFunc func(contextMoqParam context.Context, checkState *healthcheck.CheckState) error
 
 	// GetFileSizeFunc mocks the GetFileSize method.
 	GetFileSizeFunc func(ctx context.Context, userAccessToken string, collectionID string, lang string, uri string) (zebedee.FileSize, error)
+
+	// GetPageDescriptionFunc mocks the GetPageDescription method.
+	GetPageDescriptionFunc func(ctx context.Context, userAccessToken string, collectionID string, lang string, uri string) (zebedee.PageDescription, error)
 
 	// calls tracks calls to the methods.
 	calls struct {
@@ -62,9 +68,23 @@ type ZebedeeClientMock struct {
 			// URI is the uri argument value.
 			URI string
 		}
+		// GetPageDescription holds details about calls to the GetPageDescription method.
+		GetPageDescription []struct {
+			// Ctx is the ctx argument value.
+			Ctx context.Context
+			// UserAccessToken is the userAccessToken argument value.
+			UserAccessToken string
+			// CollectionID is the collectionID argument value.
+			CollectionID string
+			// Lang is the lang argument value.
+			Lang string
+			// URI is the uri argument value.
+			URI string
+		}
 	}
-	lockChecker     sync.RWMutex
-	lockGetFileSize sync.RWMutex
+	lockChecker            sync.RWMutex
+	lockGetFileSize        sync.RWMutex
+	lockGetPageDescription sync.RWMutex
 }
 
 // Checker calls CheckerFunc.
@@ -87,7 +107,8 @@ func (mock *ZebedeeClientMock) Checker(contextMoqParam context.Context, checkSta
 
 // CheckerCalls gets all the calls that were made to Checker.
 // Check the length with:
-//     len(mockedZebedeeClient.CheckerCalls())
+//
+//	len(mockedZebedeeClient.CheckerCalls())
 func (mock *ZebedeeClientMock) CheckerCalls() []struct {
 	ContextMoqParam context.Context
 	CheckState      *healthcheck.CheckState
@@ -128,7 +149,8 @@ func (mock *ZebedeeClientMock) GetFileSize(ctx context.Context, userAccessToken 
 
 // GetFileSizeCalls gets all the calls that were made to GetFileSize.
 // Check the length with:
-//     len(mockedZebedeeClient.GetFileSizeCalls())
+//
+//	len(mockedZebedeeClient.GetFileSizeCalls())
 func (mock *ZebedeeClientMock) GetFileSizeCalls() []struct {
 	Ctx             context.Context
 	UserAccessToken string
@@ -146,5 +168,53 @@ func (mock *ZebedeeClientMock) GetFileSizeCalls() []struct {
 	mock.lockGetFileSize.RLock()
 	calls = mock.calls.GetFileSize
 	mock.lockGetFileSize.RUnlock()
+	return calls
+}
+
+// GetPageDescription calls GetPageDescriptionFunc.
+func (mock *ZebedeeClientMock) GetPageDescription(ctx context.Context, userAccessToken string, collectionID string, lang string, uri string) (zebedee.PageDescription, error) {
+	if mock.GetPageDescriptionFunc == nil {
+		panic("ZebedeeClientMock.GetPageDescriptionFunc: method is nil but ZebedeeClient.GetPageDescription was just called")
+	}
+	callInfo := struct {
+		Ctx             context.Context
+		UserAccessToken string
+		CollectionID    string
+		Lang            string
+		URI             string
+	}{
+		Ctx:             ctx,
+		UserAccessToken: userAccessToken,
+		CollectionID:    collectionID,
+		Lang:            lang,
+		URI:             uri,
+	}
+	mock.lockGetPageDescription.Lock()
+	mock.calls.GetPageDescription = append(mock.calls.GetPageDescription, callInfo)
+	mock.lockGetPageDescription.Unlock()
+	return mock.GetPageDescriptionFunc(ctx, userAccessToken, collectionID, lang, uri)
+}
+
+// GetPageDescriptionCalls gets all the calls that were made to GetPageDescription.
+// Check the length with:
+//
+//	len(mockedZebedeeClient.GetPageDescriptionCalls())
+func (mock *ZebedeeClientMock) GetPageDescriptionCalls() []struct {
+	Ctx             context.Context
+	UserAccessToken string
+	CollectionID    string
+	Lang            string
+	URI             string
+} {
+	var calls []struct {
+		Ctx             context.Context
+		UserAccessToken string
+		CollectionID    string
+		Lang            string
+		URI             string
+	}
+	mock.lockGetPageDescription.RLock()
+	calls = mock.calls.GetPageDescription
+	mock.lockGetPageDescription.RUnlock()
 	return calls
 }
