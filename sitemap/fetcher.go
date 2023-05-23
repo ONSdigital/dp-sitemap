@@ -81,6 +81,26 @@ type AlternateURL struct {
 	Link    string   `xml:"href,omitempty"`
 }
 
+type UrlsetReader struct {
+	XMLName xml.Name    `xml:"urlset"`
+	Xmlns   string      `xml:"xmlns,attr"`
+	URL     []URLReader `xml:"url"`
+}
+
+type URLReader struct {
+	XMLName   xml.Name            `xml:"url"`
+	Loc       string              `xml:"loc"`
+	Lastmod   string              `xml:"lastmod"`
+	Alternate *AlternateURLReader `xml:"link,omitempty"`
+}
+
+type AlternateURLReader struct {
+	XMLName xml.Name `xml:"link,omitempty"`
+	Rel     string   `xml:"rel,omitempty"`
+	Lang    string   `xml:"hreflang,omitempty"`
+	Link    string   `xml:"href,omitempty"`
+}
+
 type ElasticFetcher struct {
 	scroll  Scroll
 	cfg     *config.Config
