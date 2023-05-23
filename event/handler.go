@@ -3,25 +3,21 @@ package event
 import (
 	"context"
 	"fmt"
-	"github.com/ONSdigital/dp-sitemap/clients"
 	"github.com/ONSdigital/dp-sitemap/config"
 	"github.com/ONSdigital/dp-sitemap/sitemap"
 	"github.com/ONSdigital/log.go/v2/log"
-	"net/url"
 	"os"
 )
 
 type ContentPublishedHandler struct {
-	fileStore     sitemap.FileStore
-	zebedeeClient clients.ZebedeeClient
-	config        *config.Config
+	fileStore sitemap.FileStore
+	fetcher   *sitemap.ElasticFetcher
 }
 
-func NewContentPublishedHandler(store sitemap.FileStore, client clients.ZebedeeClient, cfg *config.Config) *ContentPublishedHandler {
+func NewContentPublishedHandler(store sitemap.FileStore, fetcher *sitemap.ElasticFetcher) *ContentPublishedHandler {
 	return &ContentPublishedHandler{
-		fileStore:     store,
-		zebedeeClient: client,
-		config:        cfg,
+		fileStore: store,
+		fetcher:   fetcher,
 	}
 }
 
@@ -39,7 +35,7 @@ func (h *ContentPublishedHandler) Handle(ctx context.Context, cfg *config.Config
 
 	currentSitemap, err := h.fileStore.CreateFile(currentSitemapName)
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println("Error creating current sitemap", err)
 		os.Exit(1)
 	}
 	defer currentSitemap.Close()
@@ -56,14 +52,12 @@ func (h *ContentPublishedHandler) Handle(ctx context.Context, cfg *config.Config
 }
 
 func (h *ContentPublishedHandler) generateTempSitemap(ctx context.Context, currentSitemapName string, event *ContentPublished) string {
-	description, err := h.zebedeeClient.GetPageDescription(ctx, "", "", "eng", event.URI)
+	description, err := h.fetcher.GetZebedeeClient().GetPageDescription(ctx, "", "", "eng", event.URI)
 	if err != nil {
 		fmt.Println("Error getting page description", err)
 		os.Exit(1)
 	}
 
-	enLoc, _ := url.JoinPath(h.config.DpOnsURLHostNameEn, event.URI)
-	var url = &sitemap.URL{Loc: enLoc, Lastmod: description.Description.ReleaseDate}
 	currentSitemap, err := h.fileStore.GetFile(currentSitemapName)
 	if err != nil {
 		fmt.Println("Error opening current sitemap", err)
@@ -71,8 +65,10 @@ func (h *ContentPublishedHandler) generateTempSitemap(ctx context.Context, curre
 	}
 	defer currentSitemap.Close()
 
+	urlEn, _ := h.fetcher.URLVersions(ctx, event.URI, description.Description.ReleaseDate)
+
 	var adder sitemap.DefaultAdder
-	tmpSitemapName, _, err := adder.Add(currentSitemap, url)
+	tmpSitemapName, _, err := adder.Add(currentSitemap, &urlEn)
 	if err != nil {
 		fmt.Println("Error creating temp sitemap file", err)
 		os.Exit(1)

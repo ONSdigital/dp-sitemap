@@ -231,3 +231,11 @@ func (f *ElasticFetcher) GetFullSitemap(ctx context.Context) (fileNames Files, e
 
 	return fileNames, nil
 }
+
+func (f *ElasticFetcher) GetZebedeeClient() clients.ZebedeeClient {
+	return f.zClient
+}
+
+func (f *ElasticFetcher) GetConfig() *config.Config {
+	return f.cfg
+}
