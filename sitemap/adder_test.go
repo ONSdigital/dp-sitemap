@@ -52,7 +52,7 @@ func TestAdder(t *testing.T) {
 			sitemapContent, err := os.ReadFile(filename)
 			So(err, ShouldBeNil)
 			So(string(sitemapContent), ShouldEqual, `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
     <loc>a</loc>
     <lastmod>b</lastmod>
@@ -105,7 +105,7 @@ func TestAdder(t *testing.T) {
 			sitemapContent, err := os.ReadFile(filename)
 			So(err, ShouldBeNil)
 			So(string(sitemapContent), ShouldEqual, `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
     <loc>a</loc>
     <lastmod>b</lastmod>
@@ -181,7 +181,7 @@ func TestAdder(t *testing.T) {
 			sitemapContent, err := os.ReadFile(filename)
 			So(err, ShouldBeNil)
 			So(string(sitemapContent), ShouldEqual, `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
     <loc>a</loc>
     <lastmod>b</lastmod>

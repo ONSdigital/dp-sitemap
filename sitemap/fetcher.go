@@ -64,6 +64,7 @@ type ElasticHitSource struct {
 type Urlset struct {
 	XMLName xml.Name `xml:"urlset"`
 	Xmlns   string   `xml:"xmlns,attr"`
+	Xhtml   string   `xml:"xmlns:xhtml,attr"`
 	URL     []URL    `xml:"url"`
 }
 
@@ -84,6 +85,7 @@ type AlternateURL struct {
 type UrlsetReader struct {
 	XMLName xml.Name    `xml:"urlset"`
 	Xmlns   string      `xml:"xmlns,attr"`
+	Xhtml   string      `xml:"xmlns:xhtml,attr"`
 	URL     []URLReader `xml:"url"`
 }
 
@@ -197,7 +199,7 @@ func (f *ElasticFetcher) GetFullSitemap(ctx context.Context) (fileNames Files, e
 	encCy := xml.NewEncoder(bufferedFileCy)
 	encCy.Indent("", "  ")
 
-	sitemapHdContent := xml.Header + `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">` + "\n"
+	sitemapHdContent := xml.Header + `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">` + "\n"
 	_, err = bufferedFileEn.WriteString(sitemapHdContent)
 	if err != nil {
 		return fileNames, fmt.Errorf("sitemap_en page xml header write error: %w", err)

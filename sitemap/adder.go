@@ -40,6 +40,7 @@ func (a *DefaultAdder) Add(oldSitemap io.Reader, url *URL) (fileName string, siz
 	// get the old sitemap
 	sitemapReader := UrlsetReader{
 		Xmlns: "http://www.sitemaps.org/schemas/sitemap/0.9",
+		Xhtml: "http://www.w3.org/1999/xhtml",
 	}
 	decoder := xml.NewDecoder(oldSitemap)
 	err = decoder.Decode(&sitemapReader)
@@ -52,6 +53,7 @@ func (a *DefaultAdder) Add(oldSitemap io.Reader, url *URL) (fileName string, siz
 	// move old sitemap urls to new sitemap
 	sitemap := Urlset{
 		Xmlns: "http://www.sitemaps.org/schemas/sitemap/0.9",
+		Xhtml: "http://www.w3.org/1999/xhtml",
 	}
 
 	for _, url := range sitemapReader.URL {

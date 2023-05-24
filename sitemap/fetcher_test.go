@@ -80,7 +80,7 @@ func TestFetcher(t *testing.T) {
 			sitemapContent, err := os.ReadFile(filenames[config.English])
 			So(err, ShouldBeNil)
 			So(string(sitemapContent), ShouldEqual, `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
 
 </urlset>`)
 		})
@@ -150,7 +150,7 @@ func TestFetcher(t *testing.T) {
 			sitemapContent, err := os.ReadFile(filenames[config.English])
 			So(err, ShouldBeNil)
 			So(string(sitemapContent), ShouldEqual, `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
 <url>
   <loc>uri_1</loc>
   <lastmod>2014-12-10</lastmod>
@@ -310,7 +310,7 @@ func TestFetcher(t *testing.T) {
 			sitemapContent, err := os.ReadFile(filenames[config.English])
 			So(err, ShouldBeNil)
 			So(string(sitemapContent), ShouldEqual, `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
 <url>
   <loc>uri_1</loc>
   <lastmod>2014-12-10</lastmod>
@@ -435,7 +435,7 @@ func TestFetcher(t *testing.T) {
 			sitemapContent, err := os.ReadFile(filenames[config.English])
 			So(err, ShouldBeNil)
 			So(string(sitemapContent), ShouldEqual, `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
 <url>
   <loc>uri_1</loc>
   <lastmod>2014-12-10</lastmod>
