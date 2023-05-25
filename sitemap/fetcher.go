@@ -77,9 +77,9 @@ type URL struct {
 
 type AlternateURL struct {
 	XMLName xml.Name `xml:"xhtml:link,omitempty"`
-	Rel     string   `xml:"rel,omitempty"`
-	Lang    string   `xml:"hreflang,omitempty"`
-	Link    string   `xml:"href,omitempty"`
+	Rel     string   `xml:"rel,omitempty,attr"`
+	Lang    string   `xml:"hreflang,omitempty,attr"`
+	Link    string   `xml:"href,omitempty,attr"`
 }
 
 type UrlsetReader struct {
@@ -98,9 +98,9 @@ type URLReader struct {
 
 type AlternateURLReader struct {
 	XMLName xml.Name `xml:"link,omitempty"`
-	Rel     string   `xml:"rel,omitempty"`
-	Lang    string   `xml:"hreflang,omitempty"`
-	Link    string   `xml:"href,omitempty"`
+	Rel     string   `xml:"rel,omitempty,attr"`
+	Lang    string   `xml:"hreflang,omitempty,attr"`
+	Link    string   `xml:"href,omitempty,attr"`
 }
 
 type ElasticFetcher struct {
