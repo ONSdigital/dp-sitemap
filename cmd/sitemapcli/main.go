@@ -169,8 +169,8 @@ func GenerateSitemap(cfg *config.Config, commandline *FlagFields) {
 		sitemap.WithAdder(&sitemap.DefaultAdder{}),
 		sitemap.WithFileStore(store),
 		sitemap.WithFullSitemapFiles(map[config.Language]string{
-			config.English: commandline.sitemap_path + "_eng",
-			config.Welsh:   commandline.sitemap_path + "_welsh",
+			config.English: commandline.sitemap_path + "_en",
+			config.Welsh:   commandline.sitemap_path + "_cy",
 		}),
 	)
 

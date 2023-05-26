@@ -7,6 +7,7 @@ import (
 	"github.com/ONSdigital/dp-sitemap/sitemap"
 	"github.com/ONSdigital/log.go/v2/log"
 	"os"
+	"strings"
 )
 
 type ContentPublishedHandler struct {
@@ -27,11 +28,34 @@ func (h *ContentPublishedHandler) Handle(ctx context.Context, cfg *config.Config
 		"eventContentPublished": event,
 	}
 	log.Info(ctx, "event handler called with event", logData)
+	urlEn := h.fetcher.URLVersion(ctx, event.URI, "", "eng")
+	urlCy := h.fetcher.URLVersion(ctx, event.URI, "", "cy")
+	if urlEn != nil {
+		err1 := h.createSiteMap(ctx, event, "eng", "test_sitemap_en")
+		if err1 != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+	}
 
-	currentSitemapName := "test_sitemap_eng"
+	// _, err = h.fetcher.GetZebedeeClient().GetPageDescription(ctx, "", "", "cy", event.URI)
+	if urlCy != nil {
+		err1 := h.createSiteMap(ctx, event, "cy", "test_sitemap_cy")
+		if err1 != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+	}
+
+	return nil
+}
+
+func (h *ContentPublishedHandler) createSiteMap(ctx context.Context, event *ContentPublished, lang string, sitemapName string) error {
+
+	currentSitemapName := sitemapName
 	var tmpSitemapName string
 
-	tmpSitemapName = h.generateTempSitemap(ctx, currentSitemapName, event)
+	tmpSitemapName = h.generateTempSitemap(ctx, currentSitemapName, event, lang)
 
 	currentSitemap, err := h.fileStore.CreateFile(currentSitemapName)
 	if err != nil {
@@ -51,8 +75,8 @@ func (h *ContentPublishedHandler) Handle(ctx context.Context, cfg *config.Config
 	return nil
 }
 
-func (h *ContentPublishedHandler) generateTempSitemap(ctx context.Context, currentSitemapName string, event *ContentPublished) string {
-	description, err := h.fetcher.GetZebedeeClient().GetPageDescription(ctx, "", "", "eng", event.URI)
+func (h *ContentPublishedHandler) generateTempSitemap(ctx context.Context, currentSitemapName string, event *ContentPublished, lang string) string {
+	description, err := h.fetcher.GetZebedeeClient().GetPageDescription(ctx, "", "", lang, event.URI)
 	if err != nil {
 		fmt.Println("Error getting page description", err)
 		os.Exit(1)
@@ -65,10 +89,10 @@ func (h *ContentPublishedHandler) generateTempSitemap(ctx context.Context, curre
 	}
 	defer currentSitemap.Close()
 
-	urlEn, _ := h.fetcher.URLVersions(ctx, event.URI, description.Description.ReleaseDate)
+	url := h.fetcher.URLVersion(ctx, event.URI, strings.SplitN(description.Description.ReleaseDate, "T", 2)[0], lang)
 
 	var adder sitemap.DefaultAdder
-	tmpSitemapName, _, err := adder.Add(currentSitemap, &urlEn)
+	tmpSitemapName, _, err := adder.Add(currentSitemap, url)
 	if err != nil {
 		fmt.Println("Error creating temp sitemap file", err)
 		os.Exit(1)

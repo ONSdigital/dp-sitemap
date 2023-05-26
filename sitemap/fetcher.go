@@ -153,6 +153,14 @@ func (f *ElasticFetcher) URLVersions(ctx context.Context, path, lastmod string) 
 	return
 }
 
+func (f *ElasticFetcher) URLVersion(ctx context.Context, path, lastmod string, lang string) *URL {
+	urlEn, urlCy := f.URLVersions(ctx, path, lastmod)
+	if lang == "cy" {
+		return urlCy
+	}
+	return &urlEn
+}
+
 var (
 	tempSitemapFileEn = "sitemap_en"
 	tempSitemapFileCy = "sitemap_cy"
