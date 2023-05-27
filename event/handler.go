@@ -7,7 +7,7 @@ import (
 	"github.com/ONSdigital/dp-sitemap/sitemap"
 	"github.com/ONSdigital/log.go/v2/log"
 	"os"
-	"strings"
+	"time"
 )
 
 type ContentPublishedHandler struct {
@@ -89,7 +89,12 @@ func (h *ContentPublishedHandler) generateTempSitemap(ctx context.Context, curre
 	}
 	defer currentSitemap.Close()
 
-	url := h.fetcher.URLVersion(ctx, event.URI, strings.SplitN(description.Description.ReleaseDate, "T", 2)[0], lang)
+	releaseDate, err := time.Parse(time.RFC3339, description.Description.ReleaseDate)
+	if err != nil {
+		fmt.Println("Error parsing the release date", err)
+		os.Exit(1)
+	}
+	url := h.fetcher.URLVersion(ctx, event.URI, releaseDate.Format("2006-01-02"), lang)
 
 	var adder sitemap.DefaultAdder
 	tmpSitemapName, _, err := adder.Add(currentSitemap, url)
