@@ -28,7 +28,7 @@ type FileStore interface {
 type Fetcher interface {
 	GetFullSitemap(ctx context.Context) (Files, error)
 	HasWelshContent(ctx context.Context, path string) bool
-	URLVersions(ctx context.Context, path string, lastmod string) (en URL, cy *URL)
+	URLVersions(ctx context.Context, path string, lastmod string) (en *URL, cy *URL)
 }
 type Adder interface {
 	Add(oldSitemap io.Reader, url *URL) (file string, size int, err error)
@@ -121,7 +121,7 @@ func (g *Generator) MakePublishingSitemap(ctx context.Context, url URL) error {
 		url.Lastmod,
 	)
 
-	size, err := g.AppendURL(ctx, currentSitemap, &urlEn, g.publishingSitemapFile)
+	size, err := g.AppendURL(ctx, currentSitemap, urlEn, g.publishingSitemapFile)
 	if err != nil {
 		return err
 	}

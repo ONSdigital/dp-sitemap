@@ -28,8 +28,7 @@ func (h *ContentPublishedHandler) Handle(ctx context.Context, cfg *config.Config
 		"eventContentPublished": event,
 	}
 	log.Info(ctx, "event handler called with event", logData)
-	urlEn := h.fetcher.URLVersion(ctx, event.URI, "", "eng")
-	urlCy := h.fetcher.URLVersion(ctx, event.URI, "", "cy")
+	urlEn, urlCy := h.fetcher.URLVersions(ctx, event.URI, "")
 	if urlEn != nil {
 		err1 := h.createSiteMap(ctx, event, "eng", "test_sitemap_en")
 		if err1 != nil {

@@ -25,7 +25,7 @@ var _ sitemap.Fetcher = &FetcherMock{}
 //			HasWelshContentFunc: func(ctx context.Context, path string) bool {
 //				panic("mock out the HasWelshContent method")
 //			},
-//			URLVersionsFunc: func(ctx context.Context, path string, lastmod string) (sitemap.URL, *sitemap.URL) {
+//			URLVersionsFunc: func(ctx context.Context, path string, lastmod string) (*sitemap.URL, *sitemap.URL) {
 //				panic("mock out the URLVersions method")
 //			},
 //		}
@@ -42,7 +42,7 @@ type FetcherMock struct {
 	HasWelshContentFunc func(ctx context.Context, path string) bool
 
 	// URLVersionsFunc mocks the URLVersions method.
-	URLVersionsFunc func(ctx context.Context, path string, lastmod string) (sitemap.URL, *sitemap.URL)
+	URLVersionsFunc func(ctx context.Context, path string, lastmod string) (*sitemap.URL, *sitemap.URL)
 
 	// calls tracks calls to the methods.
 	calls struct {
@@ -142,7 +142,7 @@ func (mock *FetcherMock) HasWelshContentCalls() []struct {
 }
 
 // URLVersions calls URLVersionsFunc.
-func (mock *FetcherMock) URLVersions(ctx context.Context, path string, lastmod string) (sitemap.URL, *sitemap.URL) {
+func (mock *FetcherMock) URLVersions(ctx context.Context, path string, lastmod string) (*sitemap.URL, *sitemap.URL) {
 	if mock.URLVersionsFunc == nil {
 		panic("FetcherMock.URLVersionsFunc: method is nil but Fetcher.URLVersions was just called")
 	}

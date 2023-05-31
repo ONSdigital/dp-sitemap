@@ -66,20 +66,12 @@ func TestAdder(t *testing.T) {
     <url>
       <loc>a</loc>
       <lastmod>b</lastmod>
-      <xhtml:link>
-        <rel>A</rel>
-        <hreflang>B</hreflang>
-        <href>C</href>
-      </xhtml:link>
+      <xhtml:link rel="A" hreflang="B" href="C"></xhtml:link>
     </url>
     <url>
       <loc>c</loc>
       <lastmod>d</lastmod>
-      <xhtml:link>
-        <rel>D</rel>
-        <hreflang>E</hreflang>
-        <href>F</href>
-      </xhtml:link>
+      <xhtml:link rel="D" hreflang="E" href="F"></xhtml:link>
     </url>
   </urlset>`)
 
@@ -109,29 +101,17 @@ func TestAdder(t *testing.T) {
   <url>
     <loc>a</loc>
     <lastmod>b</lastmod>
-    <xhtml:link>
-      <rel>A</rel>
-      <hreflang>B</hreflang>
-      <href>C</href>
-    </xhtml:link>
+    <xhtml:link rel="A" hreflang="B" href="C"></xhtml:link>
   </url>
   <url>
     <loc>c</loc>
     <lastmod>d</lastmod>
-    <xhtml:link>
-      <rel>D</rel>
-      <hreflang>E</hreflang>
-      <href>F</href>
-    </xhtml:link>
+    <xhtml:link rel="D" hreflang="E" href="F"></xhtml:link>
   </url>
   <url>
     <loc>e</loc>
     <lastmod>f</lastmod>
-    <xhtml:link>
-      <rel>G</rel>
-      <hreflang>H</hreflang>
-      <href>I</href>
-    </xhtml:link>
+    <xhtml:link rel="G" hreflang="H" href="I"></xhtml:link>
   </url>
 </urlset>`)
 		})
@@ -142,20 +122,12 @@ func TestAdder(t *testing.T) {
 		  <url>
 			<loc>a</loc>
 			<lastmod>b</lastmod>
-			<xhtml:link>
-      			<rel>A</rel>
-      			<hreflang>B</hreflang>
-      			<href>C</href>
-    		</xhtml:link>
+			<xhtml:link rel="A" hreflang="B" href="C"></xhtml:link>
 		  </url>
 		  	<url>
 		  	<loc>c</loc>
 		  	<lastmod>d</lastmod>
-			<xhtml:link>
-      			<rel>D</rel>
-      			<hreflang>E</hreflang>
-      			<href>F</href>
-    		</xhtml:link>
+			<xhtml:link rel="D" hreflang="E" href="F"></xhtml:link>
 		</url>
 		</urlset>`)
 
@@ -185,20 +157,12 @@ func TestAdder(t *testing.T) {
   <url>
     <loc>a</loc>
     <lastmod>b</lastmod>
-    <xhtml:link>
-      <rel>A</rel>
-      <hreflang>B</hreflang>
-      <href>C</href>
-    </xhtml:link>
+    <xhtml:link rel="A" hreflang="B" href="C"></xhtml:link>
   </url>
   <url>
     <loc>c</loc>
     <lastmod>d</lastmod>
-    <xhtml:link>
-      <rel>D</rel>
-      <hreflang>E</hreflang>
-      <href>F</href>
-    </xhtml:link>
+    <xhtml:link rel="D" hreflang="E" href="F"></xhtml:link>
   </url>
 </urlset>`)
 		})

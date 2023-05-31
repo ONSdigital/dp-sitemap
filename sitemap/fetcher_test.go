@@ -439,56 +439,32 @@ func TestFetcher(t *testing.T) {
 <url>
   <loc>uri_1</loc>
   <lastmod>2014-12-10</lastmod>
-  <xhtml:link>
-    <rel>alternate</rel>
-    <hreflang>cy</hreflang>
-    <href>uri_1</href>
-  </xhtml:link>
+  <xhtml:link rel="alternate" hreflang="cy" href="uri_1"></xhtml:link>
 </url>
 <url>
   <loc>uri_2</loc>
   <lastmod>2023-03-31</lastmod>
-  <xhtml:link>
-    <rel>alternate</rel>
-    <hreflang>cy</hreflang>
-    <href>uri_2</href>
-  </xhtml:link>
+  <xhtml:link rel="alternate" hreflang="cy" href="uri_2"></xhtml:link>
 </url>
 <url>
   <loc>uri_3</loc>
   <lastmod>2015-12-10</lastmod>
-  <xhtml:link>
-    <rel>alternate</rel>
-    <hreflang>cy</hreflang>
-    <href>uri_3</href>
-  </xhtml:link>
+  <xhtml:link rel="alternate" hreflang="cy" href="uri_3"></xhtml:link>
 </url>
 <url>
   <loc>uri_4</loc>
   <lastmod>2024-03-31</lastmod>
-  <xhtml:link>
-    <rel>alternate</rel>
-    <hreflang>cy</hreflang>
-    <href>uri_4</href>
-  </xhtml:link>
+  <xhtml:link rel="alternate" hreflang="cy" href="uri_4"></xhtml:link>
 </url>
 <url>
   <loc>uri_3</loc>
   <lastmod>2015-12-10</lastmod>
-  <xhtml:link>
-    <rel>alternate</rel>
-    <hreflang>cy</hreflang>
-    <href>uri_3</href>
-  </xhtml:link>
+  <xhtml:link rel="alternate" hreflang="cy" href="uri_3"></xhtml:link>
 </url>
 <url>
   <loc>uri_4</loc>
   <lastmod>2024-03-31</lastmod>
-  <xhtml:link>
-    <rel>alternate</rel>
-    <hreflang>cy</hreflang>
-    <href>uri_4</href>
-  </xhtml:link>
+  <xhtml:link rel="alternate" hreflang="cy" href="uri_4"></xhtml:link>
 </url>
 </urlset>`)
 		})
