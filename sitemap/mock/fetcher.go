@@ -5,6 +5,8 @@ package mock
 
 import (
 	"context"
+	"github.com/ONSdigital/dp-sitemap/clients"
+	"github.com/ONSdigital/dp-sitemap/config"
 	"github.com/ONSdigital/dp-sitemap/sitemap"
 	"sync"
 )
@@ -19,11 +21,20 @@ var _ sitemap.Fetcher = &FetcherMock{}
 //
 //		// make and configure a mocked sitemap.Fetcher
 //		mockedFetcher := &FetcherMock{
+//			GetConfigFunc: func() *config.Config {
+//				panic("mock out the GetConfig method")
+//			},
 //			GetFullSitemapFunc: func(ctx context.Context) (sitemap.Files, error) {
 //				panic("mock out the GetFullSitemap method")
 //			},
+//			GetZebedeeClientFunc: func() clients.ZebedeeClient {
+//				panic("mock out the GetZebedeeClient method")
+//			},
 //			HasWelshContentFunc: func(ctx context.Context, path string) bool {
 //				panic("mock out the HasWelshContent method")
+//			},
+//			URLVersionFunc: func(ctx context.Context, path string, lastmod string, lang string) *sitemap.URL {
+//				panic("mock out the URLVersion method")
 //			},
 //			URLVersionsFunc: func(ctx context.Context, path string, lastmod string) (*sitemap.URL, *sitemap.URL) {
 //				panic("mock out the URLVersions method")
@@ -35,21 +46,36 @@ var _ sitemap.Fetcher = &FetcherMock{}
 //
 //	}
 type FetcherMock struct {
+	// GetConfigFunc mocks the GetConfig method.
+	GetConfigFunc func() *config.Config
+
 	// GetFullSitemapFunc mocks the GetFullSitemap method.
 	GetFullSitemapFunc func(ctx context.Context) (sitemap.Files, error)
 
+	// GetZebedeeClientFunc mocks the GetZebedeeClient method.
+	GetZebedeeClientFunc func() clients.ZebedeeClient
+
 	// HasWelshContentFunc mocks the HasWelshContent method.
 	HasWelshContentFunc func(ctx context.Context, path string) bool
+
+	// URLVersionFunc mocks the URLVersion method.
+	URLVersionFunc func(ctx context.Context, path string, lastmod string, lang string) *sitemap.URL
 
 	// URLVersionsFunc mocks the URLVersions method.
 	URLVersionsFunc func(ctx context.Context, path string, lastmod string) (*sitemap.URL, *sitemap.URL)
 
 	// calls tracks calls to the methods.
 	calls struct {
+		// GetConfig holds details about calls to the GetConfig method.
+		GetConfig []struct {
+		}
 		// GetFullSitemap holds details about calls to the GetFullSitemap method.
 		GetFullSitemap []struct {
 			// Ctx is the ctx argument value.
 			Ctx context.Context
+		}
+		// GetZebedeeClient holds details about calls to the GetZebedeeClient method.
+		GetZebedeeClient []struct {
 		}
 		// HasWelshContent holds details about calls to the HasWelshContent method.
 		HasWelshContent []struct {
@@ -57,6 +83,17 @@ type FetcherMock struct {
 			Ctx context.Context
 			// Path is the path argument value.
 			Path string
+		}
+		// URLVersion holds details about calls to the URLVersion method.
+		URLVersion []struct {
+			// Ctx is the ctx argument value.
+			Ctx context.Context
+			// Path is the path argument value.
+			Path string
+			// Lastmod is the lastmod argument value.
+			Lastmod string
+			// Lang is the lang argument value.
+			Lang string
 		}
 		// URLVersions holds details about calls to the URLVersions method.
 		URLVersions []struct {
@@ -68,9 +105,39 @@ type FetcherMock struct {
 			Lastmod string
 		}
 	}
-	lockGetFullSitemap  sync.RWMutex
-	lockHasWelshContent sync.RWMutex
-	lockURLVersions     sync.RWMutex
+	lockGetConfig        sync.RWMutex
+	lockGetFullSitemap   sync.RWMutex
+	lockGetZebedeeClient sync.RWMutex
+	lockHasWelshContent  sync.RWMutex
+	lockURLVersion       sync.RWMutex
+	lockURLVersions      sync.RWMutex
+}
+
+// GetConfig calls GetConfigFunc.
+func (mock *FetcherMock) GetConfig() *config.Config {
+	if mock.GetConfigFunc == nil {
+		panic("FetcherMock.GetConfigFunc: method is nil but Fetcher.GetConfig was just called")
+	}
+	callInfo := struct {
+	}{}
+	mock.lockGetConfig.Lock()
+	mock.calls.GetConfig = append(mock.calls.GetConfig, callInfo)
+	mock.lockGetConfig.Unlock()
+	return mock.GetConfigFunc()
+}
+
+// GetConfigCalls gets all the calls that were made to GetConfig.
+// Check the length with:
+//
+//	len(mockedFetcher.GetConfigCalls())
+func (mock *FetcherMock) GetConfigCalls() []struct {
+} {
+	var calls []struct {
+	}
+	mock.lockGetConfig.RLock()
+	calls = mock.calls.GetConfig
+	mock.lockGetConfig.RUnlock()
+	return calls
 }
 
 // GetFullSitemap calls GetFullSitemapFunc.
@@ -102,6 +169,33 @@ func (mock *FetcherMock) GetFullSitemapCalls() []struct {
 	mock.lockGetFullSitemap.RLock()
 	calls = mock.calls.GetFullSitemap
 	mock.lockGetFullSitemap.RUnlock()
+	return calls
+}
+
+// GetZebedeeClient calls GetZebedeeClientFunc.
+func (mock *FetcherMock) GetZebedeeClient() clients.ZebedeeClient {
+	if mock.GetZebedeeClientFunc == nil {
+		panic("FetcherMock.GetZebedeeClientFunc: method is nil but Fetcher.GetZebedeeClient was just called")
+	}
+	callInfo := struct {
+	}{}
+	mock.lockGetZebedeeClient.Lock()
+	mock.calls.GetZebedeeClient = append(mock.calls.GetZebedeeClient, callInfo)
+	mock.lockGetZebedeeClient.Unlock()
+	return mock.GetZebedeeClientFunc()
+}
+
+// GetZebedeeClientCalls gets all the calls that were made to GetZebedeeClient.
+// Check the length with:
+//
+//	len(mockedFetcher.GetZebedeeClientCalls())
+func (mock *FetcherMock) GetZebedeeClientCalls() []struct {
+} {
+	var calls []struct {
+	}
+	mock.lockGetZebedeeClient.RLock()
+	calls = mock.calls.GetZebedeeClient
+	mock.lockGetZebedeeClient.RUnlock()
 	return calls
 }
 
@@ -138,6 +232,50 @@ func (mock *FetcherMock) HasWelshContentCalls() []struct {
 	mock.lockHasWelshContent.RLock()
 	calls = mock.calls.HasWelshContent
 	mock.lockHasWelshContent.RUnlock()
+	return calls
+}
+
+// URLVersion calls URLVersionFunc.
+func (mock *FetcherMock) URLVersion(ctx context.Context, path string, lastmod string, lang string) *sitemap.URL {
+	if mock.URLVersionFunc == nil {
+		panic("FetcherMock.URLVersionFunc: method is nil but Fetcher.URLVersion was just called")
+	}
+	callInfo := struct {
+		Ctx     context.Context
+		Path    string
+		Lastmod string
+		Lang    string
+	}{
+		Ctx:     ctx,
+		Path:    path,
+		Lastmod: lastmod,
+		Lang:    lang,
+	}
+	mock.lockURLVersion.Lock()
+	mock.calls.URLVersion = append(mock.calls.URLVersion, callInfo)
+	mock.lockURLVersion.Unlock()
+	return mock.URLVersionFunc(ctx, path, lastmod, lang)
+}
+
+// URLVersionCalls gets all the calls that were made to URLVersion.
+// Check the length with:
+//
+//	len(mockedFetcher.URLVersionCalls())
+func (mock *FetcherMock) URLVersionCalls() []struct {
+	Ctx     context.Context
+	Path    string
+	Lastmod string
+	Lang    string
+} {
+	var calls []struct {
+		Ctx     context.Context
+		Path    string
+		Lastmod string
+		Lang    string
+	}
+	mock.lockURLVersion.RLock()
+	calls = mock.calls.URLVersion
+	mock.lockURLVersion.RUnlock()
 	return calls
 }
 

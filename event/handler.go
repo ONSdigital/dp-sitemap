@@ -12,10 +12,10 @@ import (
 
 type ContentPublishedHandler struct {
 	fileStore sitemap.FileStore
-	fetcher   *sitemap.ElasticFetcher
+	fetcher   sitemap.Fetcher
 }
 
-func NewContentPublishedHandler(store sitemap.FileStore, fetcher *sitemap.ElasticFetcher) *ContentPublishedHandler {
+func NewContentPublishedHandler(store sitemap.FileStore, fetcher sitemap.Fetcher) *ContentPublishedHandler {
 	return &ContentPublishedHandler{
 		fileStore: store,
 		fetcher:   fetcher,
