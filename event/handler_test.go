@@ -58,6 +58,15 @@ func TestHandle(t *testing.T) {
 			return nil
 		}
 
+		fetcher.GetPageInfoFunc = func(ctx context.Context, path string) (sitemap.PageInfo, error) {
+			urlEn := &sitemap.URL{Loc: path, Lastmod: "2006-01-02T15:04:05Z"}
+			urlCy := &sitemap.URL{Loc: path, Lastmod: "2006-01-02T15:04:05Z"}
+			return sitemap.PageInfo{
+				ReleaseDate: "2006-01-02",
+				URLs:        map[config.Language]*sitemap.URL{config.English: urlEn, config.Welsh: urlCy},
+			}, nil
+		}
+
 		err := handler.Handle(context.Background(), cfg, content)
 		Convey("There should be no error", func() {
 			So(err, ShouldBeNil)

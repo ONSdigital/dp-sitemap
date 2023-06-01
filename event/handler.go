@@ -6,7 +6,6 @@ import (
 	"github.com/ONSdigital/dp-sitemap/config"
 	"github.com/ONSdigital/dp-sitemap/sitemap"
 	"github.com/ONSdigital/log.go/v2/log"
-	"time"
 )
 
 type ContentPublishedHandler struct {
@@ -31,17 +30,21 @@ func (h *ContentPublishedHandler) Handle(ctx context.Context, cfg *config.Config
 		"eventContentPublished": event,
 	}
 	log.Info(ctx, "event handler called with event", logData)
-	urlEn, urlCy := h.fetcher.URLVersions(ctx, event.URI, "")
-	if urlEn != nil {
-		err = h.createSiteMap(ctx, event, "eng", "test_sitemap_en")
+	pageInfo, err := h.fetcher.GetPageInfo(ctx, event.URI)
+	if err != nil {
+		log.Error(ctx, "Error getting page information for \""+event.URI+"\"", err)
+		return err
+	}
+
+	if pageInfo.URLs[config.English] != nil {
+		err = h.createSiteMap(ctx, config.English, "test_sitemap_en", pageInfo)
 		if err != nil {
 			return err
 		}
 	}
 
-	// _, err = h.fetcher.GetZebedeeClient().GetPageDescription(ctx, "", "", "cy", event.URI)
-	if urlCy != nil {
-		err = h.createSiteMap(ctx, event, "cy", "test_sitemap_cy")
+	if pageInfo.URLs[config.Welsh] != nil {
+		err = h.createSiteMap(ctx, config.Welsh, "test_sitemap_cy", pageInfo)
 		if err != nil {
 			return err
 		}
@@ -50,12 +53,12 @@ func (h *ContentPublishedHandler) Handle(ctx context.Context, cfg *config.Config
 	return nil
 }
 
-func (h *ContentPublishedHandler) createSiteMap(ctx context.Context, event *ContentPublished, lang string, sitemapName string) error {
+func (h *ContentPublishedHandler) createSiteMap(ctx context.Context, lang config.Language, sitemapName string, pageInfo sitemap.PageInfo) error {
 
 	currentSitemapName := sitemapName
 	var tmpSitemapName string
 
-	tmpSitemapName, err := h.generateTempSitemap(ctx, currentSitemapName, event, lang)
+	tmpSitemapName, err := h.generateTempSitemap(ctx, currentSitemapName, lang, pageInfo)
 	if err != nil {
 		return err
 	}
@@ -79,13 +82,7 @@ func (h *ContentPublishedHandler) createSiteMap(ctx context.Context, event *Cont
 	return nil
 }
 
-func (h *ContentPublishedHandler) generateTempSitemap(ctx context.Context, currentSitemapName string, event *ContentPublished, lang string) (string, error) {
-	description, err := h.zebedeeClient.GetPageDescription(ctx, "", "", lang, event.URI)
-	if err != nil {
-		log.Error(ctx, "Error getting page description", err)
-		return "", err
-	}
-
+func (h *ContentPublishedHandler) generateTempSitemap(ctx context.Context, currentSitemapName string, lang config.Language, pageInfo sitemap.PageInfo) (string, error) {
 	currentSitemap, err := h.fileStore.GetFile(currentSitemapName)
 	if err != nil {
 		log.Error(ctx, "Error opening current sitemap", err)
@@ -93,15 +90,8 @@ func (h *ContentPublishedHandler) generateTempSitemap(ctx context.Context, curre
 	}
 	defer currentSitemap.Close()
 
-	releaseDate, err := time.Parse(time.RFC3339, description.Description.ReleaseDate)
-	if err != nil {
-		log.Error(ctx, "Error parsing the release date", err)
-		return "", err
-	}
-	url := h.fetcher.URLVersion(ctx, event.URI, releaseDate.Format("2006-01-02"), lang)
-
 	var adder sitemap.DefaultAdder
-	tmpSitemapName, _, err := adder.Add(currentSitemap, url)
+	tmpSitemapName, _, err := adder.Add(currentSitemap, pageInfo.URLs[lang])
 	if err != nil {
 		log.Error(ctx, "Error creating temp sitemap file", err)
 		return "", err

@@ -22,6 +22,9 @@ var _ sitemap.Fetcher = &FetcherMock{}
 //			GetFullSitemapFunc: func(ctx context.Context) (sitemap.Files, error) {
 //				panic("mock out the GetFullSitemap method")
 //			},
+//			GetPageInfoFunc: func(ctx context.Context, path string) (sitemap.PageInfo, error) {
+//				panic("mock out the GetPageInfo method")
+//			},
 //			HasWelshContentFunc: func(ctx context.Context, path string) bool {
 //				panic("mock out the HasWelshContent method")
 //			},
@@ -41,6 +44,9 @@ type FetcherMock struct {
 	// GetFullSitemapFunc mocks the GetFullSitemap method.
 	GetFullSitemapFunc func(ctx context.Context) (sitemap.Files, error)
 
+	// GetPageInfoFunc mocks the GetPageInfo method.
+	GetPageInfoFunc func(ctx context.Context, path string) (sitemap.PageInfo, error)
+
 	// HasWelshContentFunc mocks the HasWelshContent method.
 	HasWelshContentFunc func(ctx context.Context, path string) bool
 
@@ -56,6 +62,13 @@ type FetcherMock struct {
 		GetFullSitemap []struct {
 			// Ctx is the ctx argument value.
 			Ctx context.Context
+		}
+		// GetPageInfo holds details about calls to the GetPageInfo method.
+		GetPageInfo []struct {
+			// Ctx is the ctx argument value.
+			Ctx context.Context
+			// Path is the path argument value.
+			Path string
 		}
 		// HasWelshContent holds details about calls to the HasWelshContent method.
 		HasWelshContent []struct {
@@ -86,6 +99,7 @@ type FetcherMock struct {
 		}
 	}
 	lockGetFullSitemap  sync.RWMutex
+	lockGetPageInfo     sync.RWMutex
 	lockHasWelshContent sync.RWMutex
 	lockURLVersion      sync.RWMutex
 	lockURLVersions     sync.RWMutex
@@ -120,6 +134,42 @@ func (mock *FetcherMock) GetFullSitemapCalls() []struct {
 	mock.lockGetFullSitemap.RLock()
 	calls = mock.calls.GetFullSitemap
 	mock.lockGetFullSitemap.RUnlock()
+	return calls
+}
+
+// GetPageInfo calls GetPageInfoFunc.
+func (mock *FetcherMock) GetPageInfo(ctx context.Context, path string) (sitemap.PageInfo, error) {
+	if mock.GetPageInfoFunc == nil {
+		panic("FetcherMock.GetPageInfoFunc: method is nil but Fetcher.GetPageInfo was just called")
+	}
+	callInfo := struct {
+		Ctx  context.Context
+		Path string
+	}{
+		Ctx:  ctx,
+		Path: path,
+	}
+	mock.lockGetPageInfo.Lock()
+	mock.calls.GetPageInfo = append(mock.calls.GetPageInfo, callInfo)
+	mock.lockGetPageInfo.Unlock()
+	return mock.GetPageInfoFunc(ctx, path)
+}
+
+// GetPageInfoCalls gets all the calls that were made to GetPageInfo.
+// Check the length with:
+//
+//	len(mockedFetcher.GetPageInfoCalls())
+func (mock *FetcherMock) GetPageInfoCalls() []struct {
+	Ctx  context.Context
+	Path string
+} {
+	var calls []struct {
+		Ctx  context.Context
+		Path string
+	}
+	mock.lockGetPageInfo.RLock()
+	calls = mock.calls.GetPageInfo
+	mock.lockGetPageInfo.RUnlock()
 	return calls
 }
 
