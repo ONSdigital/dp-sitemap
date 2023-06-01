@@ -3,7 +3,6 @@ package sitemap
 import (
 	"context"
 	"fmt"
-	"github.com/ONSdigital/dp-sitemap/clients"
 	"io"
 	"os"
 	"strings"
@@ -31,8 +30,6 @@ type Fetcher interface {
 	HasWelshContent(ctx context.Context, path string) bool
 	URLVersions(ctx context.Context, path string, lastmod string) (en *URL, cy *URL)
 	URLVersion(ctx context.Context, path, lastmod string, lang string) *URL
-	GetZebedeeClient() clients.ZebedeeClient
-	GetConfig() *config.Config
 }
 type Adder interface {
 	Add(oldSitemap io.Reader, url *URL) (file string, size int, err error)

@@ -103,7 +103,7 @@ func main() {
 	case 2:
 		zebedeeClient := zebedee.New(commandLine.zebedee_url)
 		fetcher := sitemap.NewElasticFetcher(&FakeScroll{}, cfg, zebedeeClient)
-		handler := event.NewContentPublishedHandler(&sitemap.LocalStore{}, fetcher)
+		handler := event.NewContentPublishedHandler(&sitemap.LocalStore{}, zebedeeClient, cfg, fetcher)
 		content := &event.ContentPublished{
 			URI:          "economy/environmentalaccounts/articles/testarticle3",
 			DataType:     "theDateType",

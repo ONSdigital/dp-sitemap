@@ -3,7 +3,6 @@ package event
 import (
 	"context"
 	"github.com/ONSdigital/dp-api-clients-go/v2/zebedee"
-	"github.com/ONSdigital/dp-sitemap/clients"
 	mock2 "github.com/ONSdigital/dp-sitemap/clients/mock"
 	"github.com/ONSdigital/dp-sitemap/config"
 	"github.com/ONSdigital/dp-sitemap/sitemap"
@@ -21,8 +20,8 @@ func TestHandle(t *testing.T) {
 		store := &mock.FileStoreMock{}
 		fetcher := &mock.FetcherMock{}
 		zebedeeClient := &mock2.ZebedeeClientMock{}
-		handler := NewContentPublishedHandler(store, fetcher)
 		cfg, _ := config.Get()
+		handler := NewContentPublishedHandler(store, zebedeeClient, cfg, fetcher)
 		content := &ContentPublished{
 			URI:          "economy/environmentalaccounts/articles/testarticle3",
 			DataType:     "theDateType",
@@ -38,10 +37,6 @@ func TestHandle(t *testing.T) {
 
 		fetcher.URLVersionFunc = func(ctx context.Context, path string, lastmod string, lang string) *sitemap.URL {
 			return &sitemap.URL{Loc: path, Lastmod: lastmod}
-		}
-
-		fetcher.GetZebedeeClientFunc = func() clients.ZebedeeClient {
-			return zebedeeClient
 		}
 
 		zebedeeClient.GetPageDescriptionFunc = func(ctx context.Context, userAccessToken string, collectionID string, lang string, uri string) (zebedee.PageDescription, error) {

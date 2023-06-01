@@ -5,8 +5,6 @@ package mock
 
 import (
 	"context"
-	"github.com/ONSdigital/dp-sitemap/clients"
-	"github.com/ONSdigital/dp-sitemap/config"
 	"github.com/ONSdigital/dp-sitemap/sitemap"
 	"sync"
 )
@@ -21,14 +19,8 @@ var _ sitemap.Fetcher = &FetcherMock{}
 //
 //		// make and configure a mocked sitemap.Fetcher
 //		mockedFetcher := &FetcherMock{
-//			GetConfigFunc: func() *config.Config {
-//				panic("mock out the GetConfig method")
-//			},
 //			GetFullSitemapFunc: func(ctx context.Context) (sitemap.Files, error) {
 //				panic("mock out the GetFullSitemap method")
-//			},
-//			GetZebedeeClientFunc: func() clients.ZebedeeClient {
-//				panic("mock out the GetZebedeeClient method")
 //			},
 //			HasWelshContentFunc: func(ctx context.Context, path string) bool {
 //				panic("mock out the HasWelshContent method")
@@ -46,14 +38,8 @@ var _ sitemap.Fetcher = &FetcherMock{}
 //
 //	}
 type FetcherMock struct {
-	// GetConfigFunc mocks the GetConfig method.
-	GetConfigFunc func() *config.Config
-
 	// GetFullSitemapFunc mocks the GetFullSitemap method.
 	GetFullSitemapFunc func(ctx context.Context) (sitemap.Files, error)
-
-	// GetZebedeeClientFunc mocks the GetZebedeeClient method.
-	GetZebedeeClientFunc func() clients.ZebedeeClient
 
 	// HasWelshContentFunc mocks the HasWelshContent method.
 	HasWelshContentFunc func(ctx context.Context, path string) bool
@@ -66,16 +52,10 @@ type FetcherMock struct {
 
 	// calls tracks calls to the methods.
 	calls struct {
-		// GetConfig holds details about calls to the GetConfig method.
-		GetConfig []struct {
-		}
 		// GetFullSitemap holds details about calls to the GetFullSitemap method.
 		GetFullSitemap []struct {
 			// Ctx is the ctx argument value.
 			Ctx context.Context
-		}
-		// GetZebedeeClient holds details about calls to the GetZebedeeClient method.
-		GetZebedeeClient []struct {
 		}
 		// HasWelshContent holds details about calls to the HasWelshContent method.
 		HasWelshContent []struct {
@@ -105,39 +85,10 @@ type FetcherMock struct {
 			Lastmod string
 		}
 	}
-	lockGetConfig        sync.RWMutex
-	lockGetFullSitemap   sync.RWMutex
-	lockGetZebedeeClient sync.RWMutex
-	lockHasWelshContent  sync.RWMutex
-	lockURLVersion       sync.RWMutex
-	lockURLVersions      sync.RWMutex
-}
-
-// GetConfig calls GetConfigFunc.
-func (mock *FetcherMock) GetConfig() *config.Config {
-	if mock.GetConfigFunc == nil {
-		panic("FetcherMock.GetConfigFunc: method is nil but Fetcher.GetConfig was just called")
-	}
-	callInfo := struct {
-	}{}
-	mock.lockGetConfig.Lock()
-	mock.calls.GetConfig = append(mock.calls.GetConfig, callInfo)
-	mock.lockGetConfig.Unlock()
-	return mock.GetConfigFunc()
-}
-
-// GetConfigCalls gets all the calls that were made to GetConfig.
-// Check the length with:
-//
-//	len(mockedFetcher.GetConfigCalls())
-func (mock *FetcherMock) GetConfigCalls() []struct {
-} {
-	var calls []struct {
-	}
-	mock.lockGetConfig.RLock()
-	calls = mock.calls.GetConfig
-	mock.lockGetConfig.RUnlock()
-	return calls
+	lockGetFullSitemap  sync.RWMutex
+	lockHasWelshContent sync.RWMutex
+	lockURLVersion      sync.RWMutex
+	lockURLVersions     sync.RWMutex
 }
 
 // GetFullSitemap calls GetFullSitemapFunc.
@@ -169,33 +120,6 @@ func (mock *FetcherMock) GetFullSitemapCalls() []struct {
 	mock.lockGetFullSitemap.RLock()
 	calls = mock.calls.GetFullSitemap
 	mock.lockGetFullSitemap.RUnlock()
-	return calls
-}
-
-// GetZebedeeClient calls GetZebedeeClientFunc.
-func (mock *FetcherMock) GetZebedeeClient() clients.ZebedeeClient {
-	if mock.GetZebedeeClientFunc == nil {
-		panic("FetcherMock.GetZebedeeClientFunc: method is nil but Fetcher.GetZebedeeClient was just called")
-	}
-	callInfo := struct {
-	}{}
-	mock.lockGetZebedeeClient.Lock()
-	mock.calls.GetZebedeeClient = append(mock.calls.GetZebedeeClient, callInfo)
-	mock.lockGetZebedeeClient.Unlock()
-	return mock.GetZebedeeClientFunc()
-}
-
-// GetZebedeeClientCalls gets all the calls that were made to GetZebedeeClient.
-// Check the length with:
-//
-//	len(mockedFetcher.GetZebedeeClientCalls())
-func (mock *FetcherMock) GetZebedeeClientCalls() []struct {
-} {
-	var calls []struct {
-	}
-	mock.lockGetZebedeeClient.RLock()
-	calls = mock.calls.GetZebedeeClient
-	mock.lockGetZebedeeClient.RUnlock()
 	return calls
 }
 

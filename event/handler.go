@@ -3,6 +3,7 @@ package event
 import (
 	"context"
 	"fmt"
+	"github.com/ONSdigital/dp-sitemap/clients"
 	"github.com/ONSdigital/dp-sitemap/config"
 	"github.com/ONSdigital/dp-sitemap/sitemap"
 	"github.com/ONSdigital/log.go/v2/log"
@@ -11,14 +12,18 @@ import (
 )
 
 type ContentPublishedHandler struct {
-	fileStore sitemap.FileStore
-	fetcher   sitemap.Fetcher
+	fileStore     sitemap.FileStore
+	zebedeeClient clients.ZebedeeClient
+	config        *config.Config
+	fetcher       sitemap.Fetcher
 }
 
-func NewContentPublishedHandler(store sitemap.FileStore, fetcher sitemap.Fetcher) *ContentPublishedHandler {
+func NewContentPublishedHandler(store sitemap.FileStore, client clients.ZebedeeClient, cfg *config.Config, fetcher sitemap.Fetcher) *ContentPublishedHandler {
 	return &ContentPublishedHandler{
-		fileStore: store,
-		fetcher:   fetcher,
+		fileStore:     store,
+		zebedeeClient: client,
+		config:        cfg,
+		fetcher:       fetcher,
 	}
 }
 
@@ -75,7 +80,7 @@ func (h *ContentPublishedHandler) createSiteMap(ctx context.Context, event *Cont
 }
 
 func (h *ContentPublishedHandler) generateTempSitemap(ctx context.Context, currentSitemapName string, event *ContentPublished, lang string) string {
-	description, err := h.fetcher.GetZebedeeClient().GetPageDescription(ctx, "", "", lang, event.URI)
+	description, err := h.zebedeeClient.GetPageDescription(ctx, "", "", lang, event.URI)
 	if err != nil {
 		fmt.Println("Error getting page description", err)
 		os.Exit(1)
