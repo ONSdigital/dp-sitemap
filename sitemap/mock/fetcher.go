@@ -22,7 +22,7 @@ var _ sitemap.Fetcher = &FetcherMock{}
 //			GetFullSitemapFunc: func(ctx context.Context) (sitemap.Files, error) {
 //				panic("mock out the GetFullSitemap method")
 //			},
-//			GetPageInfoFunc: func(ctx context.Context, path string) (sitemap.PageInfo, error) {
+//			GetPageInfoFunc: func(ctx context.Context, path string) (*sitemap.PageInfo, error) {
 //				panic("mock out the GetPageInfo method")
 //			},
 //			HasWelshContentFunc: func(ctx context.Context, path string) bool {
@@ -45,7 +45,7 @@ type FetcherMock struct {
 	GetFullSitemapFunc func(ctx context.Context) (sitemap.Files, error)
 
 	// GetPageInfoFunc mocks the GetPageInfo method.
-	GetPageInfoFunc func(ctx context.Context, path string) (sitemap.PageInfo, error)
+	GetPageInfoFunc func(ctx context.Context, path string) (*sitemap.PageInfo, error)
 
 	// HasWelshContentFunc mocks the HasWelshContent method.
 	HasWelshContentFunc func(ctx context.Context, path string) bool
@@ -138,7 +138,7 @@ func (mock *FetcherMock) GetFullSitemapCalls() []struct {
 }
 
 // GetPageInfo calls GetPageInfoFunc.
-func (mock *FetcherMock) GetPageInfo(ctx context.Context, path string) (sitemap.PageInfo, error) {
+func (mock *FetcherMock) GetPageInfo(ctx context.Context, path string) (*sitemap.PageInfo, error) {
 	if mock.GetPageInfoFunc == nil {
 		panic("FetcherMock.GetPageInfoFunc: method is nil but Fetcher.GetPageInfo was just called")
 	}

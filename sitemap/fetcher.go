@@ -265,22 +265,22 @@ func (f *ElasticFetcher) GetFullSitemap(ctx context.Context) (fileNames Files, e
 	return fileNames, nil
 }
 
-func (f *ElasticFetcher) GetPageInfo(ctx context.Context, path string) (PageInfo, error) {
+func (f *ElasticFetcher) GetPageInfo(ctx context.Context, path string) (*PageInfo, error) {
 	description, err := f.zClient.GetPageDescription(ctx, "", "", "", path)
 	if err != nil {
 		log.Error(ctx, "Error getting page description", err)
-		return PageInfo{}, err
+		return &PageInfo{}, err
 	}
 
 	releaseDate, err := time.Parse(time.RFC3339, description.Description.ReleaseDate)
 	if err != nil {
 		log.Error(ctx, "Error parsing the release date", err)
-		return PageInfo{}, err
+		return &PageInfo{}, err
 	}
 	rd := releaseDate.Format("2006-01-02")
 	urlEn, urlCy := f.URLVersions(ctx, path, rd)
 
-	return PageInfo{
+	return &PageInfo{
 		ReleaseDate: rd,
 		URLs:        map[config.Language]*URL{config.English: urlEn, config.Welsh: urlCy},
 	}, nil

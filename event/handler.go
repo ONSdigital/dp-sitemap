@@ -53,7 +53,7 @@ func (h *ContentPublishedHandler) Handle(ctx context.Context, cfg *config.Config
 	return nil
 }
 
-func (h *ContentPublishedHandler) createSiteMap(ctx context.Context, lang config.Language, sitemapName string, pageInfo sitemap.PageInfo) error {
+func (h *ContentPublishedHandler) createSiteMap(ctx context.Context, lang config.Language, sitemapName string, pageInfo *sitemap.PageInfo) error {
 
 	currentSitemapName := sitemapName
 	var tmpSitemapName string
@@ -82,7 +82,7 @@ func (h *ContentPublishedHandler) createSiteMap(ctx context.Context, lang config
 	return nil
 }
 
-func (h *ContentPublishedHandler) generateTempSitemap(ctx context.Context, currentSitemapName string, lang config.Language, pageInfo sitemap.PageInfo) (string, error) {
+func (h *ContentPublishedHandler) generateTempSitemap(ctx context.Context, currentSitemapName string, lang config.Language, pageInfo *sitemap.PageInfo) (string, error) {
 	currentSitemap, err := h.fileStore.GetFile(currentSitemapName)
 	if err != nil {
 		log.Error(ctx, "Error opening current sitemap", err)

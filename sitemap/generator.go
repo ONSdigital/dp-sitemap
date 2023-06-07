@@ -30,7 +30,7 @@ type Fetcher interface {
 	HasWelshContent(ctx context.Context, path string) bool
 	URLVersions(ctx context.Context, path string, lastmod string) (en *URL, cy *URL)
 	URLVersion(ctx context.Context, path, lastmod string, lang string) *URL
-	GetPageInfo(ctx context.Context, path string) (PageInfo, error)
+	GetPageInfo(ctx context.Context, path string) (*PageInfo, error)
 }
 type Adder interface {
 	Add(oldSitemap io.Reader, url *URL) (file string, size int, err error)
