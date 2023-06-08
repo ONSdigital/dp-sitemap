@@ -246,6 +246,9 @@ func (f *ElasticFetcher) GetFullSitemap(ctx context.Context) (fileNames Files, e
 				}
 			}
 		}
+		if f.cfg.OpenSearchConfig.DebugFirstPageOnly {
+			break
+		}
 		result = ElasticResult{}
 		err = f.scroll.GetScroll(ctx, scrollID, &result)
 		if err != nil {

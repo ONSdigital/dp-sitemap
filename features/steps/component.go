@@ -40,17 +40,30 @@ type Component struct {
 
 func NewComponent() *Component {
 	c := &Component{errorChan: make(chan error)}
-
-	consumer := kafkatest.NewMessageConsumer(false)
-	consumer.CheckerFunc = funcCheck
-	consumer.StartFunc = func() error { return nil }
-	consumer.LogErrorsFunc = func(ctx context.Context) {}
-	c.KafkaConsumer = consumer
+	ctx := context.Background()
 
 	cfg, err := config.Get()
 	if err != nil {
 		return nil
 	}
+
+	consumer, err := kafkatest.NewConsumer(
+		ctx,
+		&kafka.ConsumerGroupConfig{
+			BrokerAddrs: cfg.KafkaConfig.Brokers,
+			Topic:       cfg.KafkaConfig.ContentUpdatedTopic,
+			GroupName:   cfg.KafkaConfig.ContentUpdatedGroup,
+		},
+		&kafkatest.ConsumerConfig{
+			NumPartitions:     10,
+			ChannelBufferSize: 10,
+			InitAtCreation:    false,
+		},
+	)
+	consumer.Mock.CheckerFunc = funcCheck
+	consumer.Mock.StartFunc = func() error { return nil }
+	consumer.Mock.LogErrorsFunc = func(ctx context.Context) {}
+	c.KafkaConsumer = consumer.Mock
 
 	c.cfg = cfg
 

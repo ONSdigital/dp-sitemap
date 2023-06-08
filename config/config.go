@@ -57,7 +57,8 @@ type OpenSearchConfig struct {
 	APIURL                string        `envconfig:"OPENSEARCH_API_URL"`
 	SitemapIndex          string        `envconfig:"OPENSEARCH_SITEMAP_INDEX"`
 	ScrollTimeout         time.Duration `envconfig:"OPENSEARCH_SCROLL_TIMEOUT"`
-	ScrollSize            int           `envconfig:"OPENSEARCH_SCROLL_TIMEOUT"`
+	ScrollSize            int           `envconfig:"OPENSEARCH_SCROLL_SIZE"`
+	DebugFirstPageOnly    bool          `envconfig:"OPENSEARCH_DEBUG_FIRST_PAGE_ONLY"` // only fetch first page of results with a size dictated by the scroll size setting
 	Signer                bool          `envconfig:"OPENSEARCH_SIGNER"`
 	SignerFilename        string        `envconfig:"OPENSEARCH_SIGNER_AWS_FILENAME"`
 	SignerProfile         string        `envconfig:"OPENSEARCH_SIGNER_AWS_PROFILE"`
@@ -124,6 +125,7 @@ func Get() (*Config, error) {
 		SitemapIndex:          "ons",
 		ScrollTimeout:         time.Minute,
 		ScrollSize:            10000,
+		DebugFirstPageOnly:    false,
 		SignerFilename:        "",
 		SignerProfile:         "",
 		SignerRegion:          "eu-west-2",
