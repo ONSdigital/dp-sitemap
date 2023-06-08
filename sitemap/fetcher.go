@@ -127,7 +127,7 @@ func (f *ElasticFetcher) HasWelshContent(ctx context.Context, path string) bool 
 	return err == nil
 }
 
-func (f *ElasticFetcher) URLVersions(ctx context.Context, path, lastmod string) (en *URL, cy *URL) {
+func (f *ElasticFetcher) URLVersions(ctx context.Context, path, lastmod string) (en, cy *URL) {
 	enLoc, _ := url.JoinPath(f.cfg.DpOnsURLHostNameEn, path)
 	en = &URL{
 		Loc:     enLoc,
@@ -156,7 +156,7 @@ func (f *ElasticFetcher) URLVersions(ctx context.Context, path, lastmod string) 
 	return
 }
 
-func (f *ElasticFetcher) URLVersion(ctx context.Context, path, lastmod string, lang string) *URL {
+func (f *ElasticFetcher) URLVersion(ctx context.Context, path, lastmod, lang string) *URL {
 	urlEn, urlCy := f.URLVersions(ctx, path, lastmod)
 	if lang == "cy" {
 		return urlCy

@@ -8,7 +8,7 @@ Feature: dp-sitemap generates English version sitemap
         Then the content of the resulting sitemap should be
         """
         <?xml version="1.0" encoding="UTF-8"?>
-        <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+        <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
         <url>
           <loc>https://dp.aws.onsdigital.uk/economy/economicoutputandproductivity1</loc>
           <lastmod>2022-01-01</lastmod>
@@ -28,7 +28,7 @@ Feature: dp-sitemap generates English version sitemap
         Then the content of the S3 sitemap should be
         """
         <?xml version="1.0" encoding="UTF-8"?>
-        <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+        <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
         <url>
           <loc>https://dp.aws.onsdigital.uk/economy/economicoutputandproductivity3</loc>
           <lastmod>2024-03-03</lastmod>

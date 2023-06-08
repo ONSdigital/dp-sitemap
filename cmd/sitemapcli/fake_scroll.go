@@ -26,7 +26,7 @@ func (fs *FakeScroll) GetScroll(ctx context.Context, id string, result interface
 func fakeStartScroll(res interface{}) error {
 	r, ok := res.(*sitemap.ElasticResult)
 	if !ok {
-		return fmt.Errorf("Type assertion for %v failed.\n", res)
+		return fmt.Errorf("type assertion for %v failed", res)
 	}
 
 	hit := sitemap.ElasticHit{

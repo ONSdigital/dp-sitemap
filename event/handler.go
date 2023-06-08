@@ -2,6 +2,7 @@ package event
 
 import (
 	"context"
+
 	"github.com/ONSdigital/dp-sitemap/clients"
 	"github.com/ONSdigital/dp-sitemap/config"
 	"github.com/ONSdigital/dp-sitemap/sitemap"
@@ -54,7 +55,6 @@ func (h *ContentPublishedHandler) Handle(ctx context.Context, cfg *config.Config
 }
 
 func (h *ContentPublishedHandler) createSiteMap(ctx context.Context, lang config.Language, sitemapName string, pageInfo *sitemap.PageInfo) error {
-
 	currentSitemapName := sitemapName
 	var tmpSitemapName string
 

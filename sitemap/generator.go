@@ -28,8 +28,8 @@ type FileStore interface {
 type Fetcher interface {
 	GetFullSitemap(ctx context.Context) (Files, error)
 	HasWelshContent(ctx context.Context, path string) bool
-	URLVersions(ctx context.Context, path string, lastmod string) (en *URL, cy *URL)
-	URLVersion(ctx context.Context, path, lastmod string, lang string) *URL
+	URLVersions(ctx context.Context, path string, lastmod string) (en, cy *URL)
+	URLVersion(ctx context.Context, path, lastmod, lang string) *URL
 	GetPageInfo(ctx context.Context, path string) (*PageInfo, error)
 }
 type Adder interface {
