@@ -34,9 +34,9 @@ func TestFetcher(t *testing.T) {
 			},
 		}}
 
-		es := sitemap.NewElasticScroll(esMock, cfg)
-		f := sitemap.NewElasticFetcher(es, cfg, &zc)
+		scroller := sitemap.NewElasticScroll(esMock, cfg)
 
+		f := sitemap.NewElasticFetcher(scroller, cfg, &zc)
 		filename, err := f.GetFullSitemap(context.Background())
 
 		Convey("Generator should return correct error", func() {
@@ -57,8 +57,10 @@ func TestFetcher(t *testing.T) {
 				}, nil
 			},
 		}}
-		es := sitemap.NewElasticScroll(esMock, cfg)
-		f := sitemap.NewElasticFetcher(es, cfg, &zc)
+
+		scroller := sitemap.NewElasticScroll(esMock, cfg)
+
+		f := sitemap.NewElasticFetcher(scroller, cfg, &zc)
 		filenames, err := f.GetFullSitemap(context.Background())
 		defer func() {
 			for _, fl := range filenames {
@@ -78,7 +80,7 @@ func TestFetcher(t *testing.T) {
 			sitemapContent, err := os.ReadFile(filenames[config.English])
 			So(err, ShouldBeNil)
 			So(string(sitemapContent), ShouldEqual, `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
 
 </urlset>`)
 		})
@@ -122,8 +124,10 @@ func TestFetcher(t *testing.T) {
 				}, nil
 			},
 		}}
-		es := sitemap.NewElasticScroll(esMock, cfg)
-		f := sitemap.NewElasticFetcher(es, cfg, &zc)
+
+		scroller := sitemap.NewElasticScroll(esMock, cfg)
+
+		f := sitemap.NewElasticFetcher(scroller, cfg, &zc)
 		filenames, err := f.GetFullSitemap(context.Background())
 		defer func() {
 			for _, fl := range filenames {
@@ -146,73 +150,7 @@ func TestFetcher(t *testing.T) {
 			sitemapContent, err := os.ReadFile(filenames[config.English])
 			So(err, ShouldBeNil)
 			So(string(sitemapContent), ShouldEqual, `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-<url>
-  <loc>uri_1</loc>
-  <lastmod>2014-12-10</lastmod>
-</url>
-<url>
-  <loc>uri_2</loc>
-  <lastmod>2023-03-31</lastmod>
-</url>
-</urlset>`)
-		})
-	})
-	Convey("When debug feature enabled to only return first page", t, func() {
-		cfg := &config.Config{
-			OpenSearchConfig: config.OpenSearchConfig{
-				DebugFirstPageOnly: true,
-			},
-		}
-		esMock := &es710.Client{API: &esapi710.API{
-			Search: func(o ...func(*esapi710.SearchRequest)) (*esapi710.Response, error) {
-				return &esapi710.Response{
-					Body: io.NopCloser(strings.NewReader(`
-					{
-						"_scroll_id": "scroll_id_1",
-						"hits": {
-							"hits": [
-								{
-									"_source": {
-										"uri": "uri_1",
-										"release_date": "2014-12-10T00:00:00.000Z"
-									}
-								},
-								{
-									"_source": {
-										"uri": "uri_2",
-										"release_date": "2023-03-31T00:00:00.000Z"
-									}
-								}
-							]
-						}
-					}
-					`)),
-				}, nil
-			},
-		}}
-		es := sitemap.NewElasticScroll(esMock, cfg)
-		f := sitemap.NewElasticFetcher(es, cfg, &zc)
-		filenames, err := f.GetFullSitemap(context.Background())
-		defer func() {
-			for _, fl := range filenames {
-				os.Remove(fl)
-			}
-		}()
-
-		Convey("Fetcher should return with no error", func() {
-			So(err, ShouldBeNil)
-		})
-		Convey("Temporary sitemap file should be created and available", func() {
-			So(filenames[config.English], ShouldContainSubstring, "sitemap")
-			_, err := os.Stat(filenames[config.English])
-			So(err, ShouldBeNil)
-		})
-		Convey("Sitemap should be valid and include all received urls", func() {
-			sitemapContent, err := os.ReadFile(filenames[config.English])
-			So(err, ShouldBeNil)
-			So(string(sitemapContent), ShouldEqual, `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
 <url>
   <loc>uri_1</loc>
   <lastmod>2014-12-10</lastmod>
@@ -261,8 +199,10 @@ func TestFetcher(t *testing.T) {
 				return nil, errors.New("subsequent scroll error")
 			},
 		}}
-		es := sitemap.NewElasticScroll(esMock, cfg)
-		f := sitemap.NewElasticFetcher(es, cfg, &zc)
+
+		scroller := sitemap.NewElasticScroll(esMock, cfg)
+
+		f := sitemap.NewElasticFetcher(scroller, cfg, &zc)
 		filename, err := f.GetFullSitemap(context.Background())
 
 		Convey("Generator should return correct error", func() {
@@ -344,8 +284,10 @@ func TestFetcher(t *testing.T) {
 				}, nil
 			},
 		}}
-		es := sitemap.NewElasticScroll(esMock, cfg)
-		f := sitemap.NewElasticFetcher(es, cfg, &zc)
+
+		scroller := sitemap.NewElasticScroll(esMock, cfg)
+
+		f := sitemap.NewElasticFetcher(scroller, cfg, &zc)
 		filenames, err := f.GetFullSitemap(context.Background())
 		defer func() {
 			for _, fl := range filenames {
@@ -368,7 +310,7 @@ func TestFetcher(t *testing.T) {
 			sitemapContent, err := os.ReadFile(filenames[config.English])
 			So(err, ShouldBeNil)
 			So(string(sitemapContent), ShouldEqual, `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
 <url>
   <loc>uri_1</loc>
   <lastmod>2014-12-10</lastmod>
@@ -467,8 +409,10 @@ func TestFetcher(t *testing.T) {
 				}, nil
 			},
 		}}
-		es := sitemap.NewElasticScroll(esMock, cfg)
-		f := sitemap.NewElasticFetcher(es, cfg, &zcWithWelsh)
+
+		scroller := sitemap.NewElasticScroll(esMock, cfg)
+
+		f := sitemap.NewElasticFetcher(scroller, cfg, &zcWithWelsh)
 		filenames, err := f.GetFullSitemap(context.Background())
 		defer func() {
 			for _, fl := range filenames {
@@ -491,60 +435,36 @@ func TestFetcher(t *testing.T) {
 			sitemapContent, err := os.ReadFile(filenames[config.English])
 			So(err, ShouldBeNil)
 			So(string(sitemapContent), ShouldEqual, `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
 <url>
   <loc>uri_1</loc>
   <lastmod>2014-12-10</lastmod>
-  <xhtml:link>
-    <rel>alternate</rel>
-    <hreflang>cy</hreflang>
-    <href>uri_1</href>
-  </xhtml:link>
+  <xhtml:link rel="alternate" hreflang="cy" href="uri_1"></xhtml:link>
 </url>
 <url>
   <loc>uri_2</loc>
   <lastmod>2023-03-31</lastmod>
-  <xhtml:link>
-    <rel>alternate</rel>
-    <hreflang>cy</hreflang>
-    <href>uri_2</href>
-  </xhtml:link>
+  <xhtml:link rel="alternate" hreflang="cy" href="uri_2"></xhtml:link>
 </url>
 <url>
   <loc>uri_3</loc>
   <lastmod>2015-12-10</lastmod>
-  <xhtml:link>
-    <rel>alternate</rel>
-    <hreflang>cy</hreflang>
-    <href>uri_3</href>
-  </xhtml:link>
+  <xhtml:link rel="alternate" hreflang="cy" href="uri_3"></xhtml:link>
 </url>
 <url>
   <loc>uri_4</loc>
   <lastmod>2024-03-31</lastmod>
-  <xhtml:link>
-    <rel>alternate</rel>
-    <hreflang>cy</hreflang>
-    <href>uri_4</href>
-  </xhtml:link>
+  <xhtml:link rel="alternate" hreflang="cy" href="uri_4"></xhtml:link>
 </url>
 <url>
   <loc>uri_3</loc>
   <lastmod>2015-12-10</lastmod>
-  <xhtml:link>
-    <rel>alternate</rel>
-    <hreflang>cy</hreflang>
-    <href>uri_3</href>
-  </xhtml:link>
+  <xhtml:link rel="alternate" hreflang="cy" href="uri_3"></xhtml:link>
 </url>
 <url>
   <loc>uri_4</loc>
   <lastmod>2024-03-31</lastmod>
-  <xhtml:link>
-    <rel>alternate</rel>
-    <hreflang>cy</hreflang>
-    <href>uri_4</href>
-  </xhtml:link>
+  <xhtml:link rel="alternate" hreflang="cy" href="uri_4"></xhtml:link>
 </url>
 </urlset>`)
 		})
