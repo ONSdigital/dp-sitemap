@@ -26,7 +26,7 @@ func TestInit(t *testing.T) {
 
 	Convey("Init calls asset function and panics on error", t, func() {
 		shouldError = true
-		So(func() { Init(&fsMock) }, ShouldPanicWith, "Can't find robot_en.json")
+		So(func() { Init(&fsMock) }, ShouldPanicWith, "Can't find robot/robot_en.json")
 		So(called, ShouldBeTrue)
 	})
 

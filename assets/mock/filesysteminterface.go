@@ -15,19 +15,19 @@ var _ assets.FileSystemInterface = &FileSystemInterfaceMock{}
 
 // FileSystemInterfaceMock is a mock implementation of assets.FileSystemInterface.
 //
-// 	func TestSomethingThatUsesFileSystemInterface(t *testing.T) {
+//	func TestSomethingThatUsesFileSystemInterface(t *testing.T) {
 //
-// 		// make and configure a mocked assets.FileSystemInterface
-// 		mockedFileSystemInterface := &FileSystemInterfaceMock{
-// 			GetFunc: func(contextMoqParam context.Context, path string) ([]byte, error) {
-// 				panic("mock out the Get method")
-// 			},
-// 		}
+//		// make and configure a mocked assets.FileSystemInterface
+//		mockedFileSystemInterface := &FileSystemInterfaceMock{
+//			GetFunc: func(contextMoqParam context.Context, path string) ([]byte, error) {
+//				panic("mock out the Get method")
+//			},
+//		}
 //
-// 		// use mockedFileSystemInterface in code that requires assets.FileSystemInterface
-// 		// and then make assertions.
+//		// use mockedFileSystemInterface in code that requires assets.FileSystemInterface
+//		// and then make assertions.
 //
-// 	}
+//	}
 type FileSystemInterfaceMock struct {
 	// GetFunc mocks the Get method.
 	GetFunc func(contextMoqParam context.Context, path string) ([]byte, error)
@@ -65,7 +65,8 @@ func (mock *FileSystemInterfaceMock) Get(contextMoqParam context.Context, path s
 
 // GetCalls gets all the calls that were made to Get.
 // Check the length with:
-//     len(mockedFileSystemInterface.GetCalls())
+//
+//	len(mockedFileSystemInterface.GetCalls())
 func (mock *FileSystemInterfaceMock) GetCalls() []struct {
 	ContextMoqParam context.Context
 	Path            string

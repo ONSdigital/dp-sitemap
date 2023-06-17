@@ -9,6 +9,7 @@ import (
 
 var (
 	//go:embed robot/*
+	//go:embed sitemap/*
 	static embed.FS
 )
 
@@ -23,7 +24,7 @@ func NewFromEmbeddedFilesystem() Embeddedfs {
 }
 
 func (s Embeddedfs) Get(_ context.Context, path string) ([]byte, error) {
-	file, err := static.Open(fmt.Sprintf("%s/%s", "robot", path))
+	file, err := static.Open(path)
 	if err != nil {
 		return nil, fmt.Errorf("cannot open file %w", err)
 	}

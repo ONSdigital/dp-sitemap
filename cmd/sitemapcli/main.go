@@ -1,10 +1,15 @@
 package main
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
+	"encoding/xml"
+	"errors"
 	"flag"
 	"fmt"
 	"github.com/ONSdigital/dp-sitemap/event"
+	"io"
 	"net/http"
 	"os"
 	"reflect"
@@ -32,6 +37,18 @@ type FlagFields struct {
 	sitemap_path     string
 	zebedee_url      string
 	fake_scroll      bool
+}
+
+type StaticURLEn struct {
+	URL         string `json:"url"`
+	ReleaseDate string `json:"releaseDate"`
+	Cy          bool   `json:"cy"`
+}
+
+type StaticURLCy struct {
+	URL         string `json:"url"`
+	ReleaseDate string `json:"releaseDate"`
+	En          bool   `json:"en"`
 }
 
 // test function for FlagFields
@@ -116,6 +133,17 @@ func main() {
 		err := handler.Handle(context.Background(), cfg, content)
 		if err != nil {
 			fmt.Println("Failed to handle event:", err)
+			return
+		}
+	case 3:
+		err = loadStaticSitemap(context.Background(), cfg, "test_sitemap_en", &sitemap.LocalStore{}, config.English)
+		if err != nil {
+			fmt.Println("Failed to load english static sitemap:", err)
+			return
+		}
+		err = loadStaticSitemap(context.Background(), cfg, "test_sitemap_cy", &sitemap.LocalStore{}, config.Welsh)
+		if err != nil {
+			fmt.Println("Failed to load welsh static sitemap:", err)
 			return
 		}
 	}
@@ -210,14 +238,123 @@ func GenerateRobotFile(cfg *config.Config, commandline *FlagFields) {
 
 func menu() (int, error) {
 	var i = 0
-	for i < 1 || i > 2 {
+	for i < 1 || i > 3 {
 		fmt.Println("*** Menu ***")
 		fmt.Println("1. Generate sitemap")
 		fmt.Println("2. Update sitemap")
+		fmt.Println("3. Load static sitemap")
 		fmt.Print("Choice: ")
 		if _, err := fmt.Scan(&i); err != nil {
 			return 0, err
 		}
 	}
 	return i, nil
+}
+
+func loadStaticSitemap(ctx context.Context, cfg *config.Config, sitemapName string, store sitemap.FileStore, lang config.Language) error {
+	efs := assets.NewFromEmbeddedFilesystem()
+
+	staticSitemaps := make(map[config.Language]string)
+	staticSitemaps[config.English] = "sitemap/sitemap_en.json"
+	staticSitemaps[config.Welsh] = "sitemap/sitemap_cy.json"
+
+	b, err := efs.Get(ctx, staticSitemaps[lang])
+	if err != nil {
+		panic("can't find file " + staticSitemaps[lang])
+	}
+
+	var contentEn []StaticURLEn
+	var contentCy []StaticURLCy
+
+	if lang == config.English {
+		err = json.Unmarshal(b, &contentEn)
+		if err != nil {
+			return fmt.Errorf("unable to read json: %w", err)
+		}
+	} else {
+		err = json.Unmarshal(b, &contentCy)
+		if err != nil {
+			return fmt.Errorf("unable to read json: %w", err)
+		}
+	}
+
+	// get the old sitemap
+	oldSitemapFile, err := store.GetFile(sitemapName)
+	if err != nil {
+		return fmt.Errorf("unable to get file: %w", err)
+	}
+	defer oldSitemapFile.Close()
+
+	sitemapReader := sitemap.UrlsetReader{
+		Xmlns: "http://www.sitemaps.org/schemas/sitemap/0.9",
+		Xhtml: "http://www.w3.org/1999/xhtml",
+	}
+	decoder := xml.NewDecoder(oldSitemapFile)
+	err = decoder.Decode(&sitemapReader)
+	if err != nil {
+		if !errors.Is(err, io.EOF) {
+			return fmt.Errorf("failed to decode old sitemap: %w", err)
+		}
+	}
+
+	// move old sitemap urls to new sitemap
+	sitemapWriter := sitemap.Urlset{
+		Xmlns: "http://www.sitemaps.org/schemas/sitemap/0.9",
+		Xhtml: "http://www.w3.org/1999/xhtml",
+	}
+
+	for _, url := range sitemapReader.URL {
+		var u sitemap.URL
+		u.Loc = url.Loc
+		u.Lastmod = url.Lastmod
+		u.Alternate = &sitemap.AlternateURL{}
+		if url.Alternate != nil {
+			u.Alternate.Rel = url.Alternate.Rel
+			u.Alternate.Link = url.Alternate.Link
+			u.Alternate.Lang = url.Alternate.Lang
+		}
+		sitemapWriter.URL = append(sitemapWriter.URL, u)
+	}
+
+	// range through static content
+	if lang == config.English {
+		for _, item := range contentEn {
+			var u sitemap.URL
+			u.Loc = cfg.DpOnsURLHostNameEn + item.URL
+			u.Lastmod = item.ReleaseDate
+			u.Alternate = &sitemap.AlternateURL{}
+			if item.Cy == true {
+				u.Alternate.Rel = "alternate"
+				u.Alternate.Link = cfg.DpOnsURLHostNameCy + item.URL
+				u.Alternate.Lang = "cy"
+			}
+			sitemapWriter.URL = append(sitemapWriter.URL, u)
+		}
+	} else {
+		for _, item := range contentCy {
+			var u sitemap.URL
+			u.Loc = cfg.DpOnsURLHostNameEn + item.URL
+			u.Lastmod = item.ReleaseDate
+			u.Alternate = &sitemap.AlternateURL{}
+			if item.En == true {
+				u.Alternate.Rel = "alternate"
+				u.Alternate.Link = cfg.DpOnsURLHostNameEn + item.URL
+				u.Alternate.Lang = "en"
+			}
+			sitemapWriter.URL = append(sitemapWriter.URL, u)
+		}
+	}
+
+	marshaledContent, err := xml.MarshalIndent(sitemapWriter, "", "  ")
+	if err != nil {
+		return err
+	}
+	header := []byte(xml.Header)
+	header = append(header, marshaledContent...)
+	reader := bytes.NewReader(header)
+	err = store.SaveFile(sitemapName, reader)
+	if err != nil {
+		return err
+	}
+	return nil
 }
