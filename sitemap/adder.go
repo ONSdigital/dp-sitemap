@@ -56,15 +56,15 @@ func (a *DefaultAdder) Add(oldSitemap io.Reader, url *URL) (fileName string, siz
 		Xhtml: "http://www.w3.org/1999/xhtml",
 	}
 
-	for _, url := range sitemapReader.URL {
+	for _, aURL := range sitemapReader.URL {
 		var u URL
-		u.Loc = url.Loc
-		u.Lastmod = url.Lastmod
+		u.Loc = aURL.Loc
+		u.Lastmod = aURL.Lastmod
 		u.Alternate = &AlternateURL{}
-		if url.Alternate != nil {
-			u.Alternate.Rel = url.Alternate.Rel
-			u.Alternate.Link = url.Alternate.Link
-			u.Alternate.Lang = url.Alternate.Lang
+		if aURL.Alternate != nil {
+			u.Alternate.Rel = aURL.Alternate.Rel
+			u.Alternate.Link = aURL.Alternate.Link
+			u.Alternate.Lang = aURL.Alternate.Lang
 		}
 		sitemap.URL = append(sitemap.URL, u)
 	}
