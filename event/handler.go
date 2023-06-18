@@ -77,7 +77,11 @@ func (h *ContentPublishedHandler) createSiteMap(ctx context.Context, lang config
 	}
 	defer tmpSitemap.Close()
 
-	h.fileStore.CopyFile(tmpSitemap, currentSitemap)
+	err = h.fileStore.CopyFile(tmpSitemap, currentSitemap)
+	if err != nil {
+		log.Error(ctx, "Error copying file", err)
+		return err
+	}
 
 	return nil
 }
