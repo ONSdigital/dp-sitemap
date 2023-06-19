@@ -266,16 +266,13 @@ func loadStaticSitemap(ctx context.Context, cfg *config.Config, sitemapName stri
 	var contentEn []StaticURLEn
 	var contentCy []StaticURLCy
 
-	if lang == config.English {
-		err = json.Unmarshal(b, &contentEn)
-		if err != nil {
-			return fmt.Errorf("unable to read json: %w", err)
-		}
-	} else {
-		err = json.Unmarshal(b, &contentCy)
-		if err != nil {
-			return fmt.Errorf("unable to read json: %w", err)
-		}
+	contents := make(map[config.Language]interface{})
+	contents[config.English] = &contentEn
+	contents[config.Welsh] = &contentCy
+
+	err = json.Unmarshal(b, contents[lang])
+	if err != nil {
+		return fmt.Errorf("unable to read json: %w", err)
 	}
 
 	// get the old sitemap
