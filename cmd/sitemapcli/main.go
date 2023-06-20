@@ -39,16 +39,10 @@ type FlagFields struct {
 	fake_scroll      bool
 }
 
-type StaticURLEn struct {
+type StaticURL struct {
 	URL         string `json:"url"`
 	ReleaseDate string `json:"releaseDate"`
-	Cy          bool   `json:"cy"`
-}
-
-type StaticURLCy struct {
-	URL         string `json:"url"`
-	ReleaseDate string `json:"releaseDate"`
-	En          bool   `json:"en"`
+	HasAltLang  bool   `json:"hasAltLang"`
 }
 
 // test function for FlagFields
@@ -136,12 +130,12 @@ func main() {
 			return
 		}
 	case 3:
-		err = loadStaticSitemap(context.Background(), cfg, "test_sitemap_en", &sitemap.LocalStore{}, config.English)
+		err = loadStaticSitemap(context.Background(), "test_sitemap_en", "sitemap/sitemap_en.json", cfg.DpOnsURLHostNameEn, cfg.DpOnsURLHostNameCy, "cy", &sitemap.LocalStore{})
 		if err != nil {
 			fmt.Println("Failed to load english static sitemap:", err)
 			return
 		}
-		err = loadStaticSitemap(context.Background(), cfg, "test_sitemap_cy", &sitemap.LocalStore{}, config.Welsh)
+		err = loadStaticSitemap(context.Background(), "test_sitemap_cy", "sitemap/sitemap_cy.json", cfg.DpOnsURLHostNameCy, cfg.DpOnsURLHostNameEn, "en", &sitemap.LocalStore{})
 		if err != nil {
 			fmt.Println("Failed to load welsh static sitemap:", err)
 			return
@@ -251,32 +245,23 @@ func menu() (int, error) {
 	return i, nil
 }
 
-func loadStaticSitemap(ctx context.Context, cfg *config.Config, sitemapName string, store sitemap.FileStore, lang config.Language) error {
+func loadStaticSitemap(ctx context.Context, oldSitemapName, staticSitemapName, DpOnsURLHostName, DpOnsURLHostNameAlt, altLang string, store sitemap.FileStore) error {
 	efs := assets.NewFromEmbeddedFilesystem()
 
-	staticSitemaps := make(map[config.Language]string)
-	staticSitemaps[config.English] = "sitemap/sitemap_en.json"
-	staticSitemaps[config.Welsh] = "sitemap/sitemap_cy.json"
-
-	b, err := efs.Get(ctx, staticSitemaps[lang])
+	b, err := efs.Get(ctx, staticSitemapName)
 	if err != nil {
-		panic("can't find file " + staticSitemaps[lang])
+		panic("can't find file " + staticSitemapName)
 	}
 
-	var contentEn []StaticURLEn
-	var contentCy []StaticURLCy
+	var content []StaticURL
 
-	contents := make(map[config.Language]interface{})
-	contents[config.English] = &contentEn
-	contents[config.Welsh] = &contentCy
-
-	err = json.Unmarshal(b, contents[lang])
+	err = json.Unmarshal(b, &content)
 	if err != nil {
 		return fmt.Errorf("unable to read json: %w", err)
 	}
 
 	// get the old sitemap
-	oldSitemapFile, err := store.GetFile(sitemapName)
+	oldSitemapFile, err := store.GetFile(oldSitemapName)
 	if err != nil {
 		return fmt.Errorf("unable to get file: %w", err)
 	}
@@ -314,32 +299,17 @@ func loadStaticSitemap(ctx context.Context, cfg *config.Config, sitemapName stri
 	}
 
 	// range through static content
-	if lang == config.English {
-		for _, item := range contentEn {
-			var u sitemap.URL
-			u.Loc = cfg.DpOnsURLHostNameEn + item.URL
-			u.Lastmod = item.ReleaseDate
-			u.Alternate = &sitemap.AlternateURL{}
-			if item.Cy == true {
-				u.Alternate.Rel = "alternate"
-				u.Alternate.Link = cfg.DpOnsURLHostNameCy + item.URL
-				u.Alternate.Lang = "cy"
-			}
-			sitemapWriter.URL = append(sitemapWriter.URL, u)
+	for _, item := range content {
+		var newURL sitemap.URL
+		newURL.Loc = DpOnsURLHostName + item.URL
+		newURL.Lastmod = item.ReleaseDate
+		newURL.Alternate = &sitemap.AlternateURL{}
+		if item.HasAltLang == true {
+			newURL.Alternate.Rel = "alternate"
+			newURL.Alternate.Link = DpOnsURLHostNameAlt + item.URL
+			newURL.Alternate.Lang = altLang
 		}
-	} else {
-		for _, item := range contentCy {
-			var u sitemap.URL
-			u.Loc = cfg.DpOnsURLHostNameEn + item.URL
-			u.Lastmod = item.ReleaseDate
-			u.Alternate = &sitemap.AlternateURL{}
-			if item.En == true {
-				u.Alternate.Rel = "alternate"
-				u.Alternate.Link = cfg.DpOnsURLHostNameEn + item.URL
-				u.Alternate.Lang = "en"
-			}
-			sitemapWriter.URL = append(sitemapWriter.URL, u)
-		}
+		sitemapWriter.URL = append(sitemapWriter.URL, newURL)
 	}
 
 	marshaledContent, err := xml.MarshalIndent(sitemapWriter, "", "  ")
@@ -349,7 +319,7 @@ func loadStaticSitemap(ctx context.Context, cfg *config.Config, sitemapName stri
 	header := []byte(xml.Header)
 	header = append(header, marshaledContent...)
 	reader := bytes.NewReader(header)
-	err = store.SaveFile(sitemapName, reader)
+	err = store.SaveFile(oldSitemapName, reader)
 	if err != nil {
 		return err
 	}
