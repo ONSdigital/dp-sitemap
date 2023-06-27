@@ -18,8 +18,8 @@ func Init(efs assets.FileSystemInterface) {
 	robotList = map[config.Language]map[string]assets.SeoRobotModel{}
 	ctx := context.Background()
 	for _, lang := range []config.Language{config.English, config.Welsh} {
-		fileName := "robot/robot_" + lang.String() + ".json"
-		b, err := efs.Get(ctx, fileName)
+		fileName := "robot_" + lang.String() + ".json"
+		b, err := efs.Get(ctx, assets.Robots, fileName)
 		if err != nil {
 			log.Error(ctx, "can't find "+fileName, err)
 			panic("Can't find " + fileName)

@@ -5,11 +5,9 @@ import (
 	"context"
 	"encoding/json"
 	"encoding/xml"
-	"errors"
 	"flag"
 	"fmt"
 	"github.com/ONSdigital/dp-sitemap/event"
-	"io"
 	"net/http"
 	"os"
 	"reflect"
@@ -130,12 +128,12 @@ func main() {
 			return
 		}
 	case 3:
-		err = loadStaticSitemap(context.Background(), "test_sitemap_en", "sitemap/sitemap_en.json", cfg.DpOnsURLHostNameEn, cfg.DpOnsURLHostNameCy, "cy", &sitemap.LocalStore{})
+		err = loadStaticSitemap(context.Background(), "test_sitemap_en", "sitemap_en.json", cfg.DpOnsURLHostNameEn, cfg.DpOnsURLHostNameCy, "cy", &sitemap.LocalStore{})
 		if err != nil {
 			fmt.Println("Failed to load english static sitemap:", err)
 			return
 		}
-		err = loadStaticSitemap(context.Background(), "test_sitemap_cy", "sitemap/sitemap_cy.json", cfg.DpOnsURLHostNameCy, cfg.DpOnsURLHostNameEn, "en", &sitemap.LocalStore{})
+		err = loadStaticSitemap(context.Background(), "test_sitemap_cy", "sitemap_cy.json", cfg.DpOnsURLHostNameCy, cfg.DpOnsURLHostNameEn, "en", &sitemap.LocalStore{})
 		if err != nil {
 			fmt.Println("Failed to load welsh static sitemap:", err)
 			return
@@ -248,7 +246,7 @@ func menu() (int, error) {
 func loadStaticSitemap(ctx context.Context, oldSitemapName, staticSitemapName, DpOnsURLHostName, DpOnsURLHostNameAlt, altLang string, store sitemap.FileStore) error {
 	efs := assets.NewFromEmbeddedFilesystem()
 
-	b, err := efs.Get(ctx, staticSitemapName)
+	b, err := efs.Get(ctx, assets.Sitemap, staticSitemapName)
 	if err != nil {
 		panic("can't find file " + staticSitemapName)
 	}
@@ -260,42 +258,10 @@ func loadStaticSitemap(ctx context.Context, oldSitemapName, staticSitemapName, D
 		return fmt.Errorf("unable to read json: %w", err)
 	}
 
-	// get the old sitemap
-	oldSitemapFile, err := store.GetFile(oldSitemapName)
-	if err != nil {
-		return fmt.Errorf("unable to get file: %w", err)
-	}
-	defer oldSitemapFile.Close()
-
-	sitemapReader := sitemap.UrlsetReader{
-		Xmlns: "http://www.sitemaps.org/schemas/sitemap/0.9",
-		Xhtml: "http://www.w3.org/1999/xhtml",
-	}
-	decoder := xml.NewDecoder(oldSitemapFile)
-	err = decoder.Decode(&sitemapReader)
-	if err != nil {
-		if !errors.Is(err, io.EOF) {
-			return fmt.Errorf("failed to decode old sitemap: %w", err)
-		}
-	}
-
 	// move old sitemap urls to new sitemap
 	sitemapWriter := sitemap.Urlset{
 		Xmlns: "http://www.sitemaps.org/schemas/sitemap/0.9",
 		Xhtml: "http://www.w3.org/1999/xhtml",
-	}
-
-	for _, url := range sitemapReader.URL {
-		var u sitemap.URL
-		u.Loc = url.Loc
-		u.Lastmod = url.Lastmod
-		u.Alternate = &sitemap.AlternateURL{}
-		if url.Alternate != nil {
-			u.Alternate.Rel = url.Alternate.Rel
-			u.Alternate.Link = url.Alternate.Link
-			u.Alternate.Lang = url.Alternate.Lang
-		}
-		sitemapWriter.URL = append(sitemapWriter.URL, u)
 	}
 
 	// range through static content
