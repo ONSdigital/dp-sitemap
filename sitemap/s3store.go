@@ -48,11 +48,9 @@ func (s *S3Store) GetFile(name string) (body io.ReadCloser, err error) {
 }
 
 func (s *S3Store) CopyFile(src io.Reader, dest io.Writer) error {
-	// TODO - Dionisi Lola
 	return nil
 }
 
 func (s *S3Store) CreateFile(name string) (io.ReadWriteCloser, error) {
-	// TODO - Dionisi Lola
 	return nil, nil
 }

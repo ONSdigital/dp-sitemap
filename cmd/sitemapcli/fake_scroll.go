@@ -8,6 +8,7 @@ import (
 	"github.com/ONSdigital/dp-sitemap/sitemap"
 )
 
+// FakeScroll is used to replicate elastic search
 type FakeScroll struct {
 }
 
@@ -29,6 +30,8 @@ func fakeStartScroll(res interface{}) error {
 		return fmt.Errorf("type assertion for %v failed", res)
 	}
 
+	// we have created a couple of test articles under $zebedee_root
+	// so we can test the code locally and not in the sandbox environment
 	hit := sitemap.ElasticHit{
 		Source: sitemap.ElasticHitSource{
 			URI:         "/economy/environmentalaccounts/articles/testarticle",

@@ -22,20 +22,18 @@ import (
 
 // Config represents service configuration for dp-sitemap
 type FlagFields struct {
-	robots_file_path string
-	api_url          string
-	sitemap_index    string
-	scroll_timeout   string
-	scroll_size      int
-	sitemap_path     string
-	zebedee_url      string
-	fake_scroll      bool
+	robots_file_path string // path to the robots file
+	api_url          string // elastic search api url
+	sitemap_index    string // elastic search sitemap index
+	scroll_timeout   string // elastic search scroll timeout
+	scroll_size      int    // elastic search scroll size
+	sitemap_path     string // path to the sitemap file
+	zebedee_url      string // zebedee url
+	fake_scroll      bool   // toggle to use or not the fake scroll implementation that replicates elastic search
 }
 
-// test function for FlagFields
 func validConfig(flagfields *FlagFields) bool {
 	fmt.Println("flag validation started..") //put log entry
-
 	v := reflect.ValueOf(*flagfields)
 	for i := 0; i < v.NumField(); i++ {
 		flagtest := v.Field(i).String()
@@ -47,19 +45,16 @@ func validConfig(flagfields *FlagFields) bool {
 		}
 
 	}
-	fmt.Println("flagtest validation succesfull..") //put log entry
-
+	fmt.Println("flagtest validation succesfull..")
 	return true
-
 }
 
 func validateCommandLines() (bool, *FlagFields) {
-
 	commandline := FlagFields{}
-	flag.StringVar(&commandline.robots_file_path, "robots-file-path", "test_robots.txt", "robotfile.txt")
-	flag.StringVar(&commandline.sitemap_path, "sitemap-file-path", "test_sitemap", "sitemap.xml")
-	flag.StringVar(&commandline.api_url, "api-url", "http://localhost", "")
-	flag.StringVar(&commandline.zebedee_url, "zebedee-url", "http://localhost:8082", "")
+	flag.StringVar(&commandline.robots_file_path, "robots-file-path", "test_robots.txt", "path to robots file")
+	flag.StringVar(&commandline.sitemap_path, "sitemap-file-path", "test_sitemap", "path to sitemap file")
+	flag.StringVar(&commandline.api_url, "api-url", "http://localhost", "elastic search api url")
+	flag.StringVar(&commandline.zebedee_url, "zebedee-url", "http://localhost:8082", "zebedee url")
 	flag.StringVar(&commandline.sitemap_index, "sitemap-index", "1", "OPENSEARCH_SITEMAP_INDEX")
 	flag.StringVar(&commandline.scroll_timeout, "scroll-timeout", "2000", "OPENSEARCH_SCROLL_TIMEOUT")
 	flag.IntVar(&commandline.scroll_size, "scroll-size", 10, "OPENSEARCH_SCROLL_SIZE")
@@ -84,7 +79,6 @@ func main() {
 	}
 
 	cfg, err := config.Get()
-
 	if err != nil {
 		fmt.Println("Error retrieving config" + err.Error())
 		os.Exit(1)
@@ -175,7 +169,7 @@ func GenerateSitemap(cfg *config.Config, commandline *FlagFields) {
 	//Generating sitemap
 	genErr := generator.MakeFullSitemap(context.Background())
 	if genErr != nil {
-		fmt.Println("Error writing sitemappp file", genErr.Error())
+		fmt.Println("Error writing sitemap file", genErr.Error())
 		return
 	}
 	fmt.Println("sitemap generation job complete")
@@ -195,11 +189,9 @@ func GenerateRobotFile(cfg *config.Config, commandline *FlagFields) {
 	cfg.OpenSearchConfig.ScrollSize = commandline.scroll_size
 	cfg.OpenSearchConfig.Signer = true
 
-	body := robotFileWriter.GetRobotsFileBody(config.Language(config.English), cfg.SitemapLocalFile)
-	fmt.Printf("robot file path is: %v", commandline.robots_file_path)
+	body := robotFileWriter.GetRobotsFileBody(config.English, cfg.SitemapLocalFile)
 
 	saveErr := store.SaveFile(commandline.robots_file_path, strings.NewReader(body))
-
 	if saveErr != nil {
 		fmt.Println("failed to save file")
 		return
@@ -215,6 +207,9 @@ func menu() (int, error) {
 		fmt.Print("Choice: ")
 		if _, err := fmt.Scan(&i); err != nil {
 			return 0, err
+		}
+		if i < 1 || i > 2 {
+			fmt.Println("Invalid option. Please choose again.")
 		}
 	}
 	return i, nil
