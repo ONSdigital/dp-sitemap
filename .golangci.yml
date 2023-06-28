@@ -52,7 +52,6 @@ linters:
   # inverted configuration with `enable-all` and `disable` is not scalable during updates of golangci-lint
   disable-all: true
   enable:
-    - depguard
     - dogsled
     - errcheck
     - gochecknoinits
@@ -78,4 +77,4 @@ linters:
 # golangci.com configuration
 # https://github.com/golangci/golangci/wiki/Configuration
 service:
-  golangci-lint-version: 1.51.1 
+  golangci-lint-version: 1.53.2
