@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"context"
 	"flag"
 	"fmt"
@@ -93,19 +94,29 @@ func main() {
 	}
 
 	if commandLine.update_sitemap {
+		var scroll sitemap.Scroll
+		if commandLine.fake_scroll {
+			scroll = &FakeScroll{}
+		} else {
+			scroll = &sitemap.ElasticScroll{}
+		}
+		var store sitemap.FileStore
+		if commandLine.fake_scroll {
+			store = &sitemap.LocalStore{}
+		} else {
+			store = &sitemap.S3Store{}
+		}
 		zebedeeClient := zebedee.New(commandLine.zebedee_url)
-		fetcher := sitemap.NewElasticFetcher(&FakeScroll{}, cfg, zebedeeClient)
-		handler := event.NewContentPublishedHandler(&sitemap.LocalStore{}, zebedeeClient, cfg, fetcher)
-		content := &event.ContentPublished{
-			URI:          "economy/environmentalaccounts/articles/testarticle3",
-			DataType:     "theDateType",
-			CollectionID: "theCollectionId",
-			JobID:        "theJobId",
-			SearchIndex:  "theSearchIndex",
-			TraceID:      "theTraceId",
+		fetcher := sitemap.NewElasticFetcher(scroll, cfg, zebedeeClient)
+		handler := event.NewContentPublishedHandler(store, zebedeeClient, cfg, fetcher)
+		content, contentErr := getContent()
+		fmt.Println(content)
+		if contentErr != nil {
+			fmt.Println("Failed to get event content from user:", err)
+			return
 		}
 
-		err := handler.Handle(context.Background(), cfg, content)
+		err = handler.Handle(context.Background(), cfg, content)
 		if err != nil {
 			fmt.Println("Failed to handle event:", err)
 			return
@@ -197,4 +208,56 @@ func GenerateRobotFile(cfg *config.Config, commandline *FlagFields) {
 		fmt.Println("failed to save file")
 		return
 	}
+}
+
+func getContent() (*event.ContentPublished, error) {
+	content := &event.ContentPublished{}
+	fmt.Print("Please enter URI: ")
+	text, err := getText()
+	if err != nil {
+		return nil, err
+	}
+	content.URI = *text
+	fmt.Print("Please enter Data Type: ")
+	text, err = getText()
+	if err != nil {
+		return nil, err
+	}
+	content.DataType = *text
+	fmt.Print("Please enter Collection ID: ")
+	text, err = getText()
+	if err != nil {
+		return nil, err
+	}
+	content.CollectionID = *text
+	fmt.Print("Please enter Job ID: ")
+	text, err = getText()
+	if err != nil {
+		return nil, err
+	}
+	content.JobID = *text
+	fmt.Print("Please enter Search Index: ")
+	text, err = getText()
+	if err != nil {
+		return nil, err
+	}
+	content.SearchIndex = *text
+	fmt.Print("Please enter Trace ID: ")
+	text, err = getText()
+	if err != nil {
+		return nil, err
+	}
+	content.TraceID = *text
+	return content, nil
+}
+
+func getText() (*string, error) {
+	reader := bufio.NewReader(os.Stdin)
+	text, err := reader.ReadString('\n')
+	if err != nil {
+		return nil, err
+	}
+	// we convert CRLF to LF
+	text = strings.Replace(text, "\n", "", -1)
+	return &text, nil
 }
