@@ -30,6 +30,8 @@ type FlagFields struct {
 	sitemap_path     string // path to the sitemap file
 	zebedee_url      string // zebedee url
 	fake_scroll      bool   // toggle to use or not the fake scroll implementation that replicates elastic search
+	generate_sitemap bool   // generate the sitemap
+	update_sitemap   bool   // updates the sitemap
 }
 
 func validConfig(flagfields *FlagFields) bool {
@@ -59,6 +61,8 @@ func validateCommandLines() (bool, *FlagFields) {
 	flag.StringVar(&commandline.scroll_timeout, "scroll-timeout", "2000", "OPENSEARCH_SCROLL_TIMEOUT")
 	flag.IntVar(&commandline.scroll_size, "scroll-size", 10, "OPENSEARCH_SCROLL_SIZE")
 	flag.BoolVar(&commandline.fake_scroll, "enable-fake-scroll", true, "enable fake scroll")
+	flag.BoolVar(&commandline.generate_sitemap, "generate-sitemap", false, "generate the sitemap")
+	flag.BoolVar(&commandline.update_sitemap, "update-sitemap", false, "update the sitemap")
 
 	flag.Parse()
 	if !validConfig(&commandline) {
@@ -84,15 +88,11 @@ func main() {
 		os.Exit(1)
 	}
 
-	choice, err := menu()
-	if err != nil {
-		fmt.Println("Error retrieving user choice:", err)
-		os.Exit(1)
-	}
-	switch choice {
-	case 1:
+	if commandLine.generate_sitemap {
 		GenerateSitemap(cfg, commandLine)
-	case 2:
+	}
+
+	if commandLine.update_sitemap {
 		zebedeeClient := zebedee.New(commandLine.zebedee_url)
 		fetcher := sitemap.NewElasticFetcher(&FakeScroll{}, cfg, zebedeeClient)
 		handler := event.NewContentPublishedHandler(&sitemap.LocalStore{}, zebedeeClient, cfg, fetcher)
@@ -111,6 +111,7 @@ func main() {
 			return
 		}
 	}
+
 	GenerateRobotFile(cfg, commandLine)
 }
 
@@ -196,21 +197,4 @@ func GenerateRobotFile(cfg *config.Config, commandline *FlagFields) {
 		fmt.Println("failed to save file")
 		return
 	}
-}
-
-func menu() (int, error) {
-	var i = 0
-	for i < 1 || i > 2 {
-		fmt.Println("*** Menu ***")
-		fmt.Println("1. Generate sitemap")
-		fmt.Println("2. Update sitemap")
-		fmt.Print("Choice: ")
-		if _, err := fmt.Scan(&i); err != nil {
-			return 0, err
-		}
-		if i < 1 || i > 2 {
-			fmt.Println("Invalid option. Please choose again.")
-		}
-	}
-	return i, nil
 }

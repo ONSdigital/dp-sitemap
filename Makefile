@@ -41,3 +41,11 @@ convey:
 .PHONY: test-component
 test-component:
 	go test -cover -coverpkg=github.com/ONSdigital/dp-sitemap/... -component
+
+.PHONY: generate-sitemap
+generate-sitemap:
+	go run cmd/sitemapcli/main.go cmd/sitemapcli/fake_scroll.go -robots-file-path=test_robots.txt -scroll-size=10 -scroll-timeout=2000 -api-url=http://localhost -sitemap-index=1 -zebedee-url=http://localhost:8082 -sitemap-file-path=test_sitemap -enable-fake-scroll=true -generate-sitemap=true
+
+.PHONY: update-sitemap
+update-sitemap:
+	go run cmd/sitemapcli/main.go cmd/sitemapcli/fake_scroll.go -robots-file-path=test_robots.txt -scroll-size=10 -scroll-timeout=2000 -api-url=http://localhost -sitemap-index=1 -zebedee-url=http://localhost:8082 -sitemap-file-path=test_sitemap -enable-fake-scroll=true -update-sitemap=true
