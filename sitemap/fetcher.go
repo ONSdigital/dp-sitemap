@@ -64,6 +64,7 @@ type ElasticHitSource struct {
 type Urlset struct {
 	XMLName xml.Name `xml:"urlset"`
 	Xmlns   string   `xml:"xmlns,attr"`
+	Xhtml   string   `xml:"xmlns:xhtml,attr"`
 	URL     []URL    `xml:"url"`
 }
 
@@ -76,11 +77,35 @@ type URL struct {
 
 type AlternateURL struct {
 	XMLName xml.Name `xml:"xhtml:link,omitempty"`
-	Rel     string   `xml:"rel,omitempty"`
-	Lang    string   `xml:"hreflang,omitempty"`
-	Link    string   `xml:"href,omitempty"`
+	Rel     string   `xml:"rel,omitempty,attr"`
+	Lang    string   `xml:"hreflang,omitempty,attr"`
+	Link    string   `xml:"href,omitempty,attr"`
 }
 
+type UrlsetReader struct {
+	XMLName xml.Name    `xml:"urlset"`
+	Xmlns   string      `xml:"xmlns,attr"`
+	Xhtml   string      `xml:"xmlns:xhtml,attr"`
+	URL     []URLReader `xml:"url"`
+}
+
+type URLReader struct {
+	XMLName   xml.Name            `xml:"url"`
+	Loc       string              `xml:"loc"`
+	Lastmod   string              `xml:"lastmod"`
+	Alternate *AlternateURLReader `xml:"link,omitempty"`
+}
+
+type AlternateURLReader struct {
+	XMLName xml.Name `xml:"link,omitempty"`
+	Rel     string   `xml:"rel,omitempty,attr"`
+	Lang    string   `xml:"hreflang,omitempty,attr"`
+	Link    string   `xml:"href,omitempty,attr"`
+}
+type PageInfo struct {
+	ReleaseDate string
+	URLs        map[config.Language]*URL
+}
 type ElasticFetcher struct {
 	scroll  Scroll
 	cfg     *config.Config
@@ -102,9 +127,9 @@ func (f *ElasticFetcher) HasWelshContent(ctx context.Context, path string) bool 
 	return err == nil
 }
 
-func (f *ElasticFetcher) URLVersions(ctx context.Context, path, lastmod string) (en URL, cy *URL) {
+func (f *ElasticFetcher) URLVersions(ctx context.Context, path, lastmod string) (en, cy *URL) {
 	enLoc, _ := url.JoinPath(f.cfg.DpOnsURLHostNameEn, path)
-	en = URL{
+	en = &URL{
 		Loc:     enLoc,
 		Lastmod: lastmod,
 	}
@@ -129,6 +154,14 @@ func (f *ElasticFetcher) URLVersions(ctx context.Context, path, lastmod string) 
 		}
 	}
 	return
+}
+
+func (f *ElasticFetcher) URLVersion(ctx context.Context, path, lastmod, lang string) *URL {
+	urlEn, urlCy := f.URLVersions(ctx, path, lastmod)
+	if lang == "cy" {
+		return urlCy
+	}
+	return urlEn
 }
 
 var (
@@ -177,7 +210,7 @@ func (f *ElasticFetcher) GetFullSitemap(ctx context.Context) (fileNames Files, e
 	encCy := xml.NewEncoder(bufferedFileCy)
 	encCy.Indent("", "  ")
 
-	sitemapHdContent := xml.Header + `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">` + "\n"
+	sitemapHdContent := xml.Header + `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">` + "\n"
 	_, err = bufferedFileEn.WriteString(sitemapHdContent)
 	if err != nil {
 		return fileNames, fmt.Errorf("sitemap_en page xml header write error: %w", err)
@@ -213,6 +246,9 @@ func (f *ElasticFetcher) GetFullSitemap(ctx context.Context) (fileNames Files, e
 				}
 			}
 		}
+		if f.cfg.OpenSearchConfig.DebugFirstPageOnly {
+			break
+		}
 		result = ElasticResult{}
 		err = f.scroll.GetScroll(ctx, scrollID, &result)
 		if err != nil {
@@ -230,4 +266,25 @@ func (f *ElasticFetcher) GetFullSitemap(ctx context.Context) (fileNames Files, e
 	}
 
 	return fileNames, nil
+}
+
+func (f *ElasticFetcher) GetPageInfo(ctx context.Context, path string) (*PageInfo, error) {
+	description, err := f.zClient.GetPageDescription(ctx, "", "", "", path)
+	if err != nil {
+		log.Error(ctx, "Error getting page description", err)
+		return &PageInfo{}, err
+	}
+
+	releaseDate, err := time.Parse(time.RFC3339, description.Description.ReleaseDate)
+	if err != nil {
+		log.Error(ctx, "Error parsing the release date", err)
+		return &PageInfo{}, err
+	}
+	rd := releaseDate.Format("2006-01-02")
+	urlEn, urlCy := f.URLVersions(ctx, path, rd)
+
+	return &PageInfo{
+		ReleaseDate: rd,
+		URLs:        map[config.Language]*URL{config.English: urlEn, config.Welsh: urlCy},
+	}, nil
 }

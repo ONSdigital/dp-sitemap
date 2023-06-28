@@ -15,34 +15,46 @@ var _ sitemap.Fetcher = &FetcherMock{}
 
 // FetcherMock is a mock implementation of sitemap.Fetcher.
 //
-// 	func TestSomethingThatUsesFetcher(t *testing.T) {
+//	func TestSomethingThatUsesFetcher(t *testing.T) {
 //
-// 		// make and configure a mocked sitemap.Fetcher
-// 		mockedFetcher := &FetcherMock{
-// 			GetFullSitemapFunc: func(ctx context.Context) (sitemap.Files, error) {
-// 				panic("mock out the GetFullSitemap method")
-// 			},
-// 			HasWelshContentFunc: func(ctx context.Context, path string) bool {
-// 				panic("mock out the HasWelshContent method")
-// 			},
-// 			URLVersionsFunc: func(ctx context.Context, path string, lastmod string) (sitemap.URL, *sitemap.URL) {
-// 				panic("mock out the URLVersions method")
-// 			},
-// 		}
+//		// make and configure a mocked sitemap.Fetcher
+//		mockedFetcher := &FetcherMock{
+//			GetFullSitemapFunc: func(ctx context.Context) (sitemap.Files, error) {
+//				panic("mock out the GetFullSitemap method")
+//			},
+//			GetPageInfoFunc: func(ctx context.Context, path string) (*sitemap.PageInfo, error) {
+//				panic("mock out the GetPageInfo method")
+//			},
+//			HasWelshContentFunc: func(ctx context.Context, path string) bool {
+//				panic("mock out the HasWelshContent method")
+//			},
+//			URLVersionFunc: func(ctx context.Context, path string, lastmod string, lang string) *sitemap.URL {
+//				panic("mock out the URLVersion method")
+//			},
+//			URLVersionsFunc: func(ctx context.Context, path string, lastmod string) (*sitemap.URL, *sitemap.URL) {
+//				panic("mock out the URLVersions method")
+//			},
+//		}
 //
-// 		// use mockedFetcher in code that requires sitemap.Fetcher
-// 		// and then make assertions.
+//		// use mockedFetcher in code that requires sitemap.Fetcher
+//		// and then make assertions.
 //
-// 	}
+//	}
 type FetcherMock struct {
 	// GetFullSitemapFunc mocks the GetFullSitemap method.
 	GetFullSitemapFunc func(ctx context.Context) (sitemap.Files, error)
 
+	// GetPageInfoFunc mocks the GetPageInfo method.
+	GetPageInfoFunc func(ctx context.Context, path string) (*sitemap.PageInfo, error)
+
 	// HasWelshContentFunc mocks the HasWelshContent method.
 	HasWelshContentFunc func(ctx context.Context, path string) bool
 
+	// URLVersionFunc mocks the URLVersion method.
+	URLVersionFunc func(ctx context.Context, path string, lastmod string, lang string) *sitemap.URL
+
 	// URLVersionsFunc mocks the URLVersions method.
-	URLVersionsFunc func(ctx context.Context, path string, lastmod string) (sitemap.URL, *sitemap.URL)
+	URLVersionsFunc func(ctx context.Context, path string, lastmod string) (*sitemap.URL, *sitemap.URL)
 
 	// calls tracks calls to the methods.
 	calls struct {
@@ -51,12 +63,30 @@ type FetcherMock struct {
 			// Ctx is the ctx argument value.
 			Ctx context.Context
 		}
+		// GetPageInfo holds details about calls to the GetPageInfo method.
+		GetPageInfo []struct {
+			// Ctx is the ctx argument value.
+			Ctx context.Context
+			// Path is the path argument value.
+			Path string
+		}
 		// HasWelshContent holds details about calls to the HasWelshContent method.
 		HasWelshContent []struct {
 			// Ctx is the ctx argument value.
 			Ctx context.Context
 			// Path is the path argument value.
 			Path string
+		}
+		// URLVersion holds details about calls to the URLVersion method.
+		URLVersion []struct {
+			// Ctx is the ctx argument value.
+			Ctx context.Context
+			// Path is the path argument value.
+			Path string
+			// Lastmod is the lastmod argument value.
+			Lastmod string
+			// Lang is the lang argument value.
+			Lang string
 		}
 		// URLVersions holds details about calls to the URLVersions method.
 		URLVersions []struct {
@@ -69,7 +99,9 @@ type FetcherMock struct {
 		}
 	}
 	lockGetFullSitemap  sync.RWMutex
+	lockGetPageInfo     sync.RWMutex
 	lockHasWelshContent sync.RWMutex
+	lockURLVersion      sync.RWMutex
 	lockURLVersions     sync.RWMutex
 }
 
@@ -91,7 +123,8 @@ func (mock *FetcherMock) GetFullSitemap(ctx context.Context) (sitemap.Files, err
 
 // GetFullSitemapCalls gets all the calls that were made to GetFullSitemap.
 // Check the length with:
-//     len(mockedFetcher.GetFullSitemapCalls())
+//
+//	len(mockedFetcher.GetFullSitemapCalls())
 func (mock *FetcherMock) GetFullSitemapCalls() []struct {
 	Ctx context.Context
 } {
@@ -101,6 +134,42 @@ func (mock *FetcherMock) GetFullSitemapCalls() []struct {
 	mock.lockGetFullSitemap.RLock()
 	calls = mock.calls.GetFullSitemap
 	mock.lockGetFullSitemap.RUnlock()
+	return calls
+}
+
+// GetPageInfo calls GetPageInfoFunc.
+func (mock *FetcherMock) GetPageInfo(ctx context.Context, path string) (*sitemap.PageInfo, error) {
+	if mock.GetPageInfoFunc == nil {
+		panic("FetcherMock.GetPageInfoFunc: method is nil but Fetcher.GetPageInfo was just called")
+	}
+	callInfo := struct {
+		Ctx  context.Context
+		Path string
+	}{
+		Ctx:  ctx,
+		Path: path,
+	}
+	mock.lockGetPageInfo.Lock()
+	mock.calls.GetPageInfo = append(mock.calls.GetPageInfo, callInfo)
+	mock.lockGetPageInfo.Unlock()
+	return mock.GetPageInfoFunc(ctx, path)
+}
+
+// GetPageInfoCalls gets all the calls that were made to GetPageInfo.
+// Check the length with:
+//
+//	len(mockedFetcher.GetPageInfoCalls())
+func (mock *FetcherMock) GetPageInfoCalls() []struct {
+	Ctx  context.Context
+	Path string
+} {
+	var calls []struct {
+		Ctx  context.Context
+		Path string
+	}
+	mock.lockGetPageInfo.RLock()
+	calls = mock.calls.GetPageInfo
+	mock.lockGetPageInfo.RUnlock()
 	return calls
 }
 
@@ -124,7 +193,8 @@ func (mock *FetcherMock) HasWelshContent(ctx context.Context, path string) bool 
 
 // HasWelshContentCalls gets all the calls that were made to HasWelshContent.
 // Check the length with:
-//     len(mockedFetcher.HasWelshContentCalls())
+//
+//	len(mockedFetcher.HasWelshContentCalls())
 func (mock *FetcherMock) HasWelshContentCalls() []struct {
 	Ctx  context.Context
 	Path string
@@ -139,8 +209,52 @@ func (mock *FetcherMock) HasWelshContentCalls() []struct {
 	return calls
 }
 
+// URLVersion calls URLVersionFunc.
+func (mock *FetcherMock) URLVersion(ctx context.Context, path string, lastmod string, lang string) *sitemap.URL {
+	if mock.URLVersionFunc == nil {
+		panic("FetcherMock.URLVersionFunc: method is nil but Fetcher.URLVersion was just called")
+	}
+	callInfo := struct {
+		Ctx     context.Context
+		Path    string
+		Lastmod string
+		Lang    string
+	}{
+		Ctx:     ctx,
+		Path:    path,
+		Lastmod: lastmod,
+		Lang:    lang,
+	}
+	mock.lockURLVersion.Lock()
+	mock.calls.URLVersion = append(mock.calls.URLVersion, callInfo)
+	mock.lockURLVersion.Unlock()
+	return mock.URLVersionFunc(ctx, path, lastmod, lang)
+}
+
+// URLVersionCalls gets all the calls that were made to URLVersion.
+// Check the length with:
+//
+//	len(mockedFetcher.URLVersionCalls())
+func (mock *FetcherMock) URLVersionCalls() []struct {
+	Ctx     context.Context
+	Path    string
+	Lastmod string
+	Lang    string
+} {
+	var calls []struct {
+		Ctx     context.Context
+		Path    string
+		Lastmod string
+		Lang    string
+	}
+	mock.lockURLVersion.RLock()
+	calls = mock.calls.URLVersion
+	mock.lockURLVersion.RUnlock()
+	return calls
+}
+
 // URLVersions calls URLVersionsFunc.
-func (mock *FetcherMock) URLVersions(ctx context.Context, path string, lastmod string) (sitemap.URL, *sitemap.URL) {
+func (mock *FetcherMock) URLVersions(ctx context.Context, path string, lastmod string) (*sitemap.URL, *sitemap.URL) {
 	if mock.URLVersionsFunc == nil {
 		panic("FetcherMock.URLVersionsFunc: method is nil but Fetcher.URLVersions was just called")
 	}
@@ -161,7 +275,8 @@ func (mock *FetcherMock) URLVersions(ctx context.Context, path string, lastmod s
 
 // URLVersionsCalls gets all the calls that were made to URLVersions.
 // Check the length with:
-//     len(mockedFetcher.URLVersionsCalls())
+//
+//	len(mockedFetcher.URLVersionsCalls())
 func (mock *FetcherMock) URLVersionsCalls() []struct {
 	Ctx     context.Context
 	Path    string

@@ -15,19 +15,19 @@ var _ sitemap.Adder = &AdderMock{}
 
 // AdderMock is a mock implementation of sitemap.Adder.
 //
-// 	func TestSomethingThatUsesAdder(t *testing.T) {
+//	func TestSomethingThatUsesAdder(t *testing.T) {
 //
-// 		// make and configure a mocked sitemap.Adder
-// 		mockedAdder := &AdderMock{
-// 			AddFunc: func(oldSitemap io.Reader, url *sitemap.URL) (string, int, error) {
-// 				panic("mock out the Add method")
-// 			},
-// 		}
+//		// make and configure a mocked sitemap.Adder
+//		mockedAdder := &AdderMock{
+//			AddFunc: func(oldSitemap io.Reader, url *sitemap.URL) (string, int, error) {
+//				panic("mock out the Add method")
+//			},
+//		}
 //
-// 		// use mockedAdder in code that requires sitemap.Adder
-// 		// and then make assertions.
+//		// use mockedAdder in code that requires sitemap.Adder
+//		// and then make assertions.
 //
-// 	}
+//	}
 type AdderMock struct {
 	// AddFunc mocks the Add method.
 	AddFunc func(oldSitemap io.Reader, url *sitemap.URL) (string, int, error)
@@ -65,7 +65,8 @@ func (mock *AdderMock) Add(oldSitemap io.Reader, url *sitemap.URL) (string, int,
 
 // AddCalls gets all the calls that were made to Add.
 // Check the length with:
-//     len(mockedAdder.AddCalls())
+//
+//	len(mockedAdder.AddCalls())
 func (mock *AdderMock) AddCalls() []struct {
 	OldSitemap io.Reader
 	URL        *sitemap.URL

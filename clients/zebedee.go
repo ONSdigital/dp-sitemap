@@ -13,4 +13,5 @@ import (
 type ZebedeeClient interface {
 	Checker(context.Context, *healthcheck.CheckState) error
 	GetFileSize(ctx context.Context, userAccessToken, collectionID, lang, uri string) (zebedee.FileSize, error)
+	GetPageDescription(ctx context.Context, userAccessToken, collectionID, lang, uri string) (zebedee.PageDescription, error)
 }

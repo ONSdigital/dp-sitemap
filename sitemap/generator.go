@@ -21,12 +21,16 @@ type Files map[config.Language]string
 type FileStore interface {
 	SaveFile(name string, body io.Reader) error
 	GetFile(name string) (body io.ReadCloser, err error)
+	CopyFile(src io.Reader, dest io.Writer) error
+	CreateFile(name string) (io.ReadWriteCloser, error)
 }
 
 type Fetcher interface {
 	GetFullSitemap(ctx context.Context) (Files, error)
 	HasWelshContent(ctx context.Context, path string) bool
-	URLVersions(ctx context.Context, path string, lastmod string) (en URL, cy *URL)
+	URLVersions(ctx context.Context, path string, lastmod string) (en, cy *URL)
+	URLVersion(ctx context.Context, path, lastmod, lang string) *URL
+	GetPageInfo(ctx context.Context, path string) (*PageInfo, error)
 }
 type Adder interface {
 	Add(oldSitemap io.Reader, url *URL) (file string, size int, err error)
@@ -119,7 +123,7 @@ func (g *Generator) MakePublishingSitemap(ctx context.Context, url URL) error {
 		url.Lastmod,
 	)
 
-	size, err := g.AppendURL(ctx, currentSitemap, &urlEn, g.publishingSitemapFile)
+	size, err := g.AppendURL(ctx, currentSitemap, urlEn, g.publishingSitemapFile)
 	if err != nil {
 		return err
 	}

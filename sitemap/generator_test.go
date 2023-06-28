@@ -18,8 +18,8 @@ func TestGeneratePublishingSitemap(t *testing.T) {
 	store := &mock.FileStoreMock{}
 	adder := &mock.AdderMock{}
 	fetcher := &mock.FetcherMock{}
-	fetcher.URLVersionsFunc = func(ctx context.Context, path, lastmod string) (sitemap.URL, *sitemap.URL) {
-		return sitemap.URL{Loc: path, Lastmod: lastmod}, nil
+	fetcher.URLVersionsFunc = func(ctx context.Context, path, lastmod string) (*sitemap.URL, *sitemap.URL) {
+		return &sitemap.URL{Loc: path, Lastmod: lastmod}, nil
 	}
 	Convey("When getting current sitemap returns an error", t, func() {
 		store.GetFileFunc = func(name string) (io.ReadCloser, error) {

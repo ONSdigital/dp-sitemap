@@ -52,7 +52,7 @@ func TestAdder(t *testing.T) {
 			sitemapContent, err := os.ReadFile(filename)
 			So(err, ShouldBeNil)
 			So(string(sitemapContent), ShouldEqual, `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
     <loc>a</loc>
     <lastmod>b</lastmod>
@@ -66,15 +66,17 @@ func TestAdder(t *testing.T) {
 		  <url>
 			<loc>a</loc>
 			<lastmod>b</lastmod>
+			<xhtml:link rel="A" hreflang="B" href="C"></xhtml:link>
 		  </url>
 		  <url>
-		  <loc>c</loc>
-		  <lastmod>d</lastmod>
-		</url>
+			<loc>c</loc>
+			<lastmod>d</lastmod>
+			<xhtml:link rel="D" hreflang="E" href="F"></xhtml:link>
+		  </url>
 		</urlset>`)
 
 		a := &sitemap.DefaultAdder{}
-		filename, size, err := a.Add(oldSitemap, &sitemap.URL{Loc: "e", Lastmod: "f"})
+		filename, size, err := a.Add(oldSitemap, &sitemap.URL{Loc: "e", Lastmod: "f", Alternate: &sitemap.AlternateURL{Rel: "G", Lang: "H", Link: "I"}})
 		defer func() {
 			removeErr := os.Remove(filename)
 			So(removeErr, ShouldBeNil)
@@ -95,18 +97,21 @@ func TestAdder(t *testing.T) {
 			sitemapContent, err := os.ReadFile(filename)
 			So(err, ShouldBeNil)
 			So(string(sitemapContent), ShouldEqual, `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
     <loc>a</loc>
     <lastmod>b</lastmod>
+    <xhtml:link rel="A" hreflang="B" href="C"></xhtml:link>
   </url>
   <url>
     <loc>c</loc>
     <lastmod>d</lastmod>
+    <xhtml:link rel="D" hreflang="E" href="F"></xhtml:link>
   </url>
   <url>
     <loc>e</loc>
     <lastmod>f</lastmod>
+    <xhtml:link rel="G" hreflang="H" href="I"></xhtml:link>
   </url>
 </urlset>`)
 		})
@@ -117,11 +122,13 @@ func TestAdder(t *testing.T) {
 		  <url>
 			<loc>a</loc>
 			<lastmod>b</lastmod>
+			<xhtml:link rel="A" hreflang="B" href="C"></xhtml:link>
 		  </url>
 		  <url>
-		  <loc>c</loc>
-		  <lastmod>d</lastmod>
-		</url>
+			<loc>c</loc>
+			<lastmod>d</lastmod>
+			<xhtml:link rel="D" hreflang="E" href="F"></xhtml:link>
+		  </url>
 		</urlset>`)
 
 		a := &sitemap.DefaultAdder{}
@@ -146,14 +153,16 @@ func TestAdder(t *testing.T) {
 			sitemapContent, err := os.ReadFile(filename)
 			So(err, ShouldBeNil)
 			So(string(sitemapContent), ShouldEqual, `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
     <loc>a</loc>
     <lastmod>b</lastmod>
+    <xhtml:link rel="A" hreflang="B" href="C"></xhtml:link>
   </url>
   <url>
     <loc>c</loc>
     <lastmod>d</lastmod>
+    <xhtml:link rel="D" hreflang="E" href="F"></xhtml:link>
   </url>
 </urlset>`)
 		})

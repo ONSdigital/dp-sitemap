@@ -15,23 +15,35 @@ var _ sitemap.FileStore = &FileStoreMock{}
 
 // FileStoreMock is a mock implementation of sitemap.FileStore.
 //
-// 	func TestSomethingThatUsesFileStore(t *testing.T) {
+//	func TestSomethingThatUsesFileStore(t *testing.T) {
 //
-// 		// make and configure a mocked sitemap.FileStore
-// 		mockedFileStore := &FileStoreMock{
-// 			GetFileFunc: func(name string) (io.ReadCloser, error) {
-// 				panic("mock out the GetFile method")
-// 			},
-// 			SaveFileFunc: func(name string, body io.Reader) error {
-// 				panic("mock out the SaveFile method")
-// 			},
-// 		}
+//		// make and configure a mocked sitemap.FileStore
+//		mockedFileStore := &FileStoreMock{
+//			CopyFileFunc: func(src io.Reader, dest io.Writer) error {
+//				panic("mock out the CopyFile method")
+//			},
+//			CreateFileFunc: func(name string) (io.ReadWriteCloser, error) {
+//				panic("mock out the CreateFile method")
+//			},
+//			GetFileFunc: func(name string) (io.ReadCloser, error) {
+//				panic("mock out the GetFile method")
+//			},
+//			SaveFileFunc: func(name string, body io.Reader) error {
+//				panic("mock out the SaveFile method")
+//			},
+//		}
 //
-// 		// use mockedFileStore in code that requires sitemap.FileStore
-// 		// and then make assertions.
+//		// use mockedFileStore in code that requires sitemap.FileStore
+//		// and then make assertions.
 //
-// 	}
+//	}
 type FileStoreMock struct {
+	// CopyFileFunc mocks the CopyFile method.
+	CopyFileFunc func(src io.Reader, dest io.Writer) error
+
+	// CreateFileFunc mocks the CreateFile method.
+	CreateFileFunc func(name string) (io.ReadWriteCloser, error)
+
 	// GetFileFunc mocks the GetFile method.
 	GetFileFunc func(name string) (io.ReadCloser, error)
 
@@ -40,6 +52,18 @@ type FileStoreMock struct {
 
 	// calls tracks calls to the methods.
 	calls struct {
+		// CopyFile holds details about calls to the CopyFile method.
+		CopyFile []struct {
+			// Src is the src argument value.
+			Src io.Reader
+			// Dest is the dest argument value.
+			Dest io.Writer
+		}
+		// CreateFile holds details about calls to the CreateFile method.
+		CreateFile []struct {
+			// Name is the name argument value.
+			Name string
+		}
 		// GetFile holds details about calls to the GetFile method.
 		GetFile []struct {
 			// Name is the name argument value.
@@ -53,8 +77,78 @@ type FileStoreMock struct {
 			Body io.Reader
 		}
 	}
-	lockGetFile  sync.RWMutex
-	lockSaveFile sync.RWMutex
+	lockCopyFile   sync.RWMutex
+	lockCreateFile sync.RWMutex
+	lockGetFile    sync.RWMutex
+	lockSaveFile   sync.RWMutex
+}
+
+// CopyFile calls CopyFileFunc.
+func (mock *FileStoreMock) CopyFile(src io.Reader, dest io.Writer) error {
+	if mock.CopyFileFunc == nil {
+		panic("FileStoreMock.CopyFileFunc: method is nil but FileStore.CopyFile was just called")
+	}
+	callInfo := struct {
+		Src  io.Reader
+		Dest io.Writer
+	}{
+		Src:  src,
+		Dest: dest,
+	}
+	mock.lockCopyFile.Lock()
+	mock.calls.CopyFile = append(mock.calls.CopyFile, callInfo)
+	mock.lockCopyFile.Unlock()
+	return mock.CopyFileFunc(src, dest)
+}
+
+// CopyFileCalls gets all the calls that were made to CopyFile.
+// Check the length with:
+//
+//	len(mockedFileStore.CopyFileCalls())
+func (mock *FileStoreMock) CopyFileCalls() []struct {
+	Src  io.Reader
+	Dest io.Writer
+} {
+	var calls []struct {
+		Src  io.Reader
+		Dest io.Writer
+	}
+	mock.lockCopyFile.RLock()
+	calls = mock.calls.CopyFile
+	mock.lockCopyFile.RUnlock()
+	return calls
+}
+
+// CreateFile calls CreateFileFunc.
+func (mock *FileStoreMock) CreateFile(name string) (io.ReadWriteCloser, error) {
+	if mock.CreateFileFunc == nil {
+		panic("FileStoreMock.CreateFileFunc: method is nil but FileStore.CreateFile was just called")
+	}
+	callInfo := struct {
+		Name string
+	}{
+		Name: name,
+	}
+	mock.lockCreateFile.Lock()
+	mock.calls.CreateFile = append(mock.calls.CreateFile, callInfo)
+	mock.lockCreateFile.Unlock()
+	return mock.CreateFileFunc(name)
+}
+
+// CreateFileCalls gets all the calls that were made to CreateFile.
+// Check the length with:
+//
+//	len(mockedFileStore.CreateFileCalls())
+func (mock *FileStoreMock) CreateFileCalls() []struct {
+	Name string
+} {
+	var calls []struct {
+		Name string
+	}
+	mock.lockCreateFile.RLock()
+	calls = mock.calls.CreateFile
+	mock.lockCreateFile.RUnlock()
+	return calls
 }
 
 // GetFile calls GetFileFunc.
@@ -75,7 +169,8 @@ func (mock *FileStoreMock) GetFile(name string) (io.ReadCloser, error) {
 
 // GetFileCalls gets all the calls that were made to GetFile.
 // Check the length with:
-//     len(mockedFileStore.GetFileCalls())
+//
+//	len(mockedFileStore.GetFileCalls())
 func (mock *FileStoreMock) GetFileCalls() []struct {
 	Name string
 } {
@@ -108,7 +203,8 @@ func (mock *FileStoreMock) SaveFile(name string, body io.Reader) error {
 
 // SaveFileCalls gets all the calls that were made to SaveFile.
 // Check the length with:
-//     len(mockedFileStore.SaveFileCalls())
+//
+//	len(mockedFileStore.SaveFileCalls())
 func (mock *FileStoreMock) SaveFileCalls() []struct {
 	Name string
 	Body io.Reader

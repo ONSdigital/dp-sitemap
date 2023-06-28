@@ -3,12 +3,12 @@ package main
 import (
 	"context"
 	"fmt"
-	"os"
 	"time"
 
 	"github.com/ONSdigital/dp-sitemap/sitemap"
 )
 
+// FakeScroll is used to replicate elastic search
 type FakeScroll struct {
 }
 
@@ -17,21 +17,21 @@ func NewFakeScroll() sitemap.Scroll {
 }
 
 func (fs *FakeScroll) StartScroll(ctx context.Context, result interface{}) error {
-	fakeStartScroll(result)
-	return nil
+	return fakeStartScroll(result)
 }
 
 func (fs *FakeScroll) GetScroll(ctx context.Context, id string, result interface{}) error {
 	return nil
 }
 
-func fakeStartScroll(res interface{}) {
+func fakeStartScroll(res interface{}) error {
 	r, ok := res.(*sitemap.ElasticResult)
 	if !ok {
-		fmt.Printf("Type assertion for %v failed.\n", res)
-		os.Exit(1)
+		return fmt.Errorf("type assertion for %v failed", res)
 	}
 
+	// we have created a couple of test articles under $zebedee_root
+	// so we can test the code locally and not in the sandbox environment
 	hit := sitemap.ElasticHit{
 		Source: sitemap.ElasticHitSource{
 			URI:         "/economy/environmentalaccounts/articles/testarticle",
@@ -39,4 +39,5 @@ func fakeStartScroll(res interface{}) {
 		},
 	}
 	r.Hits.Hits = append(r.Hits.Hits, hit)
+	return nil
 }
