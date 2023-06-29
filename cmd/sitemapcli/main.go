@@ -6,6 +6,7 @@ import (
 	"flag"
 	"fmt"
 	"github.com/ONSdigital/dp-sitemap/event"
+	"log"
 	"net/http"
 	"os"
 	"reflect"
@@ -35,12 +36,12 @@ type FlagFields struct {
 	update_sitemap   bool   // updates the sitemap
 }
 
-func validConfig(flagfields *FlagFields) bool {
-	fmt.Println("flag validation started..") //put log entry
-	v := reflect.ValueOf(*flagfields)
+func validConfig(flagFields *FlagFields) bool {
+	log.Println("flag validation started")
+	v := reflect.ValueOf(*flagFields)
 	for i := 0; i < v.NumField(); i++ {
-		flagtest := v.Field(i).String()
-		if flagtest == "" {
+		flagTest := v.Field(i).String()
+		if flagTest == "" {
 			fmt.Println(v.Type().Field(i).Name + " is empty")
 			return false
 		} else {
@@ -48,7 +49,7 @@ func validConfig(flagfields *FlagFields) bool {
 		}
 
 	}
-	fmt.Println("flagtest validation succesfull..")
+	log.Println("flag validation successful")
 	return true
 }
 
