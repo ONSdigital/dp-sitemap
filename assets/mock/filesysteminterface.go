@@ -19,7 +19,7 @@ var _ assets.FileSystemInterface = &FileSystemInterfaceMock{}
 //
 //		// make and configure a mocked assets.FileSystemInterface
 //		mockedFileSystemInterface := &FileSystemInterfaceMock{
-//			GetFunc: func(contextMoqParam context.Context, path string) ([]byte, error) {
+//			GetFunc: func(contextMoqParam context.Context, embeddedFile assets.EmbeddedFile, s string) ([]byte, error) {
 //				panic("mock out the Get method")
 //			},
 //		}
@@ -30,7 +30,7 @@ var _ assets.FileSystemInterface = &FileSystemInterfaceMock{}
 //	}
 type FileSystemInterfaceMock struct {
 	// GetFunc mocks the Get method.
-	GetFunc func(contextMoqParam context.Context, path string) ([]byte, error)
+	GetFunc func(contextMoqParam context.Context, embeddedFile assets.EmbeddedFile, s string) ([]byte, error)
 
 	// calls tracks calls to the methods.
 	calls struct {
@@ -38,29 +38,33 @@ type FileSystemInterfaceMock struct {
 		Get []struct {
 			// ContextMoqParam is the contextMoqParam argument value.
 			ContextMoqParam context.Context
-			// Path is the path argument value.
-			Path string
+			// EmbeddedFile is the embeddedFile argument value.
+			EmbeddedFile assets.EmbeddedFile
+			// S is the s argument value.
+			S string
 		}
 	}
 	lockGet sync.RWMutex
 }
 
 // Get calls GetFunc.
-func (mock *FileSystemInterfaceMock) Get(contextMoqParam context.Context, path string) ([]byte, error) {
+func (mock *FileSystemInterfaceMock) Get(contextMoqParam context.Context, embeddedFile assets.EmbeddedFile, s string) ([]byte, error) {
 	if mock.GetFunc == nil {
 		panic("FileSystemInterfaceMock.GetFunc: method is nil but FileSystemInterface.Get was just called")
 	}
 	callInfo := struct {
 		ContextMoqParam context.Context
-		Path            string
+		EmbeddedFile    assets.EmbeddedFile
+		S               string
 	}{
 		ContextMoqParam: contextMoqParam,
-		Path:            path,
+		EmbeddedFile:    embeddedFile,
+		S:               s,
 	}
 	mock.lockGet.Lock()
 	mock.calls.Get = append(mock.calls.Get, callInfo)
 	mock.lockGet.Unlock()
-	return mock.GetFunc(contextMoqParam, path)
+	return mock.GetFunc(contextMoqParam, embeddedFile, s)
 }
 
 // GetCalls gets all the calls that were made to Get.
@@ -69,11 +73,13 @@ func (mock *FileSystemInterfaceMock) Get(contextMoqParam context.Context, path s
 //	len(mockedFileSystemInterface.GetCalls())
 func (mock *FileSystemInterfaceMock) GetCalls() []struct {
 	ContextMoqParam context.Context
-	Path            string
+	EmbeddedFile    assets.EmbeddedFile
+	S               string
 } {
 	var calls []struct {
 		ContextMoqParam context.Context
-		Path            string
+		EmbeddedFile    assets.EmbeddedFile
+		S               string
 	}
 	mock.lockGet.RLock()
 	calls = mock.calls.Get
