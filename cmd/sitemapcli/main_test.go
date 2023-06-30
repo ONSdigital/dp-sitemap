@@ -95,9 +95,9 @@ func TestLoadStaticSitemap(t *testing.T) {
 }
 
 func TestLoadStaticSitemapV2(t *testing.T) {
-	Convey("given we have static sitemap file sitemap_en.json", t, func() {
+	Convey("Given we have static sitemap file sitemap_en.json", t, func() {
 
-		Convey("when loading english static sitemap", func() {
+		Convey("When loading english static sitemap", func() {
 			store := mock.FileStoreMock{}
 			buf := new(bytes.Buffer)
 			store.SaveFileFunc = func(name string, body io.Reader) error {
@@ -109,12 +109,11 @@ func TestLoadStaticSitemapV2(t *testing.T) {
 			urlSet := &sitemap.UrlsetReader{}
 			xml.Unmarshal(buf.Bytes(), urlSet)
 
-			Convey("There should be no error", func() {
+			Convey("Than there should be no error", func() {
 				So(err, ShouldBeNil)
-			})
-
-			Convey("We should have the correct content loaded", func() {
-				So(urlSet, ShouldResemble, expectedUrlSetEnglish())
+				Convey("And we should have the correct content loaded", func() {
+					So(urlSet, ShouldResemble, expectedUrlSetEnglish())
+				})
 			})
 		})
 	})
