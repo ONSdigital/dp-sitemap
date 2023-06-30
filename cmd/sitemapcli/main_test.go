@@ -3,7 +3,9 @@ package main
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"encoding/xml"
+	"github.com/ONSdigital/dp-sitemap/assets"
 	"github.com/ONSdigital/dp-sitemap/config"
 	"github.com/ONSdigital/dp-sitemap/sitemap"
 	"github.com/ONSdigital/dp-sitemap/sitemap/mock"
@@ -143,48 +145,90 @@ func TestLoadStaticSitemapV2(t *testing.T) {
 }
 
 func expectedUrlSetEnglish() *sitemap.UrlsetReader {
-	return &sitemap.UrlsetReader{
+	staticSitemapName := "sitemap_en.json"
+	cfg, _ := config.Get()
+	efs := assets.NewFromEmbeddedFilesystem()
+
+	b, err := efs.Get(context.Background(), assets.Sitemap, staticSitemapName)
+	if err != nil {
+		panic("can't find file " + staticSitemapName)
+	}
+
+	var content []StaticURL
+
+	err = json.Unmarshal(b, &content)
+	if err != nil {
+		return nil
+	}
+
+	// move old sitemap urls to new sitemap
+	sitemapReader := sitemap.UrlsetReader{
 		XMLName: xml.Name{Space: "http://www.sitemaps.org/schemas/sitemap/0.9", Local: "urlset"},
 		Xmlns:   "http://www.sitemaps.org/schemas/sitemap/0.9",
-		URL: []sitemap.URLReader{
-			{
-				XMLName: xml.Name{Space: "http://www.sitemaps.org/schemas/sitemap/0.9", Local: "url"},
-				Loc:     "https://dp.aws.onsdigital.uk/economy/environmentalaccounts/articles/testarticle1",
-				Lastmod: "01-01-2023",
-				Alternate: &sitemap.AlternateURLReader{
-					XMLName: xml.Name{Space: "http://www.w3.org/1999/xhtml", Local: "link"},
-					Rel:     "alternate",
-					Lang:    "cy",
-					Link:    "https://cy.dp.aws.onsdigital.uk/economy/environmentalaccounts/articles/testarticle1",
-				},
-			},
-			{
-				XMLName: xml.Name{Space: "http://www.sitemaps.org/schemas/sitemap/0.9", Local: "url"},
-				Loc:     "https://dp.aws.onsdigital.uk/economy/environmentalaccounts/articles/testarticle2",
-				Lastmod: "01-01-2023",
-				Alternate: &sitemap.AlternateURLReader{
-					XMLName: xml.Name{Space: "http://www.w3.org/1999/xhtml", Local: "link"},
-					Rel:     "alternate",
-					Lang:    "cy",
-					Link:    "https://cy.dp.aws.onsdigital.uk/economy/environmentalaccounts/articles/testarticle2",
-				},
-			},
-			{
-				XMLName: xml.Name{Space: "http://www.sitemaps.org/schemas/sitemap/0.9", Local: "url"},
-				Loc:     "https://dp.aws.onsdigital.uk/economy/environmentalaccounts/articles/testarticle3",
-				Lastmod: "01-01-2023",
-				Alternate: &sitemap.AlternateURLReader{
-					XMLName: xml.Name{Space: "http://www.w3.org/1999/xhtml", Local: "link"},
-					Rel:     "alternate",
-					Lang:    "cy",
-					Link:    "https://cy.dp.aws.onsdigital.uk/economy/environmentalaccounts/articles/testarticle3",
-				},
-			},
-		},
+		Xhtml:   "",
 	}
+
+	// range through static content
+	for _, contentItem := range content {
+		var newURL sitemap.URLReader
+		newURL.XMLName = xml.Name{Space: "http://www.sitemaps.org/schemas/sitemap/0.9", Local: "url"}
+		newURL.Loc = cfg.DpOnsURLHostNameEn + contentItem.URL
+		newURL.Lastmod = contentItem.ReleaseDate
+		newURL.Alternate = &sitemap.AlternateURLReader{}
+		if contentItem.HasAltLang == true {
+			newURL.Alternate.XMLName = xml.Name{Space: "http://www.w3.org/1999/xhtml", Local: "link"}
+			newURL.Alternate.Rel = "alternate"
+			newURL.Alternate.Link = cfg.DpOnsURLHostNameCy + contentItem.URL
+			newURL.Alternate.Lang = "cy"
+		}
+		sitemapReader.URL = append(sitemapReader.URL, newURL)
+	}
+	return &sitemapReader
 }
 
 func expectedUrlSetWelsh() *sitemap.UrlsetReader {
+	staticSitemapName := "sitemap_cy.json"
+	cfg, _ := config.Get()
+	efs := assets.NewFromEmbeddedFilesystem()
+
+	b, err := efs.Get(context.Background(), assets.Sitemap, staticSitemapName)
+	if err != nil {
+		panic("can't find file " + staticSitemapName)
+	}
+
+	var content []StaticURL
+
+	err = json.Unmarshal(b, &content)
+	if err != nil {
+		return nil
+	}
+
+	// move old sitemap urls to new sitemap
+	sitemapReader := sitemap.UrlsetReader{
+		XMLName: xml.Name{Space: "http://www.sitemaps.org/schemas/sitemap/0.9", Local: "urlset"},
+		Xmlns:   "http://www.sitemaps.org/schemas/sitemap/0.9",
+		Xhtml:   "",
+	}
+
+	// range through static content
+	for _, contentItem := range content {
+		var newURL sitemap.URLReader
+		newURL.XMLName = xml.Name{Space: "http://www.sitemaps.org/schemas/sitemap/0.9", Local: "url"}
+		newURL.Loc = cfg.DpOnsURLHostNameCy + contentItem.URL
+		newURL.Lastmod = contentItem.ReleaseDate
+		newURL.Alternate = &sitemap.AlternateURLReader{}
+		if contentItem.HasAltLang == true {
+			newURL.Alternate.XMLName = xml.Name{Space: "http://www.w3.org/1999/xhtml", Local: "link"}
+			newURL.Alternate.Rel = "alternate"
+			newURL.Alternate.Link = cfg.DpOnsURLHostNameEn + contentItem.URL
+			newURL.Alternate.Lang = "en"
+		}
+		sitemapReader.URL = append(sitemapReader.URL, newURL)
+	}
+	return &sitemapReader
+}
+
+func expectedUrlSetWelshV1() *sitemap.UrlsetReader {
 	return &sitemap.UrlsetReader{
 		XMLName: xml.Name{Space: "http://www.sitemaps.org/schemas/sitemap/0.9", Local: "urlset"},
 		Xmlns:   "http://www.sitemaps.org/schemas/sitemap/0.9",
