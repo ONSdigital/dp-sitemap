@@ -1,6 +1,13 @@
 package main
 
 import (
+	"bytes"
+	"context"
+	"encoding/xml"
+	"github.com/ONSdigital/dp-sitemap/config"
+	"github.com/ONSdigital/dp-sitemap/sitemap"
+	"github.com/ONSdigital/dp-sitemap/sitemap/mock"
+	"io"
 	"testing"
 
 	. "github.com/smartystreets/goconvey/convey"
@@ -38,6 +45,124 @@ func TestValidConfig(t *testing.T) {
 
 			result := validConfig(&tetestdata)
 			So(result, ShouldBeFalse)
+		})
+	})
+}
+
+func TestLoadStaticSitemap(t *testing.T) {
+	Convey("when loading english static sitemap", t, func() {
+		store := mock.FileStoreMock{}
+		buf := new(bytes.Buffer)
+		store.SaveFileFunc = func(name string, body io.Reader) error {
+			io.Copy(buf, body)
+			return nil
+		}
+		cfg, _ := config.Get()
+		err := loadStaticSitemap(context.Background(), "test_sitemap_en", "sitemap_en.json", cfg.DpOnsURLHostNameEn, cfg.DpOnsURLHostNameCy, "cy", &store)
+		urlSet := &sitemap.UrlsetReader{}
+		xml.Unmarshal(buf.Bytes(), urlSet)
+		expectedUrlset := &sitemap.UrlsetReader{
+			XMLName: xml.Name{Space: "http://www.sitemaps.org/schemas/sitemap/0.9", Local: "urlset"},
+			Xmlns:   "http://www.sitemaps.org/schemas/sitemap/0.9",
+			URL: []sitemap.URLReader{
+				{
+					XMLName: xml.Name{Space: "http://www.sitemaps.org/schemas/sitemap/0.9", Local: "url"},
+					Loc:     "https://dp.aws.onsdigital.uk/economy/environmentalaccounts/articles/testarticle1",
+					Lastmod: "01-01-2023",
+					Alternate: &sitemap.AlternateURLReader{
+						XMLName: xml.Name{Space: "http://www.w3.org/1999/xhtml", Local: "link"},
+						Rel:     "alternate",
+						Lang:    "cy",
+						Link:    "https://cy.dp.aws.onsdigital.uk/economy/environmentalaccounts/articles/testarticle1",
+					},
+				},
+				{
+					XMLName: xml.Name{Space: "http://www.sitemaps.org/schemas/sitemap/0.9", Local: "url"},
+					Loc:     "https://dp.aws.onsdigital.uk/economy/environmentalaccounts/articles/testarticle2",
+					Lastmod: "01-01-2023",
+					Alternate: &sitemap.AlternateURLReader{
+						XMLName: xml.Name{Space: "http://www.w3.org/1999/xhtml", Local: "link"},
+						Rel:     "alternate",
+						Lang:    "cy",
+						Link:    "https://cy.dp.aws.onsdigital.uk/economy/environmentalaccounts/articles/testarticle2",
+					},
+				},
+				{
+					XMLName: xml.Name{Space: "http://www.sitemaps.org/schemas/sitemap/0.9", Local: "url"},
+					Loc:     "https://dp.aws.onsdigital.uk/economy/environmentalaccounts/articles/testarticle3",
+					Lastmod: "01-01-2023",
+					Alternate: &sitemap.AlternateURLReader{
+						XMLName: xml.Name{Space: "http://www.w3.org/1999/xhtml", Local: "link"},
+						Rel:     "alternate",
+						Lang:    "cy",
+						Link:    "https://cy.dp.aws.onsdigital.uk/economy/environmentalaccounts/articles/testarticle3",
+					},
+				},
+			},
+		}
+		Convey("There should be no error", func() {
+			So(err, ShouldBeNil)
+		})
+		Convey("We should have the correct content loaded", func() {
+			So(urlSet, ShouldResemble, expectedUrlset)
+		})
+	})
+
+	Convey("when loading welsh static sitemap", t, func() {
+		store := mock.FileStoreMock{}
+		buf := new(bytes.Buffer)
+		store.SaveFileFunc = func(name string, body io.Reader) error {
+			io.Copy(buf, body)
+			return nil
+		}
+		cfg, _ := config.Get()
+		err := loadStaticSitemap(context.Background(), "test_sitemap_cy", "sitemap_cy.json", cfg.DpOnsURLHostNameCy, cfg.DpOnsURLHostNameEn, "en", &store)
+		urlSet := &sitemap.UrlsetReader{}
+		xml.Unmarshal(buf.Bytes(), urlSet)
+		expectedUrlset := &sitemap.UrlsetReader{
+			XMLName: xml.Name{Space: "http://www.sitemaps.org/schemas/sitemap/0.9", Local: "urlset"},
+			Xmlns:   "http://www.sitemaps.org/schemas/sitemap/0.9",
+			URL: []sitemap.URLReader{
+				{
+					XMLName: xml.Name{Space: "http://www.sitemaps.org/schemas/sitemap/0.9", Local: "url"},
+					Loc:     "https://cy.dp.aws.onsdigital.uk/economy/environmentalaccounts/articles/testarticle1",
+					Lastmod: "01-01-2023",
+					Alternate: &sitemap.AlternateURLReader{
+						XMLName: xml.Name{Space: "http://www.w3.org/1999/xhtml", Local: "link"},
+						Rel:     "alternate",
+						Lang:    "en",
+						Link:    "https://dp.aws.onsdigital.uk/economy/environmentalaccounts/articles/testarticle1",
+					},
+				},
+				{
+					XMLName: xml.Name{Space: "http://www.sitemaps.org/schemas/sitemap/0.9", Local: "url"},
+					Loc:     "https://cy.dp.aws.onsdigital.uk/economy/environmentalaccounts/articles/testarticle2",
+					Lastmod: "01-01-2023",
+					Alternate: &sitemap.AlternateURLReader{
+						XMLName: xml.Name{Space: "http://www.w3.org/1999/xhtml", Local: "link"},
+						Rel:     "alternate",
+						Lang:    "en",
+						Link:    "https://dp.aws.onsdigital.uk/economy/environmentalaccounts/articles/testarticle2",
+					},
+				},
+				{
+					XMLName: xml.Name{Space: "http://www.sitemaps.org/schemas/sitemap/0.9", Local: "url"},
+					Loc:     "https://cy.dp.aws.onsdigital.uk/economy/environmentalaccounts/articles/testarticle3",
+					Lastmod: "01-01-2023",
+					Alternate: &sitemap.AlternateURLReader{
+						XMLName: xml.Name{Space: "http://www.w3.org/1999/xhtml", Local: "link"},
+						Rel:     "alternate",
+						Lang:    "en",
+						Link:    "https://dp.aws.onsdigital.uk/economy/environmentalaccounts/articles/testarticle3",
+					},
+				},
+			},
+		}
+		Convey("There should be no error", func() {
+			So(err, ShouldBeNil)
+		})
+		Convey("We should have the correct content loaded", func() {
+			So(urlSet, ShouldResemble, expectedUrlset)
 		})
 	})
 }
