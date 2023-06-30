@@ -16,7 +16,7 @@ func TestInit(t *testing.T) {
 	var returnBytes []byte
 	var called bool
 
-	fsMock := mockassets.FileSystemInterfaceMock{GetFunc: func(contextMoqParam context.Context, path string) ([]byte, error) {
+	fsMock := mockassets.FileSystemInterfaceMock{GetFunc: func(contextMoqParam context.Context, embeddedFile asset.EmbeddedFile, path string) ([]byte, error) {
 		called = true
 		if shouldError {
 			return nil, errors.New("error")
@@ -26,7 +26,7 @@ func TestInit(t *testing.T) {
 
 	Convey("Init calls asset function and panics on error", t, func() {
 		shouldError = true
-		So(func() { Init(&fsMock) }, ShouldPanicWith, "Can't find robot/robot_en.json")
+		So(func() { Init(&fsMock) }, ShouldPanicWith, "Can't find robot_en.json")
 		So(called, ShouldBeTrue)
 	})
 
