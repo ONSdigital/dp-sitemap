@@ -1,10 +1,7 @@
 package main
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
-	"encoding/xml"
 	"flag"
 	"fmt"
 	"github.com/ONSdigital/dp-sitemap/event"
@@ -35,12 +32,6 @@ type FlagFields struct {
 	sitemap_path     string
 	zebedee_url      string
 	fake_scroll      bool
-}
-
-type StaticURL struct {
-	URL         string `json:"url"`
-	ReleaseDate string `json:"releaseDate"`
-	HasAltLang  bool   `json:"hasAltLang"`
 }
 
 // test function for FlagFields
@@ -128,12 +119,12 @@ func main() {
 			return
 		}
 	case 3:
-		err = loadStaticSitemap(context.Background(), "test_sitemap_en", "sitemap_en.json", cfg.DpOnsURLHostNameEn, cfg.DpOnsURLHostNameCy, "cy", &sitemap.LocalStore{})
+		err = sitemap.LoadStaticSitemap(context.Background(), "test_sitemap_en", "sitemap_en.json", cfg.DpOnsURLHostNameEn, cfg.DpOnsURLHostNameCy, "cy", &sitemap.LocalStore{})
 		if err != nil {
 			fmt.Println("Failed to load english static sitemap:", err)
 			return
 		}
-		err = loadStaticSitemap(context.Background(), "test_sitemap_cy", "sitemap_cy.json", cfg.DpOnsURLHostNameCy, cfg.DpOnsURLHostNameEn, "en", &sitemap.LocalStore{})
+		err = sitemap.LoadStaticSitemap(context.Background(), "test_sitemap_cy", "sitemap_cy.json", cfg.DpOnsURLHostNameCy, cfg.DpOnsURLHostNameEn, "en", &sitemap.LocalStore{})
 		if err != nil {
 			fmt.Println("Failed to load welsh static sitemap:", err)
 			return
@@ -241,53 +232,4 @@ func menu() (int, error) {
 		}
 	}
 	return i, nil
-}
-
-func loadStaticSitemap(ctx context.Context, oldSitemapName, staticSitemapName, DpOnsURLHostName, DpOnsURLHostNameAlt, altLang string, store sitemap.FileStore) error {
-	efs := assets.NewFromEmbeddedFilesystem()
-
-	b, err := efs.Get(ctx, assets.Sitemap, staticSitemapName)
-	if err != nil {
-		panic("can't find file " + staticSitemapName)
-	}
-
-	var content []StaticURL
-
-	err = json.Unmarshal(b, &content)
-	if err != nil {
-		return fmt.Errorf("unable to read json: %w", err)
-	}
-
-	// move old sitemap urls to new sitemap
-	sitemapWriter := sitemap.Urlset{
-		Xmlns: "http://www.sitemaps.org/schemas/sitemap/0.9",
-		Xhtml: "http://www.w3.org/1999/xhtml",
-	}
-
-	// range through static content
-	for _, item := range content {
-		var newURL sitemap.URL
-		newURL.Loc = DpOnsURLHostName + item.URL
-		newURL.Lastmod = item.ReleaseDate
-		newURL.Alternate = &sitemap.AlternateURL{}
-		if item.HasAltLang == true {
-			newURL.Alternate.Rel = "alternate"
-			newURL.Alternate.Link = DpOnsURLHostNameAlt + item.URL
-			newURL.Alternate.Lang = altLang
-		}
-		sitemapWriter.URL = append(sitemapWriter.URL, newURL)
-	}
-
-	marshaledContent, err := xml.MarshalIndent(sitemapWriter, "", "  ")
-	if err != nil {
-		return err
-	}
-	header := []byte(xml.Header)
-	header = append(header, marshaledContent...)
-	reader := bytes.NewReader(header)
-	err = store.SaveFile(oldSitemapName, reader)
-	if err != nil {
-		return err
-	}
-	return nil
 }

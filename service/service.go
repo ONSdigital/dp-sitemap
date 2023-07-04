@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"strings"
 	"time"
 
@@ -180,6 +181,12 @@ func Run(ctx context.Context, serviceList *ExternalServiceList, buildTime, gitCo
 		// write robots file
 		// TODO: pass sitemap file path (once URL is known)
 		for _, lang := range []config.Language{config.English, config.Welsh} {
+			err = sitemap.LoadStaticSitemap(context.Background(), "test_sitemap_en", "sitemap_en.json", cfg.DpOnsURLHostNameEn, cfg.DpOnsURLHostNameCy, "cy", &sitemap.LocalStore{})
+			if err != nil {
+				fmt.Println("Failed to load english static sitemap:", err)
+				return
+			}
+			// get array of sitemap files
 			body := robotFileWriter.GetRobotsFileBody(lang, cfg.SitemapLocalFile)
 			saveErr := store.SaveFile(cfg.RobotsFilePath[lang], strings.NewReader(body))
 			if saveErr != nil {
