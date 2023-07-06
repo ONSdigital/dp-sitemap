@@ -180,15 +180,15 @@ func Run(ctx context.Context, serviceList *ExternalServiceList, buildTime, gitCo
 
 		// write robots file
 		// TODO: pass sitemap file path (once URL is known)
-		for _, lang := range []config.Language{config.English, config.Welsh} {
-			err = sitemap.LoadStaticSitemap(context.Background(), "test_sitemap_en", "sitemap_en.json", cfg.DpOnsURLHostNameEn, cfg.DpOnsURLHostNameCy, "cy", &sitemap.LocalStore{})
+		for _, staticSitemapConfig := range sitemap.GetConfigAsArray(cfg) {
+			err = sitemap.LoadStaticSitemap(context.Background(), staticSitemapConfig.SitemapFileName, staticSitemapConfig.StaticSitemapFileName, staticSitemapConfig.HostName, staticSitemapConfig.AlternateHostName, staticSitemapConfig.AlternateLang.String(), &sitemap.LocalStore{})
 			if err != nil {
 				fmt.Println("Failed to load english static sitemap:", err)
 				return
 			}
 			// get array of sitemap files
-			body := robotFileWriter.GetRobotsFileBody(lang, cfg.SitemapLocalFile)
-			saveErr := store.SaveFile(cfg.RobotsFilePath[lang], strings.NewReader(body))
+			body := robotFileWriter.GetRobotsFileBody(staticSitemapConfig.Lang, cfg.SitemapLocalFile)
+			saveErr := store.SaveFile(cfg.RobotsFilePath[staticSitemapConfig.Lang], strings.NewReader(body))
 			if saveErr != nil {
 				log.Error(ctx, "failed to save file: %w", saveErr)
 				return

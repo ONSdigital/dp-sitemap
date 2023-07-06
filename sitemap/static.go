@@ -6,7 +6,9 @@ import (
 	"encoding/json"
 	"encoding/xml"
 	"fmt"
+
 	"github.com/ONSdigital/dp-sitemap/assets"
+	"github.com/ONSdigital/dp-sitemap/config"
 )
 
 type StaticURL struct {
@@ -15,7 +17,7 @@ type StaticURL struct {
 	HasAltLang  bool   `json:"hasAltLang"`
 }
 
-func LoadStaticSitemap(ctx context.Context, oldSitemapName, staticSitemapName, DpOnsURLHostName, DpOnsURLHostNameAlt, altLang string, store FileStore) error {
+func LoadStaticSitemap(ctx context.Context, oldSitemapName, staticSitemapName, dpOnsURLHostName, dpOnsURLHostNameAlt, altLang string, store FileStore) error {
 	efs := assets.NewFromEmbeddedFilesystem()
 
 	b, err := efs.Get(ctx, assets.Sitemap, staticSitemapName)
@@ -39,12 +41,12 @@ func LoadStaticSitemap(ctx context.Context, oldSitemapName, staticSitemapName, D
 	// range through static content
 	for _, item := range content {
 		var newURL URL
-		newURL.Loc = DpOnsURLHostName + item.URL
+		newURL.Loc = dpOnsURLHostName + item.URL
 		newURL.Lastmod = item.ReleaseDate
 		newURL.Alternate = &AlternateURL{}
-		if item.HasAltLang == true {
+		if item.HasAltLang {
 			newURL.Alternate.Rel = "alternate"
-			newURL.Alternate.Link = DpOnsURLHostNameAlt + item.URL
+			newURL.Alternate.Link = dpOnsURLHostNameAlt + item.URL
 			newURL.Alternate.Lang = altLang
 		}
 		sitemapWriter.URL = append(sitemapWriter.URL, newURL)
@@ -62,4 +64,34 @@ func LoadStaticSitemap(ctx context.Context, oldSitemapName, staticSitemapName, D
 		return err
 	}
 	return nil
+}
+
+type StaticSitemapConfig struct {
+	Lang                  config.Language // the main language
+	HostName              string          // the main language host name url
+	StaticSitemapFileName string          // the static sitemap file name
+	SitemapFileName       string          // the sitemap file name
+	AlternateHostName     string          // the alternate language host name url
+	AlternateLang         config.Language // the alternate language
+}
+
+func GetConfigAsArray(cfg *config.Config) []StaticSitemapConfig {
+	return []StaticSitemapConfig{
+		{
+			Lang:                  config.English,
+			HostName:              cfg.DpOnsURLHostNameEn,
+			StaticSitemapFileName: "sitemap_en.json",
+			SitemapFileName:       "test_sitemap_en",
+			AlternateHostName:     cfg.DpOnsURLHostNameCy,
+			AlternateLang:         config.Welsh,
+		},
+		{
+			Lang:                  config.Welsh,
+			HostName:              cfg.DpOnsURLHostNameCy,
+			StaticSitemapFileName: "sitemap_cy.json",
+			SitemapFileName:       "test_sitemap_cy",
+			AlternateHostName:     cfg.DpOnsURLHostNameEn,
+			AlternateLang:         config.English,
+		},
+	}
 }

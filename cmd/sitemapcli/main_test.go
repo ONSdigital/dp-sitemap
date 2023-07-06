@@ -61,7 +61,7 @@ func TestLoadStaticSitemap(t *testing.T) {
 			return nil
 		}
 		cfg, _ := config.Get()
-		err := loadStaticSitemap(context.Background(), "test_sitemap_en", "sitemap_en.json", cfg.DpOnsURLHostNameEn, cfg.DpOnsURLHostNameCy, "cy", &store)
+		err := sitemap.LoadStaticSitemap(context.Background(), "test_sitemap_en", "sitemap_en.json", cfg.DpOnsURLHostNameEn, cfg.DpOnsURLHostNameCy, "cy", &store)
 		urlSet := &sitemap.UrlsetReader{}
 		xml.Unmarshal(buf.Bytes(), urlSet)
 
@@ -81,7 +81,7 @@ func TestLoadStaticSitemap(t *testing.T) {
 			return nil
 		}
 		cfg, _ := config.Get()
-		err := loadStaticSitemap(context.Background(), "test_sitemap_cy", "sitemap_cy.json", cfg.DpOnsURLHostNameCy, cfg.DpOnsURLHostNameEn, "en", &store)
+		err := sitemap.LoadStaticSitemap(context.Background(), "test_sitemap_cy", "sitemap_cy.json", cfg.DpOnsURLHostNameCy, cfg.DpOnsURLHostNameEn, "en", &store)
 		urlSet := &sitemap.UrlsetReader{}
 		xml.Unmarshal(buf.Bytes(), urlSet)
 		expectedUrlset = expectedUrlSetWelsh()
@@ -105,7 +105,7 @@ func TestLoadStaticSitemapV2(t *testing.T) {
 				return nil
 			}
 			cfg, _ := config.Get()
-			err := loadStaticSitemap(context.Background(), "test_sitemap_en", "sitemap_en.json", cfg.DpOnsURLHostNameEn, cfg.DpOnsURLHostNameCy, "cy", &store)
+			err := sitemap.LoadStaticSitemap(context.Background(), "test_sitemap_en", "sitemap_en.json", cfg.DpOnsURLHostNameEn, cfg.DpOnsURLHostNameCy, "cy", &store)
 			urlSet := &sitemap.UrlsetReader{}
 			xml.Unmarshal(buf.Bytes(), urlSet)
 
@@ -128,7 +128,7 @@ func TestLoadStaticSitemapV2(t *testing.T) {
 				return nil
 			}
 			cfg, _ := config.Get()
-			err := loadStaticSitemap(context.Background(), "test_sitemap_cy", "sitemap_cy.json", cfg.DpOnsURLHostNameCy, cfg.DpOnsURLHostNameEn, "en", &store)
+			err := sitemap.LoadStaticSitemap(context.Background(), "test_sitemap_cy", "sitemap_cy.json", cfg.DpOnsURLHostNameCy, cfg.DpOnsURLHostNameEn, "en", &store)
 			urlSet := &sitemap.UrlsetReader{}
 			xml.Unmarshal(buf.Bytes(), urlSet)
 
@@ -153,7 +153,7 @@ func expectedUrlSetEnglish() *sitemap.UrlsetReader {
 		panic("can't find file " + staticSitemapName)
 	}
 
-	var content []StaticURL
+	var content []sitemap.StaticURL
 
 	err = json.Unmarshal(b, &content)
 	if err != nil {
@@ -195,7 +195,7 @@ func expectedUrlSetWelsh() *sitemap.UrlsetReader {
 		panic("can't find file " + staticSitemapName)
 	}
 
-	var content []StaticURL
+	var content []sitemap.StaticURL
 
 	err = json.Unmarshal(b, &content)
 	if err != nil {
