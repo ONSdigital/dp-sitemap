@@ -4,6 +4,7 @@ import (
 	"context"
 	"os"
 	"os/signal"
+	"syscall"
 
 	"github.com/ONSdigital/dp-sitemap/assets"
 	"github.com/ONSdigital/dp-sitemap/robotseo"
@@ -28,14 +29,14 @@ func main() {
 	ctx := context.Background()
 
 	if err := run(ctx); err != nil {
-		log.Fatal(ctx, "fatal runtime error", err)
+		log.Error(ctx, "fatal runtime error", err)
 		os.Exit(1)
 	}
 }
 
 func run(ctx context.Context) error {
 	signals := make(chan os.Signal, 1)
-	signal.Notify(signals, os.Interrupt, os.Kill)
+	signal.Notify(signals, os.Interrupt, syscall.SIGTERM)
 
 	robotseo.Init(assets.NewFromEmbeddedFilesystem())
 

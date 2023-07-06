@@ -10,13 +10,13 @@ func TestValidConfig(t *testing.T) {
 	// Define test cases
 	Convey("when all the args filled", t, func() {
 		testdata := FlagFields{
-			robots_file_path: "robot_file.txt",
-			api_url:          "test.api.url",
-			sitemap_index:    "2",
-			scroll_timeout:   "1000",
-			scroll_size:      2,
-			zebedee_url:      "test.zeebedee.url",
-			sitemap_path:     "/path",
+			robotsFilePath: "robot_file.txt",
+			apiURL:         "test.api.url",
+			sitemapIndex:   "2",
+			scrollTimeout:  "1000",
+			scrollSize:     2,
+			zebedeeURL:     "test.zeebedee.url",
+			sitemapPath:    "/path",
 		}
 		Convey("Then the args are valid", func() {
 			result := validConfig(&testdata)
@@ -25,13 +25,13 @@ func TestValidConfig(t *testing.T) {
 	})
 	Convey("when sitemap_index is missing", t, func() {
 		testdata := FlagFields{
-			robots_file_path: "robot_file.txt",
-			api_url:          "test.api.url",
-			sitemap_index:    "",
-			scroll_timeout:   "200",
-			scroll_size:      2,
-			zebedee_url:      "test.zeebedee.url",
-			sitemap_path:     "/path",
+			robotsFilePath: "robot_file.txt",
+			apiURL:         "test.api.url",
+			sitemapIndex:   "",
+			scrollTimeout:  "200",
+			scrollSize:     2,
+			zebedeeURL:     "test.zeebedee.url",
+			sitemapPath:    "/path",
 		}
 		Convey("Then the args are invalid", func() {
 
@@ -41,13 +41,13 @@ func TestValidConfig(t *testing.T) {
 	})
 	Convey("when robots_file_path is missing", t, func() {
 		testdata := FlagFields{
-			robots_file_path: "",
-			api_url:          "test.api.url",
-			sitemap_index:    "2",
-			scroll_timeout:   "200",
-			scroll_size:      2,
-			zebedee_url:      "test.zeebedee.url",
-			sitemap_path:     "/path",
+			robotsFilePath: "",
+			apiURL:         "test.api.url",
+			sitemapIndex:   "2",
+			scrollTimeout:  "200",
+			scrollSize:     2,
+			zebedeeURL:     "test.zeebedee.url",
+			sitemapPath:    "/path",
 		}
 		Convey("Then the args are invalid", func() {
 
@@ -57,13 +57,13 @@ func TestValidConfig(t *testing.T) {
 	})
 	Convey("when api_url is missing", t, func() {
 		testdata := FlagFields{
-			robots_file_path: "robot_file.txt",
-			api_url:          "",
-			sitemap_index:    "2",
-			scroll_timeout:   "200",
-			scroll_size:      2,
-			zebedee_url:      "test.zeebedee.url",
-			sitemap_path:     "/path",
+			robotsFilePath: "robot_file.txt",
+			apiURL:         "",
+			sitemapIndex:   "2",
+			scrollTimeout:  "200",
+			scrollSize:     2,
+			zebedeeURL:     "test.zeebedee.url",
+			sitemapPath:    "/path",
 		}
 		Convey("Then the args are invalid", func() {
 
@@ -73,13 +73,13 @@ func TestValidConfig(t *testing.T) {
 	})
 	Convey("when scroll_timeout is missing", t, func() {
 		testdata := FlagFields{
-			robots_file_path: "robot_file.txt",
-			api_url:          "test.api.url",
-			sitemap_index:    "2",
-			scroll_timeout:   "",
-			scroll_size:      2,
-			zebedee_url:      "test.zeebedee.url",
-			sitemap_path:     "/path",
+			robotsFilePath: "robot_file.txt",
+			apiURL:         "test.api.url",
+			sitemapIndex:   "2",
+			scrollTimeout:  "",
+			scrollSize:     2,
+			zebedeeURL:     "test.zeebedee.url",
+			sitemapPath:    "/path",
 		}
 		Convey("Then the args are invalid", func() {
 
@@ -89,13 +89,13 @@ func TestValidConfig(t *testing.T) {
 	})
 	Convey("when zebedee_url is missing", t, func() {
 		testdata := FlagFields{
-			robots_file_path: "robot_file.txt",
-			api_url:          "test.api.url",
-			sitemap_index:    "2",
-			scroll_timeout:   "200",
-			scroll_size:      2,
-			zebedee_url:      "",
-			sitemap_path:     "/path",
+			robotsFilePath: "robot_file.txt",
+			apiURL:         "test.api.url",
+			sitemapIndex:   "2",
+			scrollTimeout:  "200",
+			scrollSize:     2,
+			zebedeeURL:     "",
+			sitemapPath:    "/path",
 		}
 		Convey("Then the args are invalid", func() {
 
@@ -105,13 +105,13 @@ func TestValidConfig(t *testing.T) {
 	})
 	Convey("when sitemap_path is missing", t, func() {
 		testdata := FlagFields{
-			robots_file_path: "robot_file.txt",
-			api_url:          "test.api.url",
-			sitemap_index:    "2",
-			scroll_timeout:   "",
-			scroll_size:      2,
-			zebedee_url:      "test.zeebedee.url",
-			sitemap_path:     "",
+			robotsFilePath: "robot_file.txt",
+			apiURL:         "test.api.url",
+			sitemapIndex:   "2",
+			scrollTimeout:  "",
+			scrollSize:     2,
+			zebedeeURL:     "test.zeebedee.url",
+			sitemapPath:    "",
 		}
 		Convey("Then the args are invalid", func() {
 
