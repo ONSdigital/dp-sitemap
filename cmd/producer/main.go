@@ -56,16 +56,16 @@ func main() {
 		e := scanEvent(scanner)
 		log.Info(ctx, "sending hello-called event", log.Data{"helloCalledEvent": e})
 
-		bytes, err2 := schema.ContentPublishedEvent.Marshal(e)
-		if err2 != nil {
-			log.Error(ctx, "hello-called event error", err2)
+		bytes, kafkaErr := schema.ContentPublishedEvent.Marshal(e)
+		if kafkaErr != nil {
+			log.Error(ctx, "hello-called event error", kafkaErr)
 			os.Exit(1)
 		}
 
 		// Send bytes to Output channel, after calling Initialise just in case it is not initialised.
-		err2 = kafkaProducer.Initialise(ctx)
-		if err2 != nil {
-			log.Error(ctx, "error initialising kafka producer", err2)
+		kafkaErr = kafkaProducer.Initialise(ctx)
+		if kafkaErr != nil {
+			log.Error(ctx, "error initialising kafka producer", kafkaErr)
 			return
 		}
 		kafkaProducer.Channels().Output <- bytes
