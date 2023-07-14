@@ -12,11 +12,11 @@ import (
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "dp-sitemap",
-	Short: "A brief description of your application",
-	Long: `A longer description that spans multiple lines and likely contains
-examples and usage of using your application. For example:
+	Short: "dp-sitemap is a cli tool to generate sitemaps easily & locally",
+	Long: `dp-sitemap is a comprehensive tool for generating and managing sitemaps of your website. 
+	The tool provides functionality for creating sitemaps from different data sources, updating existing sitemaps, and integrating with external services
 
-Cobra is a CLI library for Go that empowers applications.
+Sitemap-cli is a CLI tool for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	// Uncomment the following line if your bare application
@@ -24,7 +24,9 @@ to quickly create a Cobra application.`,
 	// Run: func(cmd *cobra.Command, args []string) { },
 }
 
+// pretend command
 // generate()
+// update()
 // sub commands
 // fakescroll = True or False
 // kafka = true or false
@@ -43,7 +45,7 @@ func init() {
 	// Cobra supports persistent flags, which, if defined here,
 	// will be global for your application.
 
-	// rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.dp-sitemap.yaml)")
+	// rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default s $HOME/.dp-sitemap.yaml)")
 
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
