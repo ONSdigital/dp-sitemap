@@ -1,6 +1,3 @@
-/*
-Copyright © 2023 NAME HERE <EMAIL ADDRESS>
-*/
 package cmd
 
 import (
@@ -18,21 +15,9 @@ var rootCmd = &cobra.Command{
 
 Sitemap-cli is a CLI tool for Go that empowers applications.
 This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
-	// Uncomment the following line if your bare application
-	// has an action associated with it:
-	// Run: func(cmd *cobra.Command, args []string) { },
+to quickly.`,
 }
 
-// pretend command
-// generate()
-// update()
-// sub commands
-// fakescroll = True or False
-// kafka = true or false
-//
-// Execute adds all child commands to the root command and sets flags appropriately.
-// This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
 	err := rootCmd.Execute()
 	if err != nil {
