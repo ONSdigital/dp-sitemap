@@ -3,7 +3,6 @@ package utilities
 import (
 	"bufio"
 	"context"
-	"flag"
 	"fmt"
 	"net/http"
 	"os"
@@ -22,33 +21,16 @@ import (
 
 // Config represents service configuration for dp-sitemap
 type FlagFields struct {
-	robots_file_path string // path to the robots file
-	api_url          string // elastic search api url
-	sitemap_index    string // elastic search sitemap index
-	scroll_timeout   string // elastic search scroll timeout
-	scroll_size      int    // elastic search scroll size
-	sitemap_path     string // path to the sitemap file
-	zebedee_url      string // zebedee url
-	fake_scroll      bool   // toggle to use or not the fake scroll implementation that replicates elastic search
-	generate_sitemap bool   // generate the sitemap
-	update_sitemap   bool   // updates the sitemap
-}
-
-func ValidateCommandLines() (bool, *FlagFields) {
-	commandline := FlagFields{}
-	flag.StringVar(&commandline.robots_file_path, "robots-file-path", "test_robots.txt", "path to robots file")
-	flag.StringVar(&commandline.sitemap_path, "sitemap-file-path", "test_sitemap", "path to sitemap file")
-	flag.StringVar(&commandline.api_url, "api-url", "http://localhost", "elastic search api url")
-	flag.StringVar(&commandline.zebedee_url, "zebedee-url", "http://localhost:8082", "zebedee url")
-	flag.StringVar(&commandline.sitemap_index, "sitemap-index", "1", "OPENSEARCH_SITEMAP_INDEX")
-	flag.StringVar(&commandline.scroll_timeout, "scroll-timeout", "2000", "OPENSEARCH_SCROLL_TIMEOUT")
-	flag.IntVar(&commandline.scroll_size, "scroll-size", 10, "OPENSEARCH_SCROLL_SIZE")
-	flag.BoolVar(&commandline.fake_scroll, "enable-fake-scroll", true, "enable fake scroll")
-	flag.BoolVar(&commandline.generate_sitemap, "generate-sitemap", false, "generate the sitemap")
-	flag.BoolVar(&commandline.update_sitemap, "update-sitemap", false, "update the sitemap")
-
-	flag.Parse()
-	return true, &commandline
+	RobotsFilePath  string // path to the robots file
+	ApiUrl          string // elastic search api url
+	SitemapIndex    string // elastic search sitemap index
+	ScrollTimeout   string // elastic search scroll timeout
+	ScrollSize      int    // elastic search scroll size
+	SitemapPath     string // path to the sitemap file
+	ZebedeeUrl      string // zebedee url
+	FakeScroll      bool   // toggle to use or not the fake scroll implementation that replicates elastic search
+	GenerateSitemap bool   // generate the sitemap
+	UpdateSitemap   bool   // updates the sitemap
 }
 
 func GenerateSitemap(cfg *config.Config, commandline *FlagFields) {
@@ -69,7 +51,7 @@ func GenerateSitemap(cfg *config.Config, commandline *FlagFields) {
 
 	//Get rawClient using arg -api-url
 	rawClient, err := es710.NewClient(es710.Config{
-		Addresses: []string{commandline.api_url},
+		Addresses: []string{commandline.ApiUrl},
 		Transport: transport,
 	})
 	if err != nil {
@@ -77,10 +59,10 @@ func GenerateSitemap(cfg *config.Config, commandline *FlagFields) {
 	}
 
 	//Get zebedeeClient using arg -zebedee-url
-	zebedeeClient := zebedee.New(commandline.zebedee_url)
+	zebedeeClient := zebedee.New(commandline.ZebedeeUrl)
 
 	var scroll sitemap.Scroll
-	if commandline.fake_scroll {
+	if commandline.FakeScroll {
 		scroll = NewFakeScroll()
 	} else {
 		scroll = sitemap.NewElasticScroll(
@@ -98,8 +80,8 @@ func GenerateSitemap(cfg *config.Config, commandline *FlagFields) {
 		sitemap.WithAdder(&sitemap.DefaultAdder{}),
 		sitemap.WithFileStore(store),
 		sitemap.WithFullSitemapFiles(map[config.Language]string{
-			config.English: commandline.sitemap_path + "_en",
-			config.Welsh:   commandline.sitemap_path + "_cy",
+			config.English: commandline.SitemapPath + "_en",
+			config.Welsh:   commandline.SitemapPath + "_cy",
 		}),
 	)
 
@@ -109,6 +91,9 @@ func GenerateSitemap(cfg *config.Config, commandline *FlagFields) {
 		fmt.Println("Error writing sitemap file", genErr.Error())
 		return
 	}
+
+	GenerateRobotFile(cfg, commandline)
+
 	fmt.Println("sitemap generation job complete")
 }
 
@@ -117,18 +102,18 @@ func GenerateRobotFile(cfg *config.Config, commandline *FlagFields) {
 	robotseo.Init(assets.NewFromEmbeddedFilesystem())
 	robotFileWriter := robotseo.RobotFileWriter{}
 	cfg.RobotsFilePath = map[config.Language]string{
-		config.English: commandline.robots_file_path,
+		config.English: commandline.RobotsFilePath,
 	}
 
 	store := &sitemap.LocalStore{}
 
-	cfg.OpenSearchConfig.APIURL = commandline.api_url
-	cfg.OpenSearchConfig.ScrollSize = commandline.scroll_size
+	cfg.OpenSearchConfig.APIURL = commandline.ApiUrl
+	cfg.OpenSearchConfig.ScrollSize = commandline.ScrollSize
 	cfg.OpenSearchConfig.Signer = true
 
 	body := robotFileWriter.GetRobotsFileBody(config.English, cfg.SitemapLocalFile)
 
-	saveErr := store.SaveFile(commandline.robots_file_path, strings.NewReader(body))
+	saveErr := store.SaveFile(commandline.RobotsFilePath, strings.NewReader(body))
 	if saveErr != nil {
 		fmt.Println("failed to save file")
 		return
@@ -143,20 +128,20 @@ func UpdateSitemap(cfg *config.Config, commandLine *FlagFields) {
 		os.Exit(1)
 	}
 
-	if commandLine.update_sitemap {
+	if commandLine.UpdateSitemap {
 		var scroll sitemap.Scroll
-		if commandLine.fake_scroll {
+		if commandLine.FakeScroll {
 			scroll = &FakeScroll{}
 		} else {
 			scroll = &sitemap.ElasticScroll{}
 		}
 		var store sitemap.FileStore
-		if commandLine.fake_scroll {
+		if commandLine.FakeScroll {
 			store = &sitemap.LocalStore{}
 		} else {
 			store = &sitemap.S3Store{}
 		}
-		zebedeeClient := zebedee.New(commandLine.zebedee_url)
+		zebedeeClient := zebedee.New(commandLine.ZebedeeUrl)
 		fetcher := sitemap.NewElasticFetcher(scroll, cfg, zebedeeClient)
 		handler := event.NewContentPublishedHandler(store, zebedeeClient, cfg, fetcher)
 		content, contentErr := getContent()
@@ -174,6 +159,8 @@ func UpdateSitemap(cfg *config.Config, commandLine *FlagFields) {
 	}
 
 	GenerateRobotFile(cfg, commandLine)
+	fmt.Println("sitemap update job complete")
+
 }
 
 func getContent() (*event.ContentPublished, error) {
