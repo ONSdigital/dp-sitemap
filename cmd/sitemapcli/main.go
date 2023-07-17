@@ -82,54 +82,55 @@ func main() {
 	cmd.Execute()
 }
 
-func mainold() {
-	valid, commandLine := validateCommandLines()
-	if !valid {
-		os.Exit(1)
-	}
+// Delete this func?
+// func mainold() {
+// 	valid, commandLine := validateCommandLines()
+// 	if !valid {
+// 		os.Exit(1)
+// 	}
 
-	cfg, err := config.Get()
-	if err != nil {
-		fmt.Println("Error retrieving config" + err.Error())
-		os.Exit(1)
-	}
+// 	cfg, err := config.Get()
+// 	if err != nil {
+// 		fmt.Println("Error retrieving config" + err.Error())
+// 		os.Exit(1)
+// 	}
 
-	if commandLine.generate_sitemap {
-		GenerateSitemap(cfg, commandLine)
-	}
+// 	if commandLine.generate_sitemap {
+// 		GenerateSitemap(cfg, commandLine)
+// 	}
 
-	if commandLine.update_sitemap {
-		var scroll sitemap.Scroll
-		if commandLine.fake_scroll {
-			scroll = &utilities.FakeScroll{}
-		} else {
-			scroll = &sitemap.ElasticScroll{}
-		}
-		var store sitemap.FileStore
-		if commandLine.fake_scroll {
-			store = &sitemap.LocalStore{}
-		} else {
-			store = &sitemap.S3Store{}
-		}
-		zebedeeClient := zebedee.New(commandLine.zebedee_url)
-		fetcher := sitemap.NewElasticFetcher(scroll, cfg, zebedeeClient)
-		handler := event.NewContentPublishedHandler(store, zebedeeClient, cfg, fetcher)
-		content, contentErr := getContent()
-		fmt.Println(content)
-		if contentErr != nil {
-			fmt.Println("Failed to get event content from user:", err)
-			return
-		}
+// 	if commandLine.update_sitemap {
+// 		var scroll sitemap.Scroll
+// 		if commandLine.fake_scroll {
+// 			scroll = &utilities.FakeScroll{}
+// 		} else {
+// 			scroll = &sitemap.ElasticScroll{}
+// 		}
+// 		var store sitemap.FileStore
+// 		if commandLine.fake_scroll {
+// 			store = &sitemap.LocalStore{}
+// 		} else {
+// 			store = &sitemap.S3Store{}
+// 		}
+// 		zebedeeClient := zebedee.New(commandLine.zebedee_url)
+// 		fetcher := sitemap.NewElasticFetcher(scroll, cfg, zebedeeClient)
+// 		handler := event.NewContentPublishedHandler(store, zebedeeClient, cfg, fetcher)
+// 		content, contentErr := getContent()
+// 		fmt.Println(content)
+// 		if contentErr != nil {
+// 			fmt.Println("Failed to get event content from user:", err)
+// 			return
+// 		}
 
-		err = handler.Handle(context.Background(), cfg, content)
-		if err != nil {
-			fmt.Println("Failed to handle event:", err)
-			return
-		}
-	}
+// 		err = handler.Handle(context.Background(), cfg, content)
+// 		if err != nil {
+// 			fmt.Println("Failed to handle event:", err)
+// 			return
+// 		}
+// 	}
 
-	GenerateRobotFile(cfg, commandLine)
-}
+// 	GenerateRobotFile(cfg, commandLine)
+// }
 
 func GenerateSitemap(cfg *config.Config, commandline *FlagFields) {
 	//Create local file store
