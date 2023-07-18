@@ -23,7 +23,7 @@ func main() {
 	// Get Config
 	cfg, err := config.Get()
 	if err != nil {
-		log.Fatal(ctx, "error getting config", err)
+		log.Error(ctx, "error getting config", err)
 		os.Exit(1)
 	}
 
@@ -43,7 +43,7 @@ func main() {
 	}
 	kafkaProducer, err := kafka.NewProducer(ctx, pConfig)
 	if err != nil {
-		log.Fatal(ctx, "fatal error trying to create kafka producer", err, log.Data{"topic": cfg.KafkaConfig.ContentUpdatedTopic})
+		log.Error(ctx, "fatal error trying to create kafka producer", err, log.Data{"topic": cfg.KafkaConfig.ContentUpdatedTopic})
 		os.Exit(1)
 	}
 
@@ -56,14 +56,18 @@ func main() {
 		e := scanEvent(scanner)
 		log.Info(ctx, "sending hello-called event", log.Data{"helloCalledEvent": e})
 
-		bytes, err := schema.ContentPublishedEvent.Marshal(e)
-		if err != nil {
-			log.Fatal(ctx, "hello-called event error", err)
+		bytes, kafkaErr := schema.ContentPublishedEvent.Marshal(e)
+		if kafkaErr != nil {
+			log.Error(ctx, "hello-called event error", kafkaErr)
 			os.Exit(1)
 		}
 
 		// Send bytes to Output channel, after calling Initialise just in case it is not initialised.
-		kafkaProducer.Initialise(ctx)
+		kafkaErr = kafkaProducer.Initialise(ctx)
+		if kafkaErr != nil {
+			log.Error(ctx, "error initialising kafka producer", kafkaErr)
+			return
+		}
 		kafkaProducer.Channels().Output <- bytes
 	}
 }
