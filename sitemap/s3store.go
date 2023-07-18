@@ -47,10 +47,10 @@ func (s *S3Store) GetFile(name string) (body io.ReadCloser, err error) {
 	return file, nil
 }
 
-func (s *S3Store) CopyFile(src io.Reader, dest io.Writer) error {
+func (s *S3Store) CopyFile(_ io.Reader, _ io.Writer) error {
 	return nil
 }
 
-func (s *S3Store) CreateFile(name string) (io.ReadWriteCloser, error) {
+func (s *S3Store) CreateFile(_ string) (io.ReadWriteCloser, error) {
 	return nil, nil
 }
