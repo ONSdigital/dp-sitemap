@@ -26,7 +26,7 @@ func NewContentPublishedHandler(store sitemap.FileStore, client clients.ZebedeeC
 }
 
 // Handle takes a single event.
-func (h *ContentPublishedHandler) Handle(ctx context.Context, cfg *config.Config, event *ContentPublished) (err error) {
+func (h *ContentPublishedHandler) Handle(ctx context.Context, _ *config.Config, event *ContentPublished) (err error) {
 	logData := log.Data{
 		"eventContentPublished": event,
 	}
