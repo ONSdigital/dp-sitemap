@@ -21,16 +21,14 @@ import (
 
 // Config represents service configuration for dp-sitemap
 type FlagFields struct {
-	RobotsFilePath  string // path to the robots file
-	ApiUrl          string // elastic search api url
-	SitemapIndex    string // elastic search sitemap index
-	ScrollTimeout   string // elastic search scroll timeout
-	ScrollSize      int    // elastic search scroll size
-	SitemapPath     string // path to the sitemap file
-	ZebedeeUrl      string // zebedee url
-	FakeScroll      bool   // toggle to use or not the fake scroll implementation that replicates elastic search
-	GenerateSitemap bool   // generate the sitemap
-	UpdateSitemap   bool   // updates the sitemap
+	RobotsFilePath string // path to the robots file
+	ApiUrl         string // elastic search api url
+	SitemapIndex   string // elastic search sitemap index
+	ScrollTimeout  string // elastic search scroll timeout
+	ScrollSize     int    // elastic search scroll size
+	SitemapPath    string // path to the sitemap file
+	ZebedeeUrl     string // zebedee url
+	FakeScroll     bool   // toggle to use or not the fake scroll implementation that replicates elastic search
 }
 
 func GenerateSitemap(cfg *config.Config, commandline *FlagFields) {
@@ -122,40 +120,31 @@ func GenerateRobotFile(cfg *config.Config, commandline *FlagFields) {
 
 func UpdateSitemap(cfg *config.Config, commandLine *FlagFields) {
 
-	cfg, err := config.Get()
-	if err != nil {
-		fmt.Println("Error retrieving config" + err.Error())
-		os.Exit(1)
+	var scroll sitemap.Scroll
+	if commandLine.FakeScroll {
+		scroll = &FakeScroll{}
+	} else {
+		scroll = &sitemap.ElasticScroll{}
+	}
+	var store sitemap.FileStore
+	if commandLine.FakeScroll {
+		store = &sitemap.LocalStore{}
+	} else {
+		store = &sitemap.S3Store{}
+	}
+	zebedeeClient := zebedee.New(commandLine.ZebedeeUrl)
+	fetcher := sitemap.NewElasticFetcher(scroll, cfg, zebedeeClient)
+	handler := event.NewContentPublishedHandler(store, zebedeeClient, cfg, fetcher)
+	content, contentErr := getContent()
+	if contentErr != nil {
+		fmt.Println("Failed to get event content from user:", contentErr)
+		return
 	}
 
-	if commandLine.UpdateSitemap {
-		var scroll sitemap.Scroll
-		if commandLine.FakeScroll {
-			scroll = &FakeScroll{}
-		} else {
-			scroll = &sitemap.ElasticScroll{}
-		}
-		var store sitemap.FileStore
-		if commandLine.FakeScroll {
-			store = &sitemap.LocalStore{}
-		} else {
-			store = &sitemap.S3Store{}
-		}
-		zebedeeClient := zebedee.New(commandLine.ZebedeeUrl)
-		fetcher := sitemap.NewElasticFetcher(scroll, cfg, zebedeeClient)
-		handler := event.NewContentPublishedHandler(store, zebedeeClient, cfg, fetcher)
-		content, contentErr := getContent()
-		fmt.Println(content)
-		if contentErr != nil {
-			fmt.Println("Failed to get event content from user:", err)
-			return
-		}
-
-		err = handler.Handle(context.Background(), cfg, content)
-		if err != nil {
-			fmt.Println("Failed to handle event:", err)
-			return
-		}
+	err := handler.Handle(context.Background(), cfg, content)
+	if err != nil {
+		fmt.Println("Failed to handle event:", err)
+		return
 	}
 
 	GenerateRobotFile(cfg, commandLine)

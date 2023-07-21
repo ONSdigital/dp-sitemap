@@ -37,16 +37,14 @@ var updateCmd = &cobra.Command{
 
 		// Create FlagFields structure
 		flagList := utilities.FlagFields{
-			RobotsFilePath:  viper.GetString("robots-file-path"),
-			ApiUrl:          viper.GetString("api-url"),
-			SitemapIndex:    viper.GetString("sitemap-index"),
-			ScrollTimeout:   viper.GetString("scroll-timeout"),
-			ScrollSize:      viper.GetInt("scroll-size"),
-			SitemapPath:     viper.GetString("sitemap-file-path"),
-			ZebedeeUrl:      viper.GetString("zebedee-url"),
-			FakeScroll:      viper.GetBool("fake-scroll"),
-			GenerateSitemap: viper.GetBool("generate-sitemap"),
-			UpdateSitemap:   viper.GetBool("update-sitemap"),
+			RobotsFilePath: viper.GetString("robots-file-path"),
+			ApiUrl:         viper.GetString("api-url"),
+			SitemapIndex:   viper.GetString("sitemap-index"),
+			ScrollTimeout:  viper.GetString("scroll-timeout"),
+			ScrollSize:     viper.GetInt("scroll-size"),
+			SitemapPath:    viper.GetString("sitemap-file-path"),
+			ZebedeeUrl:     viper.GetString("zebedee-url"),
+			FakeScroll:     viper.GetBool("fake-scroll"),
 		}
 
 		utilities.UpdateSitemap(cfg, &flagList)

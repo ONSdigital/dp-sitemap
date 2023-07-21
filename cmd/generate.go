@@ -24,32 +24,27 @@ var generateCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		viper.BindPFlags(cmd.Flags()) // Bind Flags with Viper
+		viper.BindPFlags(cmd.Flags())
 
-		// Validate ApiUrl
 		if !isValidUrl(viper.GetString("api-url")) {
 			fmt.Printf("api-url is not a valid URL: %s\n", viper.GetString("api-url"))
 			os.Exit(1)
 		}
 
-		// Validate ZebedeeUrl
 		if !isValidUrl(viper.GetString("zebedee-url")) {
 			fmt.Printf("zebedee-url is not a valid URL: %s\n", viper.GetString("zebedee-url"))
 			os.Exit(1)
 		}
 
-		// Create FlagFields structure
 		flagList := utilities.FlagFields{
-			RobotsFilePath:  viper.GetString("robots-file-path"),
-			ApiUrl:          viper.GetString("api-url"),
-			SitemapIndex:    viper.GetString("sitemap-index"),
-			ScrollTimeout:   viper.GetString("scroll-timeout"),
-			ScrollSize:      viper.GetInt("scroll-size"),
-			SitemapPath:     viper.GetString("sitemap-file-path"),
-			ZebedeeUrl:      viper.GetString("zebedee-url"),
-			FakeScroll:      viper.GetBool("fake-scroll"),
-			GenerateSitemap: viper.GetBool("generate-sitemap"),
-			UpdateSitemap:   viper.GetBool("update-sitemap"),
+			RobotsFilePath: viper.GetString("robots-file-path"),
+			ApiUrl:         viper.GetString("api-url"),
+			SitemapIndex:   viper.GetString("sitemap-index"),
+			ScrollTimeout:  viper.GetString("scroll-timeout"),
+			ScrollSize:     viper.GetInt("scroll-size"),
+			SitemapPath:    viper.GetString("sitemap-file-path"),
+			ZebedeeUrl:     viper.GetString("zebedee-url"),
+			FakeScroll:     viper.GetBool("fake-scroll"),
 		}
 
 		utilities.GenerateSitemap(cfg, &flagList)
