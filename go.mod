@@ -45,7 +45,7 @@ require (
 	github.com/chromedp/sysutil v1.0.0 // indirect
 	github.com/cucumber/gherkin-go/v19 v19.0.3 // indirect
 	github.com/cucumber/messages-go/v16 v16.0.1 // indirect
-	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/eapache/go-resiliency v1.3.0 // indirect
 	github.com/eapache/go-xerial-snappy v0.0.0-20230111030713-bf00bc1b83b6 // indirect
 	github.com/eapache/queue v1.1.0 // indirect
@@ -82,7 +82,7 @@ require (
 	github.com/mattn/go-isatty v0.0.19 // indirect
 	github.com/maxcnunes/httpfake v1.2.4 // indirect
 	github.com/pierrec/lz4/v4 v4.1.17 // indirect
-	github.com/pmezard/go-difflib v1.0.0 // indirect
+	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/rcrowley/go-metrics v0.0.0-20201227073835-cf1acfcdf475 // indirect
 	github.com/robfig/cron/v3 v3.0.1 // indirect
 	github.com/smartystreets/assertions v1.13.1 // indirect
@@ -94,11 +94,11 @@ require (
 	github.com/xdg-go/stringprep v1.0.4 // indirect
 	github.com/youmark/pkcs8 v0.0.0-20201027041543-1326539a0a0a // indirect
 	go.mongodb.org/mongo-driver v1.12.0 // indirect
-	golang.org/x/crypto v0.10.0 // indirect
-	golang.org/x/exp v0.0.0-20230212135524-a684f29349b6
-	golang.org/x/net v0.11.0 // indirect
+	golang.org/x/crypto v0.11.0 // indirect
+	golang.org/x/exp v0.0.0-20230321023759-10a507213a29
+	golang.org/x/net v0.12.0 // indirect
 	golang.org/x/sync v0.3.0 // indirect
-	golang.org/x/sys v0.9.0 // indirect
-	golang.org/x/text v0.10.0 // indirect
+	golang.org/x/sys v0.10.0 // indirect
+	golang.org/x/text v0.11.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
