@@ -26,16 +26,18 @@ var (
 )
 
 func main() {
-	cmd.Execute()
-
 	log.Namespace = serviceName
 	ctx := context.Background()
+	cmdErr := cmd.GetRootCommand().Execute()
+	if cmdErr != nil {
+		log.Error(ctx, "error initialising kafka producer", cmdErr)
+		return
+	}
 
 	if err := run(ctx); err != nil {
 		log.Error(ctx, "fatal runtime error", err)
 		os.Exit(1)
 	}
-
 }
 
 func run(ctx context.Context) error {
