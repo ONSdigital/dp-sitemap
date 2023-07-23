@@ -22,23 +22,22 @@ import (
 // Config represents service configuration for dp-sitemap
 type FlagFields struct {
 	RobotsFilePath string // path to the robots file
-	ApiUrl         string // elastic search api url
+	APIURL         string // elastic search api url
 	SitemapIndex   string // elastic search sitemap index
 	ScrollTimeout  string // elastic search scroll timeout
 	ScrollSize     int    // elastic search scroll size
 	SitemapPath    string // path to the sitemap file
-	ZebedeeUrl     string // zebedee url
+	ZebedeeURL     string // zebedee url
 	FakeScroll     bool   // toggle to use or not the fake scroll implementation that replicates elastic search
 }
 
 func GenerateSitemap(cfg *config.Config, commandline *FlagFields) {
-	//Create local file store
 	store := &sitemap.LocalStore{}
 
-	//Get ElasticSearch Clients
 	var transport http.RoundTripper = dphttp.DefaultTransport
+
+	// add SignerRegion,SignerService
 	if cfg.OpenSearchConfig.Signer {
-		//add SignerRegion,SignerService
 		var err error
 		transport, err = awsauth.NewAWSSignerRoundTripper(cfg.OpenSearchConfig.APIURL, cfg.OpenSearchConfig.SignerFilename, cfg.OpenSearchConfig.SignerRegion, cfg.OpenSearchConfig.SignerService, awsauth.Options{TlsInsecureSkipVerify: cfg.OpenSearchConfig.TLSInsecureSkipVerify})
 		if err != nil {
@@ -47,17 +46,16 @@ func GenerateSitemap(cfg *config.Config, commandline *FlagFields) {
 		}
 	}
 
-	//Get rawClient using arg -api-url
 	rawClient, err := es710.NewClient(es710.Config{
-		Addresses: []string{commandline.ApiUrl},
+		Addresses: []string{commandline.APIURL},
 		Transport: transport,
 	})
 	if err != nil {
 		return
 	}
 
-	//Get zebedeeClient using arg -zebedee-url
-	zebedeeClient := zebedee.New(commandline.ZebedeeUrl)
+	// Get zebedeeClient using arg -zebedee-url
+	zebedeeClient := zebedee.New(commandline.ZebedeeURL)
 
 	var scroll sitemap.Scroll
 	if commandline.FakeScroll {
@@ -83,7 +81,7 @@ func GenerateSitemap(cfg *config.Config, commandline *FlagFields) {
 		}),
 	)
 
-	//Generating sitemap
+	// Generating sitemap
 	genErr := generator.MakeFullSitemap(context.Background())
 	if genErr != nil {
 		fmt.Println("Error writing sitemap file", genErr.Error())
@@ -96,7 +94,6 @@ func GenerateSitemap(cfg *config.Config, commandline *FlagFields) {
 }
 
 func GenerateRobotFile(cfg *config.Config, commandline *FlagFields) {
-
 	robotseo.Init(assets.NewFromEmbeddedFilesystem())
 	robotFileWriter := robotseo.RobotFileWriter{}
 	cfg.RobotsFilePath = map[config.Language]string{
@@ -105,7 +102,7 @@ func GenerateRobotFile(cfg *config.Config, commandline *FlagFields) {
 
 	store := &sitemap.LocalStore{}
 
-	cfg.OpenSearchConfig.APIURL = commandline.ApiUrl
+	cfg.OpenSearchConfig.APIURL = commandline.APIURL
 	cfg.OpenSearchConfig.ScrollSize = commandline.ScrollSize
 	cfg.OpenSearchConfig.Signer = true
 
@@ -119,7 +116,6 @@ func GenerateRobotFile(cfg *config.Config, commandline *FlagFields) {
 }
 
 func UpdateSitemap(cfg *config.Config, commandLine *FlagFields) {
-
 	var scroll sitemap.Scroll
 	if commandLine.FakeScroll {
 		scroll = &FakeScroll{}
@@ -132,7 +128,7 @@ func UpdateSitemap(cfg *config.Config, commandLine *FlagFields) {
 	} else {
 		store = &sitemap.S3Store{}
 	}
-	zebedeeClient := zebedee.New(commandLine.ZebedeeUrl)
+	zebedeeClient := zebedee.New(commandLine.ZebedeeURL)
 	fetcher := sitemap.NewElasticFetcher(scroll, cfg, zebedeeClient)
 	handler := event.NewContentPublishedHandler(store, zebedeeClient, cfg, fetcher)
 	content, contentErr := getContent()
@@ -149,7 +145,6 @@ func UpdateSitemap(cfg *config.Config, commandLine *FlagFields) {
 
 	GenerateRobotFile(cfg, commandLine)
 	fmt.Println("sitemap update job complete")
-
 }
 
 func getContent() (*event.ContentPublished, error) {

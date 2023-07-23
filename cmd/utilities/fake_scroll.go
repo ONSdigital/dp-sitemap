@@ -16,11 +16,11 @@ func NewFakeScroll() sitemap.Scroll {
 	return &FakeScroll{}
 }
 
-func (fs *FakeScroll) StartScroll(ctx context.Context, result interface{}) error {
+func (fs *FakeScroll) StartScroll(_ context.Context, result interface{}) error {
 	return fakeStartScroll(result)
 }
 
-func (fs *FakeScroll) GetScroll(ctx context.Context, id string, result interface{}) error {
+func (fs *FakeScroll) GetScroll(_ context.Context, _ string, _ interface{}) error {
 	return nil
 }
 

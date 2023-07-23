@@ -26,24 +26,23 @@ var generateCmd = &cobra.Command{
 
 		viper.BindPFlags(cmd.Flags())
 
-		if !isValidUrl(viper.GetString("api-url")) {
+		if !isValidURL(viper.GetString("api-url")) {
 			fmt.Printf("api-url is not a valid URL: %s\n", viper.GetString("api-url"))
 			os.Exit(1)
 		}
 
-		if !isValidUrl(viper.GetString("zebedee-url")) {
+		if !isValidURL(viper.GetString("zebedee-url")) {
 			fmt.Printf("zebedee-url is not a valid URL: %s\n", viper.GetString("zebedee-url"))
 			os.Exit(1)
 		}
-
 		flagList := utilities.FlagFields{
 			RobotsFilePath: viper.GetString("robots-file-path"),
-			ApiUrl:         viper.GetString("api-url"),
+			APIURL:         viper.GetString("api-url"),
 			SitemapIndex:   viper.GetString("sitemap-index"),
 			ScrollTimeout:  viper.GetString("scroll-timeout"),
 			ScrollSize:     viper.GetInt("scroll-size"),
 			SitemapPath:    viper.GetString("sitemap-file-path"),
-			ZebedeeUrl:     viper.GetString("zebedee-url"),
+			ZebedeeURL:     viper.GetString("zebedee-url"),
 			FakeScroll:     viper.GetBool("fake-scroll"),
 		}
 
@@ -65,10 +64,9 @@ func init() {
 	generateCmd.PersistentFlags().Bool("fake-scroll", true, "enable fake scroll")
 	generateCmd.PersistentFlags().Bool("generate-sitemap", false, "generate the sitemap")
 	generateCmd.PersistentFlags().Bool("update-sitemap", false, "update the sitemap")
-
 }
 
-func isValidUrl(u string) bool {
+func isValidURL(u string) bool {
 	_, err := url.ParseRequestURI(u)
 	return err == nil
 }

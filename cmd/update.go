@@ -23,14 +23,14 @@ var updateCmd = &cobra.Command{
 		}
 		viper.BindPFlags(cmd.Flags()) // Bind Flags with Viper
 
-		// Validate ApiUrl
-		if !isValidUrl(viper.GetString("api-url")) {
+		// Validate APIURL
+		if !isValidURL(viper.GetString("api-url")) {
 			fmt.Printf("api-url is not a valid URL: %s\n", viper.GetString("api-url"))
 			os.Exit(1)
 		}
 
 		// Validate ZebedeeUrl
-		if !isValidUrl(viper.GetString("zebedee-url")) {
+		if !isValidURL(viper.GetString("zebedee-url")) {
 			fmt.Printf("zebedee-url is not a valid URL: %s\n", viper.GetString("zebedee-url"))
 			os.Exit(1)
 		}
@@ -38,12 +38,12 @@ var updateCmd = &cobra.Command{
 		// Create FlagFields structure
 		flagList := utilities.FlagFields{
 			RobotsFilePath: viper.GetString("robots-file-path"),
-			ApiUrl:         viper.GetString("api-url"),
+			APIURL:         viper.GetString("api-url"),
 			SitemapIndex:   viper.GetString("sitemap-index"),
 			ScrollTimeout:  viper.GetString("scroll-timeout"),
 			ScrollSize:     viper.GetInt("scroll-size"),
 			SitemapPath:    viper.GetString("sitemap-file-path"),
-			ZebedeeUrl:     viper.GetString("zebedee-url"),
+			ZebedeeURL:     viper.GetString("zebedee-url"),
 			FakeScroll:     viper.GetBool("fake-scroll"),
 		}
 
