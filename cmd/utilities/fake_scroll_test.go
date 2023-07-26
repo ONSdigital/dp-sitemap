@@ -1,8 +1,9 @@
-package main
+package utilities
 
 import (
-	"github.com/ONSdigital/dp-sitemap/sitemap"
 	"testing"
+
+	"github.com/ONSdigital/dp-sitemap/sitemap"
 
 	. "github.com/smartystreets/goconvey/convey"
 )
