@@ -15,7 +15,19 @@ func GetRootCommand() *cobra.Command {
 	rootCmd := &cobra.Command{
 		Use:   "dp-sitemap",
 		Short: "CLI tool to generate and update sitemaps ",
+		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+			return viper.BindPFlags(cmd.Flags())
+		},
 	}
+	rootCmd.PersistentFlags().String("robots-file-path", "test_robots.txt", "path to robots file")
+	rootCmd.PersistentFlags().String("sitemap-file-path", "test_sitemap", "path to sitemap file")
+	rootCmd.PersistentFlags().String("api-url", "http://localhost", "elastic search api url")
+	rootCmd.PersistentFlags().String("zebedee-url", "http://localhost:8082", "zebedee url")
+	rootCmd.PersistentFlags().String("sitemap-index", "1", "OPENSEARCH_SITEMAP_INDEX")
+	rootCmd.PersistentFlags().String("scroll-timeout", "2000", "OPENSEARCH_SCROLL_TIMEOUT")
+	rootCmd.PersistentFlags().Int("scroll-size", 10, "OPENSEARCH_SCROLL_SIZE")
+	rootCmd.PersistentFlags().Bool("fake-scroll", true, "enable fake scroll")
+
 	rootCmd.AddCommand(setupGenerateCmd())
 	rootCmd.AddCommand(setupUpdateCmd())
 	return rootCmd
@@ -29,11 +41,6 @@ func setupGenerateCmd() *cobra.Command {
 			cfg, err := config.Get()
 			if err != nil {
 				fmt.Println("Error retrieving config" + err.Error())
-				os.Exit(1)
-			}
-
-			if err := viper.BindPFlags(cmd.Flags()); err != nil {
-				fmt.Println("Error binding flags: " + err.Error())
 				os.Exit(1)
 			}
 
@@ -59,18 +66,11 @@ func setupGenerateCmd() *cobra.Command {
 			}
 
 			utilities.GenerateSitemap(cfg, &flagList)
+			utilities.GenerateRobotFile(cfg, &flagList)
 			return nil
 		},
 	}
 
-	cmd.Flags().String("robots-file-path", "test_robots.txt", "path to robots file")
-	cmd.Flags().String("sitemap-file-path", "test_sitemap", "path to sitemap file")
-	cmd.Flags().String("api-url", "http://localhost", "elastic search api url")
-	cmd.Flags().String("zebedee-url", "http://localhost:8082", "zebedee url")
-	cmd.Flags().String("sitemap-index", "1", "OPENSEARCH_SITEMAP_INDEX")
-	cmd.Flags().String("scroll-timeout", "2000", "OPENSEARCH_SCROLL_TIMEOUT")
-	cmd.Flags().Int("scroll-size", 10, "OPENSEARCH_SCROLL_SIZE")
-	cmd.Flags().Bool("fake-scroll", true, "enable fake scroll")
 	return cmd
 }
 
@@ -82,11 +82,6 @@ func setupUpdateCmd() *cobra.Command {
 			cfg, err := config.Get()
 			if err != nil {
 				fmt.Println("Error retrieving config" + err.Error())
-				os.Exit(1)
-			}
-
-			if err := viper.BindPFlags(cmd.Flags()); err != nil {
-				fmt.Println("Error binding flags: " + err.Error())
 				os.Exit(1)
 			}
 
@@ -112,19 +107,10 @@ func setupUpdateCmd() *cobra.Command {
 			}
 
 			utilities.UpdateSitemap(cfg, &flagList)
+			utilities.GenerateRobotFile(cfg, &flagList)
 			return nil
 		},
 	}
-
-	cmd.Flags().String("robots-file-path", "test_robots.txt", "path to robots file")
-	cmd.Flags().String("sitemap-file-path", "test_sitemap", "path to sitemap file")
-	cmd.Flags().String("api-url", "http://localhost", "elastic search api url")
-	cmd.Flags().String("zebedee-url", "http://localhost:8082", "zebedee url")
-	cmd.Flags().String("sitemap-index", "1", "OPENSEARCH_SITEMAP_INDEX")
-	cmd.Flags().String("scroll-timeout", "2000", "OPENSEARCH_SCROLL_TIMEOUT")
-	cmd.Flags().Int("scroll-size", 10, "OPENSEARCH_SCROLL_SIZE")
-	cmd.Flags().Bool("fake-scroll", true, "enable fake scroll")
-
 	return cmd
 }
 

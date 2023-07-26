@@ -87,9 +87,6 @@ func GenerateSitemap(cfg *config.Config, commandline *FlagFields) {
 		fmt.Println("Error writing sitemap file", genErr.Error())
 		return
 	}
-
-	GenerateRobotFile(cfg, commandline)
-
 	fmt.Println("sitemap generation job complete")
 }
 
@@ -112,6 +109,8 @@ func GenerateRobotFile(cfg *config.Config, commandline *FlagFields) {
 	if saveErr != nil {
 		fmt.Println("failed to save file")
 		return
+	} else {
+		fmt.Println("robot file creation successful")
 	}
 }
 
@@ -142,8 +141,6 @@ func UpdateSitemap(cfg *config.Config, commandLine *FlagFields) {
 		fmt.Println("Failed to handle event:", err)
 		return
 	}
-
-	GenerateRobotFile(cfg, commandLine)
 	fmt.Println("sitemap update job complete")
 }
 
