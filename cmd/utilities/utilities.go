@@ -109,9 +109,8 @@ func GenerateRobotFile(cfg *config.Config, commandline *FlagFields) {
 	if saveErr != nil {
 		fmt.Println("failed to save file")
 		return
-	} else {
-		fmt.Println("robot file creation successful")
 	}
+	fmt.Println("robot file creation successful")
 }
 
 func UpdateSitemap(cfg *config.Config, commandLine *FlagFields) {
