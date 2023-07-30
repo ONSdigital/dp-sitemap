@@ -143,6 +143,20 @@ func UpdateSitemap(cfg *config.Config, commandLine *FlagFields) {
 	fmt.Println("sitemap update job complete")
 }
 
+func LoadStaticSitemap(cfg *config.Config, commandLine *FlagFields) {
+	var err error
+	err = sitemap.LoadStaticSitemap(context.Background(), commandLine.SitemapPath+"_en", "sitemap_en.json", cfg.DpOnsURLHostNameEn, cfg.DpOnsURLHostNameCy, "cy", &sitemap.LocalStore{})
+	if err != nil {
+		fmt.Println("Failed to load english static sitemap:", err)
+		return
+	}
+	err = sitemap.LoadStaticSitemap(context.Background(), commandLine.SitemapPath+"_cy", "sitemap_cy.json", cfg.DpOnsURLHostNameCy, cfg.DpOnsURLHostNameEn, "en", &sitemap.LocalStore{})
+	if err != nil {
+		fmt.Println("Failed to load welsh static sitemap:", err)
+		return
+	}
+}
+
 func getContent() (*event.ContentPublished, error) {
 	content := &event.ContentPublished{}
 	fmt.Print("Please enter URI: ")

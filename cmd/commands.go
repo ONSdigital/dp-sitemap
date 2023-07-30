@@ -30,6 +30,7 @@ func GetRootCommand() *cobra.Command {
 
 	rootCmd.AddCommand(setupGenerateCmd())
 	rootCmd.AddCommand(setupUpdateCmd())
+	rootCmd.AddCommand(setupLoadStaticSitemapCmd())
 	return rootCmd
 }
 
@@ -107,6 +108,46 @@ func setupUpdateCmd() *cobra.Command {
 			}
 
 			utilities.UpdateSitemap(cfg, &flagList)
+			utilities.GenerateRobotFile(cfg, &flagList)
+			return nil
+		},
+	}
+	return cmd
+}
+
+func setupLoadStaticSitemapCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "load",
+		Short: "Load the static sitemap",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			cfg, err := config.Get()
+			if err != nil {
+				fmt.Println("Error retrieving config" + err.Error())
+				os.Exit(1)
+			}
+
+			if !isValidURL(viper.GetString("api-url")) {
+				fmt.Printf("api-url is not a valid URL: %s\n", viper.GetString("api-url"))
+				os.Exit(1)
+			}
+
+			if !isValidURL(viper.GetString("zebedee-url")) {
+				fmt.Printf("zebedee-url is not a valid URL: %s\n", viper.GetString("zebedee-url"))
+				os.Exit(1)
+			}
+
+			flagList := utilities.FlagFields{
+				RobotsFilePath: viper.GetString("robots-file-path"),
+				APIURL:         viper.GetString("api-url"),
+				SitemapIndex:   viper.GetString("sitemap-index"),
+				ScrollTimeout:  viper.GetString("scroll-timeout"),
+				ScrollSize:     viper.GetInt("scroll-size"),
+				SitemapPath:    viper.GetString("sitemap-file-path"),
+				ZebedeeURL:     viper.GetString("zebedee-url"),
+				FakeScroll:     viper.GetBool("fake-scroll"),
+			}
+
+			utilities.LoadStaticSitemap(cfg, &flagList)
 			utilities.GenerateRobotFile(cfg, &flagList)
 			return nil
 		},
