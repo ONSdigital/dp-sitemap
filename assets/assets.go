@@ -9,12 +9,29 @@ import (
 
 var (
 	//go:embed robot/*
+	//go:embed sitemap/*
 	static embed.FS
 )
 
+type EmbeddedFile string
+
+const (
+	Robots  EmbeddedFile = "robots"
+	Sitemap EmbeddedFile = "sitemap"
+)
+
+func (l EmbeddedFile) String() string {
+	switch l {
+	case Robots:
+		return "robot"
+	default:
+		return "sitemap"
+	}
+}
+
 //go:generate moq -out mock/filesysteminterface.go -pkg mock . FileSystemInterface
 type FileSystemInterface interface {
-	Get(_ context.Context, path string) ([]byte, error)
+	Get(context.Context, EmbeddedFile, string) ([]byte, error)
 }
 type Embeddedfs struct{}
 
@@ -22,8 +39,8 @@ func NewFromEmbeddedFilesystem() Embeddedfs {
 	return Embeddedfs{}
 }
 
-func (s Embeddedfs) Get(_ context.Context, path string) ([]byte, error) {
-	file, err := static.Open(fmt.Sprintf("%s/%s", "robot", path))
+func (s Embeddedfs) Get(_ context.Context, embeddedFile EmbeddedFile, path string) ([]byte, error) {
+	file, err := static.Open(embeddedFile.String() + "/" + path)
 	if err != nil {
 		return nil, fmt.Errorf("cannot open file %w", err)
 	}

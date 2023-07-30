@@ -19,7 +19,7 @@ func Init(efs assets.FileSystemInterface) {
 	ctx := context.Background()
 	for _, lang := range []config.Language{config.English, config.Welsh} {
 		fileName := "robot_" + lang.String() + ".json"
-		b, err := efs.Get(ctx, fileName)
+		b, err := efs.Get(ctx, assets.Robots, fileName)
 		if err != nil {
 			log.Error(ctx, "can't find "+fileName, err)
 			panic("Can't find " + fileName)

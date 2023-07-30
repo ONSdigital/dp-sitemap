@@ -16,7 +16,7 @@ func TestInit(t *testing.T) {
 	var returnBytes []byte
 	var called bool
 
-	fsMock := mockassets.FileSystemInterfaceMock{GetFunc: func(contextMoqParam context.Context, path string) ([]byte, error) {
+	fsMock := mockassets.FileSystemInterfaceMock{GetFunc: func(contextMoqParam context.Context, embeddedFile asset.EmbeddedFile, path string) ([]byte, error) {
 		called = true
 		if shouldError {
 			return nil, errors.New("error")
