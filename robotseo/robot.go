@@ -6,26 +6,25 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/ONSdigital/dp-sitemap/assets"
 	"github.com/ONSdigital/dp-sitemap/config"
 	"github.com/ONSdigital/log.go/v2/log"
 	"golang.org/x/exp/slices"
 )
 
-var robotList map[config.Language]map[string]assets.SeoRobotModel
+var robotList map[config.Language]map[string]SeoRobotModel
 
-func Init(efs assets.FileSystemInterface) {
-	robotList = map[config.Language]map[string]assets.SeoRobotModel{}
+func Init() {
+	robotList = map[config.Language]map[string]SeoRobotModel{}
 	ctx := context.Background()
 	for _, lang := range []config.Language{config.English, config.Welsh} {
 		fileName := "robot_" + lang.String() + ".json"
-		b, err := efs.Get(ctx, assets.Robots, fileName)
+		b, err := GetRobotFile(fileName)
 		if err != nil {
 			log.Error(ctx, "can't find "+fileName, err)
 			panic("Can't find " + fileName)
 		}
 
-		rContent := map[string]assets.SeoRobotModel{}
+		rContent := map[string]SeoRobotModel{}
 		err = json.Unmarshal(b, &rContent)
 		if err != nil {
 			log.Error(ctx, "error reading "+fileName, err)

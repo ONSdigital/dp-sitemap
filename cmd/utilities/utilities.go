@@ -11,7 +11,6 @@ import (
 	"github.com/ONSdigital/dp-api-clients-go/v2/zebedee"
 	"github.com/ONSdigital/dp-net/v2/awsauth"
 	dphttp "github.com/ONSdigital/dp-net/v2/http"
-	"github.com/ONSdigital/dp-sitemap/assets"
 	"github.com/ONSdigital/dp-sitemap/config"
 	"github.com/ONSdigital/dp-sitemap/event"
 	"github.com/ONSdigital/dp-sitemap/robotseo"
@@ -91,7 +90,7 @@ func GenerateSitemap(cfg *config.Config, commandline *FlagFields) {
 }
 
 func GenerateRobotFile(cfg *config.Config, commandline *FlagFields) {
-	robotseo.Init(assets.NewFromEmbeddedFilesystem())
+	robotseo.Init()
 	robotFileWriter := robotseo.RobotFileWriter{}
 	cfg.RobotsFilePath = map[config.Language]string{
 		config.English: commandline.RobotsFilePath,

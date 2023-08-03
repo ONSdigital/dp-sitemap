@@ -6,8 +6,6 @@ import (
 	"encoding/json"
 	"encoding/xml"
 	"fmt"
-
-	"github.com/ONSdigital/dp-sitemap/assets"
 )
 
 type StaticURL struct {
@@ -17,9 +15,8 @@ type StaticURL struct {
 }
 
 func LoadStaticSitemap(ctx context.Context, oldSitemapName, staticSitemapName, dpOnsURLHostName, dpOnsURLHostNameAlt, altLang string, store FileStore) error {
-	efs := assets.NewFromEmbeddedFilesystem()
 
-	b, err := efs.Get(ctx, assets.Sitemap, staticSitemapName)
+	b, err := GetStaticSitemap(staticSitemapName)
 	if err != nil {
 		panic("can't find file " + staticSitemapName)
 	}

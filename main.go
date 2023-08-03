@@ -6,7 +6,6 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/ONSdigital/dp-sitemap/assets"
 	"github.com/ONSdigital/dp-sitemap/cmd"
 	"github.com/ONSdigital/dp-sitemap/robotseo"
 	"github.com/ONSdigital/dp-sitemap/service"
@@ -44,7 +43,7 @@ func run(ctx context.Context) error {
 	signals := make(chan os.Signal, 1)
 	signal.Notify(signals, os.Interrupt, syscall.SIGTERM)
 
-	robotseo.Init(assets.NewFromEmbeddedFilesystem())
+	robotseo.Init()
 
 	// Run the service, providing an error channel for fatal errors
 	svcErrors := make(chan error, 1)

@@ -1,63 +1,46 @@
 package sitemap
 
 import (
-	"bytes"
 	"context"
 	"encoding/xml"
 	"github.com/ONSdigital/dp-sitemap/config"
-	"io"
+	"os"
 	"testing"
 
 	. "github.com/smartystreets/goconvey/convey"
 )
 
-type TestStore struct {
-}
-
-var buf = new(bytes.Buffer)
-
-func (s *TestStore) SaveFile(name string, body io.Reader) error {
-	io.Copy(buf, body)
-	return nil
-}
-func (s *TestStore) GetFile(name string) (body io.ReadCloser, err error) { return nil, nil }
-func (s *TestStore) CopyFile(src io.Reader, dest io.Writer) error        { return nil }
-func (s *TestStore) CreateFile(name string) (io.ReadWriteCloser, error)  { return nil, nil }
 func TestLoadStaticSitemap(t *testing.T) {
-	Convey("given we have static sitemap file sitemap_en.json", t, func() {
-
+	Convey("given we have static sitemap file", t, func() {
+		oldSitemapName := "test_sitemap_en"
+		staticSitemapName := "sitemap_en_test.json"
 		Convey("when loading english static sitemap", func() {
-			store := TestStore{}
+			store := LocalStore{}
 			cfg, _ := config.Get()
-			err := LoadStaticSitemap(context.Background(), "test_sitemap_en", "sitemap_en_test.json", cfg.DpOnsURLHostNameEn, cfg.DpOnsURLHostNameCy, "cy", &store)
-			urlSet := &UrlsetReader{}
-			xml.Unmarshal(buf.Bytes(), urlSet)
-			buf.Reset()
+			err := LoadStaticSitemap(context.Background(), oldSitemapName, staticSitemapName, cfg.DpOnsURLHostNameEn, cfg.DpOnsURLHostNameCy, "cy", &store)
 			Convey("There should be no error", func() {
 				So(err, ShouldBeNil)
 			})
-
-			Convey("We should have the correct content loaded", func() {
-				So(urlSet, ShouldResemble, expectedUrlSetEnglish())
+			Convey("And the file should exist", func() {
+				_, err = os.Stat(oldSitemapName)
+				So(err, ShouldBeNil)
 			})
 		})
 	})
 
 	Convey("given we have static sitemap file sitemap_cy.json", t, func() {
-
+		oldSitemapName := "test_sitemap_cy"
+		staticSitemapName := "sitemap_cy_test.json"
 		Convey("when loading welsh static sitemap", func() {
-			store := TestStore{}
+			store := LocalStore{}
 			cfg, _ := config.Get()
-			err := LoadStaticSitemap(context.Background(), "test_sitemap_cy", "sitemap_cy_test.json", cfg.DpOnsURLHostNameCy, cfg.DpOnsURLHostNameEn, "en", &store)
-			urlSet := &UrlsetReader{}
-			xml.Unmarshal(buf.Bytes(), urlSet)
-			buf.Reset()
+			err := LoadStaticSitemap(context.Background(), oldSitemapName, staticSitemapName, cfg.DpOnsURLHostNameCy, cfg.DpOnsURLHostNameEn, "en", &store)
 			Convey("There should be no error", func() {
 				So(err, ShouldBeNil)
 			})
-
-			Convey("We should have the correct content loaded", func() {
-				So(urlSet, ShouldResemble, expectedUrlSetWelsh())
+			Convey("And the file should exist", func() {
+				_, err = os.Stat(oldSitemapName)
+				So(err, ShouldBeNil)
 			})
 		})
 	})

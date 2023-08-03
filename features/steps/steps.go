@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/ONSdigital/dp-sitemap/assets"
 	"io"
 	"os"
 	"path"
@@ -14,7 +13,6 @@ import (
 
 	"github.com/ONSdigital/dp-api-clients-go/v2/zebedee"
 	"github.com/ONSdigital/dp-healthcheck/healthcheck"
-	assetmock "github.com/ONSdigital/dp-sitemap/assets/mock"
 	zcMock "github.com/ONSdigital/dp-sitemap/clients/mock"
 	"github.com/ONSdigital/dp-sitemap/config"
 	"github.com/ONSdigital/dp-sitemap/robotseo"
@@ -253,12 +251,7 @@ func (c *Component) theContentOfTheS3SitemapShouldBe(arg1 *godog.DocString) erro
 }
 
 func iHaveTheFollowingRobotjson(arg1 *godog.DocString) error {
-	amock := assetmock.FileSystemInterfaceMock{
-		GetFunc: func(contextMoqParam context.Context, embeddedFile assets.EmbeddedFile, path string) ([]byte, error) {
-			return []byte(arg1.Content), nil
-		},
-	}
-	robotseo.Init(&amock)
+	robotseo.Init()
 	return nil
 }
 

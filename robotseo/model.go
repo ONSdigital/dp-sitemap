@@ -1,4 +1,4 @@
-package assets
+package robotseo
 
 type SeoRobotModel struct {
 	AllowList []string `json:"AllowList"`
