@@ -4,8 +4,6 @@ import "embed"
 
 //go:embed static/sitemap_en.json
 //go:embed static/sitemap_cy.json
-//go:embed static/sitemap_en_test.json
-//go:embed static/sitemap_cy_test.json
 
 var folder embed.FS
 

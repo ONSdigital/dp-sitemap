@@ -12,7 +12,7 @@ import (
 func TestLoadStaticSitemap(t *testing.T) {
 	Convey("given we have static sitemap file", t, func() {
 		oldSitemapName := "test_sitemap_en"
-		staticSitemapName := "sitemap_en_test.json"
+		staticSitemapName := "sitemap_en.json"
 		Convey("when loading english static sitemap", func() {
 			store := LocalStore{}
 			cfg, _ := config.Get()
@@ -29,7 +29,7 @@ func TestLoadStaticSitemap(t *testing.T) {
 
 	Convey("given we have static sitemap file sitemap_cy.json", t, func() {
 		oldSitemapName := "test_sitemap_cy"
-		staticSitemapName := "sitemap_cy_test.json"
+		staticSitemapName := "sitemap_cy.json"
 		Convey("when loading welsh static sitemap", func() {
 			store := LocalStore{}
 			cfg, _ := config.Get()
