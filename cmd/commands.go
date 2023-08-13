@@ -23,6 +23,7 @@ func GetRootCommand() *cobra.Command {
 	rootCmd.PersistentFlags().String("robots-file-path", "test_robots.txt", "path to robots file that will be generated")
 	rootCmd.PersistentFlags().String("robots-file-path-reader", "./robotseo/robot/", "path to robots files that we are reading from")
 	rootCmd.PersistentFlags().String("sitemap-file-path", "test_sitemap", "path to sitemap file")
+	rootCmd.PersistentFlags().String("sitemap-file-path-reader", "./sitemap/static/", "path to sitemap files that we are reading from")
 	rootCmd.PersistentFlags().String("api-url", "http://localhost", "elastic search api url")
 	rootCmd.PersistentFlags().String("zebedee-url", "http://localhost:8082", "zebedee url")
 	rootCmd.PersistentFlags().String("sitemap-index", "1", "OPENSEARCH_SITEMAP_INDEX")
@@ -65,6 +66,7 @@ func setupGenerateCmd() *cobra.Command {
 				ScrollTimeout:        viper.GetString("scroll-timeout"),
 				ScrollSize:           viper.GetInt("scroll-size"),
 				SitemapPath:          viper.GetString("sitemap-file-path"),
+				SitemapPathReader:    viper.GetString("sitemap-file-path-reader"),
 				ZebedeeURL:           viper.GetString("zebedee-url"),
 				FakeScroll:           viper.GetBool("fake-scroll"),
 			}
@@ -107,6 +109,7 @@ func setupUpdateCmd() *cobra.Command {
 				ScrollTimeout:        viper.GetString("scroll-timeout"),
 				ScrollSize:           viper.GetInt("scroll-size"),
 				SitemapPath:          viper.GetString("sitemap-file-path"),
+				SitemapPathReader:    viper.GetString("sitemap-file-path-reader"),
 				ZebedeeURL:           viper.GetString("zebedee-url"),
 				FakeScroll:           viper.GetBool("fake-scroll"),
 			}
@@ -148,6 +151,7 @@ func setupLoadStaticSitemapCmd() *cobra.Command {
 				ScrollTimeout:        viper.GetString("scroll-timeout"),
 				ScrollSize:           viper.GetInt("scroll-size"),
 				SitemapPath:          viper.GetString("sitemap-file-path"),
+				SitemapPathReader:    viper.GetString("sitemap-file-path-reader"),
 				ZebedeeURL:           viper.GetString("zebedee-url"),
 				FakeScroll:           viper.GetBool("fake-scroll"),
 			}

@@ -10,7 +10,8 @@ type FlagFields struct {
 	SitemapIndex         string // elastic search sitemap index
 	ScrollTimeout        string // elastic search scroll timeout
 	ScrollSize           int    // elastic search scroll size
-	SitemapPath          string // path to the sitemap file
+	SitemapPath          string // path to the sitemap file that will be generated
+	SitemapPathReader    string // path to the sitemap file that we are reading from
 	ZebedeeURL           string // zebedee url
 	FakeScroll           bool   // toggle to use or not the fake scroll implementation that replicates elastic search
 }

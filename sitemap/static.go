@@ -5,6 +5,9 @@ import (
 	"encoding/json"
 	"encoding/xml"
 	"fmt"
+	"os"
+
+	"github.com/ONSdigital/dp-sitemap/global"
 )
 
 type StaticURL struct {
@@ -14,7 +17,13 @@ type StaticURL struct {
 }
 
 func LoadStaticSitemap(oldSitemapName, staticSitemapName, dpOnsURLHostName, dpOnsURLHostNameAlt, altLang string, store FileStore) error {
-	b, err := GetStaticSitemap(staticSitemapName)
+	var b []byte
+	var err error
+	if global.CmdFlagFields == nil {
+		b, err = GetStaticSitemap(staticSitemapName)
+	} else {
+		b, err = os.ReadFile(staticSitemapName)
+	}
 	if err != nil {
 		panic("can't find file " + staticSitemapName)
 	}
