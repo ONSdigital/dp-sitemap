@@ -24,6 +24,12 @@ func TestLoadStaticSitemap(t *testing.T) {
 				_, err = os.Stat(oldSitemapName)
 				So(err, ShouldBeNil)
 			})
+			Convey("And when we delete it, it should not exist", func() {
+				err = os.Remove(oldSitemapName)
+				So(err, ShouldBeNil)
+				_, err = os.Stat(oldSitemapName)
+				So(err, ShouldNotBeNil)
+			})
 		})
 	})
 
@@ -40,6 +46,12 @@ func TestLoadStaticSitemap(t *testing.T) {
 			Convey("And the file should exist", func() {
 				_, err = os.Stat(oldSitemapName)
 				So(err, ShouldBeNil)
+			})
+			Convey("And when we delete it, it should not exist", func() {
+				err = os.Remove(oldSitemapName)
+				So(err, ShouldBeNil)
+				_, err = os.Stat(oldSitemapName)
+				So(err, ShouldNotBeNil)
 			})
 		})
 	})
