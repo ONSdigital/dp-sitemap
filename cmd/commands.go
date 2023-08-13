@@ -7,6 +7,7 @@ import (
 
 	"github.com/ONSdigital/dp-sitemap/cmd/utilities"
 	"github.com/ONSdigital/dp-sitemap/config"
+	"github.com/ONSdigital/dp-sitemap/global"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -19,7 +20,8 @@ func GetRootCommand() *cobra.Command {
 			return viper.BindPFlags(cmd.Flags())
 		},
 	}
-	rootCmd.PersistentFlags().String("robots-file-path", "test_robots.txt", "path to robots file")
+	rootCmd.PersistentFlags().String("robots-file-path", "test_robots.txt", "path to robots file that will be generated")
+	rootCmd.PersistentFlags().String("robots-file-path-reader", "./robotseo/robot/", "path to robots files that we are reading from")
 	rootCmd.PersistentFlags().String("sitemap-file-path", "test_sitemap", "path to sitemap file")
 	rootCmd.PersistentFlags().String("api-url", "http://localhost", "elastic search api url")
 	rootCmd.PersistentFlags().String("zebedee-url", "http://localhost:8082", "zebedee url")
@@ -55,17 +57,18 @@ func setupGenerateCmd() *cobra.Command {
 				os.Exit(1)
 			}
 
-			flagList := utilities.FlagFields{
-				RobotsFilePath: viper.GetString("robots-file-path"),
-				APIURL:         viper.GetString("api-url"),
-				SitemapIndex:   viper.GetString("sitemap-index"),
-				ScrollTimeout:  viper.GetString("scroll-timeout"),
-				ScrollSize:     viper.GetInt("scroll-size"),
-				SitemapPath:    viper.GetString("sitemap-file-path"),
-				ZebedeeURL:     viper.GetString("zebedee-url"),
-				FakeScroll:     viper.GetBool("fake-scroll"),
+			flagList := global.FlagFields{
+				RobotsFilePath:       viper.GetString("robots-file-path"),
+				RobotsFilePathReader: viper.GetString("robots-file-path-reader"),
+				APIURL:               viper.GetString("api-url"),
+				SitemapIndex:         viper.GetString("sitemap-index"),
+				ScrollTimeout:        viper.GetString("scroll-timeout"),
+				ScrollSize:           viper.GetInt("scroll-size"),
+				SitemapPath:          viper.GetString("sitemap-file-path"),
+				ZebedeeURL:           viper.GetString("zebedee-url"),
+				FakeScroll:           viper.GetBool("fake-scroll"),
 			}
-
+			global.CmdFlagFields = &flagList
 			utilities.GenerateSitemap(cfg, &flagList)
 			utilities.GenerateRobotFile(cfg, &flagList)
 			return nil
@@ -96,17 +99,18 @@ func setupUpdateCmd() *cobra.Command {
 				os.Exit(1)
 			}
 
-			flagList := utilities.FlagFields{
-				RobotsFilePath: viper.GetString("robots-file-path"),
-				APIURL:         viper.GetString("api-url"),
-				SitemapIndex:   viper.GetString("sitemap-index"),
-				ScrollTimeout:  viper.GetString("scroll-timeout"),
-				ScrollSize:     viper.GetInt("scroll-size"),
-				SitemapPath:    viper.GetString("sitemap-file-path"),
-				ZebedeeURL:     viper.GetString("zebedee-url"),
-				FakeScroll:     viper.GetBool("fake-scroll"),
+			flagList := global.FlagFields{
+				RobotsFilePath:       viper.GetString("robots-file-path"),
+				RobotsFilePathReader: viper.GetString("robots-file-path-reader"),
+				APIURL:               viper.GetString("api-url"),
+				SitemapIndex:         viper.GetString("sitemap-index"),
+				ScrollTimeout:        viper.GetString("scroll-timeout"),
+				ScrollSize:           viper.GetInt("scroll-size"),
+				SitemapPath:          viper.GetString("sitemap-file-path"),
+				ZebedeeURL:           viper.GetString("zebedee-url"),
+				FakeScroll:           viper.GetBool("fake-scroll"),
 			}
-
+			global.CmdFlagFields = &flagList
 			utilities.UpdateSitemap(cfg, &flagList)
 			utilities.GenerateRobotFile(cfg, &flagList)
 			return nil
@@ -136,17 +140,18 @@ func setupLoadStaticSitemapCmd() *cobra.Command {
 				os.Exit(1)
 			}
 
-			flagList := utilities.FlagFields{
-				RobotsFilePath: viper.GetString("robots-file-path"),
-				APIURL:         viper.GetString("api-url"),
-				SitemapIndex:   viper.GetString("sitemap-index"),
-				ScrollTimeout:  viper.GetString("scroll-timeout"),
-				ScrollSize:     viper.GetInt("scroll-size"),
-				SitemapPath:    viper.GetString("sitemap-file-path"),
-				ZebedeeURL:     viper.GetString("zebedee-url"),
-				FakeScroll:     viper.GetBool("fake-scroll"),
+			flagList := global.FlagFields{
+				RobotsFilePath:       viper.GetString("robots-file-path"),
+				RobotsFilePathReader: viper.GetString("robots-file-path-reader"),
+				APIURL:               viper.GetString("api-url"),
+				SitemapIndex:         viper.GetString("sitemap-index"),
+				ScrollTimeout:        viper.GetString("scroll-timeout"),
+				ScrollSize:           viper.GetInt("scroll-size"),
+				SitemapPath:          viper.GetString("sitemap-file-path"),
+				ZebedeeURL:           viper.GetString("zebedee-url"),
+				FakeScroll:           viper.GetBool("fake-scroll"),
 			}
-
+			global.CmdFlagFields = &flagList
 			utilities.LoadStaticSitemap(cfg, &flagList)
 			utilities.GenerateRobotFile(cfg, &flagList)
 			return nil

@@ -5,8 +5,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"os"
+	"strings"
 
 	"github.com/ONSdigital/dp-sitemap/config"
+	"github.com/ONSdigital/dp-sitemap/global"
 	"github.com/ONSdigital/log.go/v2/log"
 	"golang.org/x/exp/slices"
 )
@@ -16,12 +19,27 @@ var robotList map[config.Language]map[string]SeoRobotModel
 func Init() {
 	robotList = map[config.Language]map[string]SeoRobotModel{}
 	ctx := context.Background()
+	var b []byte
+	var err error
+	var fileName string
 	for _, lang := range []config.Language{config.English, config.Welsh} {
-		fileName := "robot_" + lang.String() + ".json"
-		b, err := GetRobotFile(fileName)
-		if err != nil {
-			log.Error(ctx, "can't find "+fileName, err)
-			panic("Can't find " + fileName)
+		if global.CmdFlagFields != nil {
+			if !strings.HasSuffix(global.CmdFlagFields.RobotsFilePathReader, "/") {
+				global.CmdFlagFields.RobotsFilePathReader += "/"
+			}
+			fileName = global.CmdFlagFields.RobotsFilePathReader + "robot_" + lang.String() + ".json"
+			b, err = os.ReadFile(fileName)
+			if err != nil {
+				log.Error(ctx, "can't find "+fileName, err)
+				panic("Can't find " + fileName)
+			}
+		} else {
+			fileName = "robot_" + lang.String() + ".json"
+			b, err = GetRobotFile(fileName)
+			if err != nil {
+				log.Error(ctx, "can't find "+fileName, err)
+				panic("Can't find " + fileName)
+			}
 		}
 
 		rContent := map[string]SeoRobotModel{}

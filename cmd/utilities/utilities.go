@@ -13,24 +13,13 @@ import (
 	dphttp "github.com/ONSdigital/dp-net/v2/http"
 	"github.com/ONSdigital/dp-sitemap/config"
 	"github.com/ONSdigital/dp-sitemap/event"
+	"github.com/ONSdigital/dp-sitemap/global"
 	"github.com/ONSdigital/dp-sitemap/robotseo"
 	"github.com/ONSdigital/dp-sitemap/sitemap"
 	es710 "github.com/elastic/go-elasticsearch/v7"
 )
 
-// Config represents service configuration for dp-sitemap
-type FlagFields struct {
-	RobotsFilePath string // path to the robots file
-	APIURL         string // elastic search api url
-	SitemapIndex   string // elastic search sitemap index
-	ScrollTimeout  string // elastic search scroll timeout
-	ScrollSize     int    // elastic search scroll size
-	SitemapPath    string // path to the sitemap file
-	ZebedeeURL     string // zebedee url
-	FakeScroll     bool   // toggle to use or not the fake scroll implementation that replicates elastic search
-}
-
-func GenerateSitemap(cfg *config.Config, commandline *FlagFields) {
+func GenerateSitemap(cfg *config.Config, commandline *global.FlagFields) {
 	store := &sitemap.LocalStore{}
 
 	var transport http.RoundTripper = dphttp.DefaultTransport
@@ -89,7 +78,7 @@ func GenerateSitemap(cfg *config.Config, commandline *FlagFields) {
 	fmt.Println("sitemap generation job complete")
 }
 
-func GenerateRobotFile(cfg *config.Config, commandline *FlagFields) {
+func GenerateRobotFile(cfg *config.Config, commandline *global.FlagFields) {
 	robotseo.Init()
 	robotFileWriter := robotseo.RobotFileWriter{}
 	cfg.RobotsFilePath = map[config.Language]string{
@@ -112,7 +101,7 @@ func GenerateRobotFile(cfg *config.Config, commandline *FlagFields) {
 	fmt.Println("robot file creation successful")
 }
 
-func UpdateSitemap(cfg *config.Config, commandLine *FlagFields) {
+func UpdateSitemap(cfg *config.Config, commandLine *global.FlagFields) {
 	var scroll sitemap.Scroll
 	if commandLine.FakeScroll {
 		scroll = &FakeScroll{}
@@ -142,7 +131,7 @@ func UpdateSitemap(cfg *config.Config, commandLine *FlagFields) {
 	fmt.Println("sitemap update job complete")
 }
 
-func LoadStaticSitemap(cfg *config.Config, commandLine *FlagFields) {
+func LoadStaticSitemap(cfg *config.Config, commandLine *global.FlagFields) {
 	var err error
 	err = sitemap.LoadStaticSitemap(commandLine.SitemapPath+"_en", "sitemap_en.json", cfg.DpOnsURLHostNameEn, cfg.DpOnsURLHostNameCy, "cy", &sitemap.LocalStore{})
 	if err != nil {
