@@ -2,7 +2,6 @@ package sitemap
 
 import (
 	"bytes"
-	"context"
 	"encoding/json"
 	"encoding/xml"
 	"fmt"
@@ -14,8 +13,7 @@ type StaticURL struct {
 	HasAltLang  bool   `json:"hasAltLang"`
 }
 
-func LoadStaticSitemap(ctx context.Context, oldSitemapName, staticSitemapName, dpOnsURLHostName, dpOnsURLHostNameAlt, altLang string, store FileStore) error {
-
+func LoadStaticSitemap(oldSitemapName, staticSitemapName, dpOnsURLHostName, dpOnsURLHostNameAlt, altLang string, store FileStore) error {
 	b, err := GetStaticSitemap(staticSitemapName)
 	if err != nil {
 		panic("can't find file " + staticSitemapName)

@@ -1,7 +1,6 @@
 package sitemap
 
 import (
-	"context"
 	"encoding/xml"
 	"github.com/ONSdigital/dp-sitemap/config"
 	"os"
@@ -17,7 +16,7 @@ func TestLoadStaticSitemap(t *testing.T) {
 		Convey("when loading english static sitemap", func() {
 			store := LocalStore{}
 			cfg, _ := config.Get()
-			err := LoadStaticSitemap(context.Background(), oldSitemapName, staticSitemapName, cfg.DpOnsURLHostNameEn, cfg.DpOnsURLHostNameCy, "cy", &store)
+			err := LoadStaticSitemap(oldSitemapName, staticSitemapName, cfg.DpOnsURLHostNameEn, cfg.DpOnsURLHostNameCy, "cy", &store)
 			Convey("There should be no error", func() {
 				So(err, ShouldBeNil)
 			})
@@ -34,7 +33,7 @@ func TestLoadStaticSitemap(t *testing.T) {
 		Convey("when loading welsh static sitemap", func() {
 			store := LocalStore{}
 			cfg, _ := config.Get()
-			err := LoadStaticSitemap(context.Background(), oldSitemapName, staticSitemapName, cfg.DpOnsURLHostNameCy, cfg.DpOnsURLHostNameEn, "en", &store)
+			err := LoadStaticSitemap(oldSitemapName, staticSitemapName, cfg.DpOnsURLHostNameCy, cfg.DpOnsURLHostNameEn, "en", &store)
 			Convey("There should be no error", func() {
 				So(err, ShouldBeNil)
 			})
