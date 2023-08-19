@@ -106,7 +106,10 @@ func setupUpdateCmd() *cobra.Command {
 				FakeScroll:     viper.GetBool("fake-scroll"),
 			}
 
-			utilities.UpdateSitemap(cfg, &flagList)
+			err = utilities.UpdateSitemap(cfg, &flagList)
+			if err != nil {
+				return err
+			}
 			utilities.GenerateRobotFile(cfg, &flagList)
 			return nil
 		},

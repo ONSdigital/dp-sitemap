@@ -1,56 +1,128 @@
 package utilities
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/ONSdigital/dp-sitemap/config"
+	"github.com/ONSdigital/dp-sitemap/event"
 	. "github.com/smartystreets/goconvey/convey"
 )
 
-// // Mock dependencies
-
-// type MockRoundTripper struct {
-// 	signed bool
-// }
-
-// func (m *MockRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
-// 	return &http.Response{}, nil
-// }
-
-// func MockNewAWSSignerRoundTripper(...interface{}) (http.RoundTripper, error) {
-// 	return &MockRoundTripper{signed: true}, nil
-// }
-
-// func MockNewClient(config es710.Config) (*es710.Client, error) {
-// 	if _, ok := config.Transport.(*MockRoundTripper); !ok {
-// 		return nil, errors.New("transport is not signed")
-// 	}
-// 	return &es710.Client{}, nil
-// }
-
-func TestGenerateSitemap(t *testing.T) {
-	Convey("Given configuration and commandline flags", t, func() {
-		cfg := &config.Config{
-			OpenSearchConfig: config.OpenSearchConfig{
-				Signer: true,
-			},
+func TestCreateCliSitemapGenerator(t *testing.T) {
+	Convey("Given valid config and command line flags/Fake scroll is True", t, func() {
+		cfg := &config.Config{}
+		commandline := &FlagFields{
+			RobotsFilePath: "robot_file.txt",
+			APIURL:         "http://localhost",
+			ScrollTimeout:  "1000",
+			ScrollSize:     2,
+			ZebedeeURL:     "http://localhost:8082",
+			SitemapPath:    "test_sitemap",
+			FakeScroll:     true,
+			SitemapIndex:   "1",
 		}
-		cmd := &FlagFields{}
 
-		Convey("When GenerateSitemap is called", func() {
+		Convey("When OpenSearchConfig.Signer is true and no errors", func() {
+			generator, err := createCliSitemapGenerator(cfg, commandline)
 
-			GenerateSitemap(cfg, cmd)
+			Convey("Then no error should be returned", func() {
+				So(err, ShouldBeNil)
+				So(generator, ShouldNotBeNil)
+			})
+		})
 
-			Convey("It should configure transport with AWS signer", func() {
-				// Here, you can check the aspects of the function that are observable from the outside,
-				// such as effects on global state or function outputs.
-				// In this mock, we haven't actually given a way to observe the effect,
-				// so this is just a placeholder.
+		Convey("When Fakescroll is true", func() {
+			generator, err := createCliSitemapGenerator(cfg, commandline)
+
+			Print(generator)
+			Convey("Then no error should be returned", func() {
+				So(err, ShouldBeNil)
+				So(generator, ShouldNotBeNil)
+			})
+		})
+
+		Convey("When Fakescroll is false", func() {
+			generator, err := createCliSitemapGenerator(cfg, commandline)
+
+			//Creates the ElasticScroll
+			Convey("Then no error should be returned", func() {
+				So(err, ShouldBeNil)
+				So(generator, ShouldNotBeNil)
+			})
+		})
+
+	})
+}
+
+func TestUpdateSitemap(t *testing.T) {
+	Convey("Given a valid config and command line flags", t, func() {
+		cfg := &config.Config{}
+		commandLine := &FlagFields{}
+
+		Convey("When FakeScroll is true", func() {
+			commandLine.FakeScroll = true
+
+			Convey("And getContent does not return an error", func() {
+				getContent = func() (*event.ContentPublished, error) {
+					var cont event.ContentPublished
+					cont.URI = "1"
+					cont.CollectionID = "1"
+					cont.DataType = "abc"
+					cont.JobID = "1"
+					cont.SearchIndex = "2"
+					cont.TraceID = "1"
+					return &cont, nil
+				}
+				err := UpdateSitemap(cfg, commandLine)
+				Convey("It should not return an error", func() {
+					So(err, ShouldNotBeNil)
+				})
 			})
 
-			Convey("Elasticsearch client should be initialized with the correct transport", func() {
-				// Similar to the above, this would require you to be able to observe
-				// the configuration of the Elasticsearch client.
+			Convey("But getContent returns an error", func() {
+
+				getContent = func() (*event.ContentPublished, error) {
+					return nil, errors.New("Error")
+				}
+				err := UpdateSitemap(cfg, commandLine)
+
+				Convey("It should return an error", func() {
+					So(err, ShouldNotBeNil)
+				})
+			})
+		})
+
+		Convey("When FakeScroll is false", func() {
+			commandLine.FakeScroll = false
+
+			Convey("And getContent does not return an error", func() {
+				getContent = func() (*event.ContentPublished, error) {
+					var cont event.ContentPublished
+					cont.URI = "1"
+					cont.CollectionID = "1"
+					cont.DataType = "abc"
+					cont.JobID = "1"
+					cont.SearchIndex = "2"
+					cont.TraceID = "1"
+					return &cont, nil
+				}
+				err := UpdateSitemap(cfg, commandLine)
+				Convey("It should not return an error", func() {
+					So(err, ShouldNotBeNil)
+				})
+			})
+
+			Convey("But getContent returns an error", func() {
+
+				getContent = func() (*event.ContentPublished, error) {
+					return nil, errors.New("Error")
+				}
+				err := UpdateSitemap(cfg, commandLine)
+
+				Convey("It should return an error", func() {
+					So(err, ShouldNotBeNil)
+				})
 			})
 		})
 	})
