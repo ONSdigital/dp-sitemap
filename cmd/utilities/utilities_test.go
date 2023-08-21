@@ -35,7 +35,6 @@ func TestCreateCliSitemapGenerator(t *testing.T) {
 		Convey("When Fakescroll is true", func() {
 			generator, err := createCliSitemapGenerator(cfg, commandline)
 
-			Print(generator)
 			Convey("Then no error should be returned", func() {
 				So(err, ShouldBeNil)
 				So(generator, ShouldNotBeNil)
@@ -45,7 +44,6 @@ func TestCreateCliSitemapGenerator(t *testing.T) {
 		Convey("When Fakescroll is false", func() {
 			generator, err := createCliSitemapGenerator(cfg, commandline)
 
-			//Creates the ElasticScroll
 			Convey("Then no error should be returned", func() {
 				So(err, ShouldBeNil)
 				So(generator, ShouldNotBeNil)
@@ -63,7 +61,7 @@ func TestUpdateSitemap(t *testing.T) {
 		Convey("When FakeScroll is true", func() {
 			commandLine.FakeScroll = true
 
-			Convey("And getContent does not return an error", func() {
+			Convey("When getContent does not return an error", func() {
 				getContent = func() (*event.ContentPublished, error) {
 					var cont event.ContentPublished
 					cont.URI = "1"
@@ -75,19 +73,19 @@ func TestUpdateSitemap(t *testing.T) {
 					return &cont, nil
 				}
 				err := UpdateSitemap(cfg, commandLine)
-				Convey("It should not return an error", func() {
+				Convey("UpdateSitemap should not return an error", func() {
 					So(err, ShouldNotBeNil)
 				})
 			})
 
-			Convey("But getContent returns an error", func() {
+			Convey("When getContent returns an error", func() {
 
 				getContent = func() (*event.ContentPublished, error) {
 					return nil, errors.New("Error")
 				}
 				err := UpdateSitemap(cfg, commandLine)
 
-				Convey("It should return an error", func() {
+				Convey("UpdateSitemap should return an error", func() {
 					So(err, ShouldNotBeNil)
 				})
 			})
@@ -96,7 +94,7 @@ func TestUpdateSitemap(t *testing.T) {
 		Convey("When FakeScroll is false", func() {
 			commandLine.FakeScroll = false
 
-			Convey("And getContent does not return an error", func() {
+			Convey("When getContent does not return an error", func() {
 				getContent = func() (*event.ContentPublished, error) {
 					var cont event.ContentPublished
 					cont.URI = "1"
@@ -108,19 +106,19 @@ func TestUpdateSitemap(t *testing.T) {
 					return &cont, nil
 				}
 				err := UpdateSitemap(cfg, commandLine)
-				Convey("It should not return an error", func() {
+				Convey("UpdateSitemap should not return an error", func() {
 					So(err, ShouldNotBeNil)
 				})
 			})
 
-			Convey("But getContent returns an error", func() {
+			Convey("When getContent returns an error", func() {
 
 				getContent = func() (*event.ContentPublished, error) {
 					return nil, errors.New("Error")
 				}
 				err := UpdateSitemap(cfg, commandLine)
 
-				Convey("It should return an error", func() {
+				Convey("UpdateSitemap should return an error", func() {
 					So(err, ShouldNotBeNil)
 				})
 			})

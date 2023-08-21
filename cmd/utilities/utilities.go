@@ -87,7 +87,8 @@ func createCliSitemapGenerator(cfg *config.Config, commandline *FlagFields) (*si
 func GenerateSitemap(cfg *config.Config, commandline *FlagFields) {
 	generator, err := createCliSitemapGenerator(cfg, commandline)
 	if err != nil {
-		panic(err)
+		fmt.Println("Error creating sitemap generator", err.Error())
+		return
 	}
 
 	// Generating sitemap
