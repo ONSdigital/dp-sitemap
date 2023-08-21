@@ -133,31 +133,13 @@ func setupLoadStaticSitemapCmd() *cobra.Command {
 				os.Exit(1)
 			}
 
-			if !isValidURL(viper.GetString("api-url")) {
-				fmt.Printf("api-url is not a valid URL: %s\n", viper.GetString("api-url"))
-				os.Exit(1)
-			}
-
-			if !isValidURL(viper.GetString("zebedee-url")) {
-				fmt.Printf("zebedee-url is not a valid URL: %s\n", viper.GetString("zebedee-url"))
-				os.Exit(1)
-			}
-
 			flagList := global.FlagFields{
-				RobotsFilePath:       viper.GetString("robots-file-path"),
 				RobotsFilePathReader: viper.GetString("robots-file-path-reader"),
-				APIURL:               viper.GetString("api-url"),
-				SitemapIndex:         viper.GetString("sitemap-index"),
-				ScrollTimeout:        viper.GetString("scroll-timeout"),
-				ScrollSize:           viper.GetInt("scroll-size"),
 				SitemapPath:          viper.GetString("sitemap-file-path"),
 				SitemapPathReader:    viper.GetString("sitemap-file-path-reader"),
-				ZebedeeURL:           viper.GetString("zebedee-url"),
-				FakeScroll:           viper.GetBool("fake-scroll"),
 			}
 			global.CmdFlagFields = &flagList
 			utilities.LoadStaticSitemap(cfg, &flagList)
-			utilities.GenerateRobotFile(cfg, &flagList)
 			return nil
 		},
 	}
