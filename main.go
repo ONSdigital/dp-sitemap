@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"github.com/ONSdigital/dp-sitemap/global"
 	"os"
 	"os/signal"
 	"syscall"
@@ -43,7 +44,7 @@ func run(ctx context.Context) error {
 	signals := make(chan os.Signal, 1)
 	signal.Notify(signals, os.Interrupt, syscall.SIGTERM)
 
-	robotseo.Init()
+	robotseo.Init(global.CmdFlagFields.RobotsFilePathReader)
 
 	// Run the service, providing an error channel for fatal errors
 	svcErrors := make(chan error, 1)

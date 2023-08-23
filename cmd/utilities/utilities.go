@@ -79,7 +79,7 @@ func GenerateSitemap(cfg *config.Config, commandline *global.FlagFields) {
 }
 
 func GenerateRobotFile(cfg *config.Config, commandline *global.FlagFields) {
-	robotseo.Init()
+	robotseo.Init(commandline.RobotsFilePathReader)
 	robotFileWriter := robotseo.RobotFileWriter{}
 	cfg.RobotsFilePath = map[config.Language]string{
 		config.English: commandline.RobotsFilePath,

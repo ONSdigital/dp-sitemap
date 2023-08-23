@@ -251,8 +251,8 @@ func (c *Component) theContentOfTheS3SitemapShouldBe(arg1 *godog.DocString) erro
 }
 
 func iHaveTheFollowingRobotjson(arg1 *godog.DocString) error {
-	robotseo.Init()
-	err := os.WriteFile("./robotseo/robot/robot_en.json", []byte(arg1.Content), 0o600)
+	robotseo.Init("./assets/robot/")
+	err := os.WriteFile("./assets/robot/robot_en.json", []byte(arg1.Content), 0o600)
 	if err != nil {
 		return fmt.Errorf("failed to write to robots file: %w", err)
 	}
