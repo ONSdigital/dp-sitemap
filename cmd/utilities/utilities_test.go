@@ -11,7 +11,7 @@ import (
 
 func TestCreateCliSitemapGenerator(t *testing.T) {
 	Convey("Given valid config and command line flags/Fake scroll is True", t, func() {
-		cfg := &config.Config{}
+		cfg, _ := config.Get()
 		commandline := &FlagFields{
 			RobotsFilePath: "robot_file.txt",
 			APIURL:         "http://localhost",
@@ -22,6 +22,8 @@ func TestCreateCliSitemapGenerator(t *testing.T) {
 			FakeScroll:     true,
 			SitemapIndex:   "1",
 		}
+		cfg.OpenSearchConfig.Signer = true
+		So(cfg.OpenSearchConfig.Signer, ShouldBeTrue)
 
 		Convey("When OpenSearchConfig.Signer is true and no errors", func() {
 			generator, err := createCliSitemapGenerator(cfg, commandline)
@@ -33,6 +35,8 @@ func TestCreateCliSitemapGenerator(t *testing.T) {
 		})
 
 		Convey("When Fakescroll is true", func() {
+
+			So(commandline.FakeScroll, ShouldBeTrue)
 			generator, err := createCliSitemapGenerator(cfg, commandline)
 
 			Convey("Then no error should be returned", func() {
@@ -40,6 +44,9 @@ func TestCreateCliSitemapGenerator(t *testing.T) {
 				So(generator, ShouldNotBeNil)
 			})
 		})
+
+		commandline.FakeScroll = false
+		So(commandline.FakeScroll, ShouldBeFalse)
 
 		Convey("When Fakescroll is false", func() {
 			generator, err := createCliSitemapGenerator(cfg, commandline)
