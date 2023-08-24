@@ -19,7 +19,7 @@ import (
 	es710 "github.com/elastic/go-elasticsearch/v7"
 )
 
-func GenerateSitemap(cfg *config.Config, commandline *global.FlagFields) {
+func createCliSitemapGenerator(cfg *config.Config, commandline *global.FlagFields) (*sitemap.Generator, error) {
 	store := &sitemap.LocalStore{}
 
 	var transport http.RoundTripper = dphttp.DefaultTransport
@@ -30,7 +30,7 @@ func GenerateSitemap(cfg *config.Config, commandline *global.FlagFields) {
 		transport, err = awsauth.NewAWSSignerRoundTripper(cfg.OpenSearchConfig.APIURL, cfg.OpenSearchConfig.SignerFilename, cfg.OpenSearchConfig.SignerRegion, cfg.OpenSearchConfig.SignerService, awsauth.Options{TlsInsecureSkipVerify: cfg.OpenSearchConfig.TLSInsecureSkipVerify})
 		if err != nil {
 			fmt.Printf("failed to save file")
-			return
+			return nil, err
 		}
 	}
 
@@ -39,7 +39,7 @@ func GenerateSitemap(cfg *config.Config, commandline *global.FlagFields) {
 		Transport: transport,
 	})
 	if err != nil {
-		return
+		return nil, err
 	}
 
 	// Get zebedeeClient using arg -zebedee-url
@@ -68,6 +68,16 @@ func GenerateSitemap(cfg *config.Config, commandline *global.FlagFields) {
 			config.Welsh:   commandline.SitemapPath + "_cy",
 		}),
 	)
+
+	return generator, nil
+}
+
+func GenerateSitemap(cfg *config.Config, commandline *global.FlagFields) {
+	generator, err := createCliSitemapGenerator(cfg, commandline)
+	if err != nil {
+		fmt.Println("Error creating sitemap generator", err.Error())
+		return
+	}
 
 	// Generating sitemap
 	genErr := generator.MakeFullSitemap(context.Background())
@@ -101,7 +111,7 @@ func GenerateRobotFile(cfg *config.Config, commandline *global.FlagFields) {
 	fmt.Println("robot file creation successful")
 }
 
-func UpdateSitemap(cfg *config.Config, commandLine *global.FlagFields) {
+func UpdateSitemap(cfg *config.Config, commandLine *global.FlagFields) error {
 	var scroll sitemap.Scroll
 	if commandLine.FakeScroll {
 		scroll = &FakeScroll{}
@@ -120,15 +130,16 @@ func UpdateSitemap(cfg *config.Config, commandLine *global.FlagFields) {
 	content, contentErr := getContent()
 	if contentErr != nil {
 		fmt.Println("Failed to get event content from user:", contentErr)
-		return
+		return contentErr
 	}
 
 	err := handler.Handle(context.Background(), cfg, content)
 	if err != nil {
 		fmt.Println("Failed to handle event:", err)
-		return
+		return err
 	}
 	fmt.Println("sitemap update job complete")
+	return nil
 }
 
 func LoadStaticSitemap(cfg *config.Config, commandLine *global.FlagFields) {
@@ -148,7 +159,7 @@ func LoadStaticSitemap(cfg *config.Config, commandLine *global.FlagFields) {
 	}
 }
 
-func getContent() (*event.ContentPublished, error) {
+var getContent = func() (*event.ContentPublished, error) {
 	content := &event.ContentPublished{}
 	fmt.Print("Please enter URI: ")
 	text, err := getText()
