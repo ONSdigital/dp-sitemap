@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/ONSdigital/dp-sitemap/global"
+	"github.com/ONSdigital/dp-sitemap/config"
 )
 
 type StaticURL struct {
@@ -16,10 +16,10 @@ type StaticURL struct {
 	HasAltLang  bool   `json:"hasAltLang"`
 }
 
-func LoadStaticSitemap(oldSitemapName, staticSitemapName, dpOnsURLHostName, dpOnsURLHostNameAlt, altLang string, store FileStore) error {
+func LoadStaticSitemap(cfg *config.Config, oldSitemapName, staticSitemapName, dpOnsURLHostName, dpOnsURLHostNameAlt, altLang string, store FileStore) error {
 	var b []byte
 	var err error
-	if global.CmdFlagFields == nil {
+	if cfg.Debug {
 		b, err = GetStaticSitemap(staticSitemapName)
 	} else {
 		b, err = os.ReadFile(staticSitemapName)

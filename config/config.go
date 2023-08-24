@@ -43,6 +43,7 @@ type Config struct {
 	ZebedeeURL                 string `envconfig:"ZEBEDEE_URL"`
 	DpOnsURLHostNameEn         string `envconfig:"DP_ONS_URL_HOSTNAME_ENGLISH"`
 	DpOnsURLHostNameCy         string `envconfig:"DP_ONS_URL_HOSTNAME_WELSH"`
+	Debug                      bool   `envconfig:"SITEMAP_DEBUG_ENABLED"`
 }
 
 type S3Config struct {
@@ -103,6 +104,7 @@ func Get() (*Config, error) {
 			English: "/tmp/dp_robot_file_en.txt",
 			Welsh:   "/tmp/dp_robot_file_cy.txt",
 		},
+		Debug: true,
 		KafkaConfig: KafkaConfig{
 			Brokers:             []string{"localhost:9092"},
 			Version:             "1.0.2",

@@ -5,11 +5,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"os"
+	"strings"
+
 	"github.com/ONSdigital/dp-sitemap/config"
 	"github.com/ONSdigital/log.go/v2/log"
 	"golang.org/x/exp/slices"
-	"os"
-	"strings"
 )
 
 var robotList map[config.Language]map[string]SeoRobotModel

@@ -136,12 +136,12 @@ func LoadStaticSitemap(cfg *config.Config, commandLine *global.FlagFields) {
 		commandLine.SitemapPathReader += "/"
 	}
 	var err error
-	err = sitemap.LoadStaticSitemap(commandLine.SitemapPath+"_en", commandLine.SitemapPathReader+"sitemap_en.json", cfg.DpOnsURLHostNameEn, cfg.DpOnsURLHostNameCy, "cy", &sitemap.LocalStore{})
+	err = sitemap.LoadStaticSitemap(cfg, commandLine.SitemapPath+"_en", commandLine.SitemapPathReader+"sitemap_en.json", cfg.DpOnsURLHostNameEn, cfg.DpOnsURLHostNameCy, "cy", &sitemap.LocalStore{})
 	if err != nil {
 		fmt.Println("Failed to load english static sitemap:", err)
 		return
 	}
-	err = sitemap.LoadStaticSitemap(commandLine.SitemapPath+"_cy", commandLine.SitemapPathReader+"sitemap_cy.json", cfg.DpOnsURLHostNameCy, cfg.DpOnsURLHostNameEn, "en", &sitemap.LocalStore{})
+	err = sitemap.LoadStaticSitemap(cfg, commandLine.SitemapPath+"_cy", commandLine.SitemapPathReader+"sitemap_cy.json", cfg.DpOnsURLHostNameCy, cfg.DpOnsURLHostNameEn, "en", &sitemap.LocalStore{})
 	if err != nil {
 		fmt.Println("Failed to load welsh static sitemap:", err)
 		return

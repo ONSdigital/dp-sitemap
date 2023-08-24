@@ -53,6 +53,7 @@ func TestConfig(t *testing.T) {
 				So(cfg.S3Config.SitemapFileKey[Welsh], ShouldEqual, "sitemap-cy")
 				So(cfg.S3Config.PublishingSitemapFileKey, ShouldEqual, "publishing-sitemap")
 				So(cfg.RobotsFilePath, ShouldNotBeEmpty)
+				So(cfg.Debug, ShouldBeTrue)
 			})
 
 			Convey("Then a second call to config should return the same config", func() {

@@ -16,7 +16,7 @@ func TestLoadStaticSitemap(t *testing.T) {
 		Convey("when loading english static sitemap", func() {
 			store := LocalStore{}
 			cfg, _ := config.Get()
-			err := LoadStaticSitemap(oldSitemapName, staticSitemapName, cfg.DpOnsURLHostNameEn, cfg.DpOnsURLHostNameCy, "cy", &store)
+			err := LoadStaticSitemap(cfg, oldSitemapName, staticSitemapName, cfg.DpOnsURLHostNameEn, cfg.DpOnsURLHostNameCy, "cy", &store)
 			Convey("There should be no error", func() {
 				So(err, ShouldBeNil)
 			})
@@ -39,7 +39,7 @@ func TestLoadStaticSitemap(t *testing.T) {
 		Convey("when loading welsh static sitemap", func() {
 			store := LocalStore{}
 			cfg, _ := config.Get()
-			err := LoadStaticSitemap(oldSitemapName, staticSitemapName, cfg.DpOnsURLHostNameCy, cfg.DpOnsURLHostNameEn, "en", &store)
+			err := LoadStaticSitemap(cfg, oldSitemapName, staticSitemapName, cfg.DpOnsURLHostNameCy, cfg.DpOnsURLHostNameEn, "en", &store)
 			Convey("There should be no error", func() {
 				So(err, ShouldBeNil)
 			})

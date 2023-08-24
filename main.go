@@ -2,12 +2,12 @@ package main
 
 import (
 	"context"
-	"github.com/ONSdigital/dp-sitemap/global"
 	"os"
 	"os/signal"
 	"syscall"
 
 	"github.com/ONSdigital/dp-sitemap/cmd"
+	"github.com/ONSdigital/dp-sitemap/global"
 	"github.com/ONSdigital/dp-sitemap/robotseo"
 	"github.com/ONSdigital/dp-sitemap/service"
 	"github.com/ONSdigital/log.go/v2/log"
