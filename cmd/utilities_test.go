@@ -1,8 +1,7 @@
-package utilities
+package cmd
 
 import (
 	"errors"
-	"github.com/ONSdigital/dp-sitemap/global"
 	"testing"
 
 	"github.com/ONSdigital/dp-sitemap/config"
@@ -13,7 +12,7 @@ import (
 func TestCreateCliSitemapGenerator(t *testing.T) {
 	Convey("Given valid config and command line flags/Fake scroll is True", t, func() {
 		cfg, _ := config.Get()
-		commandline := &global.FlagFields{
+		commandline := &FlagFields{
 			RobotsFilePath: "robot_file.txt",
 			APIURL:         "http://localhost",
 			ScrollTimeout:  "1000",
@@ -64,7 +63,7 @@ func TestCreateCliSitemapGenerator(t *testing.T) {
 func TestUpdateSitemap(t *testing.T) {
 	Convey("Given a valid config and command line flags", t, func() {
 		cfg := &config.Config{}
-		commandLine := &global.FlagFields{}
+		commandLine := &FlagFields{}
 
 		Convey("When FakeScroll is true", func() {
 			commandLine.FakeScroll = true

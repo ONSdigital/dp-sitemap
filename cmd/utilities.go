@@ -1,4 +1,4 @@
-package utilities
+package cmd
 
 import (
 	"bufio"
@@ -13,13 +13,12 @@ import (
 	dphttp "github.com/ONSdigital/dp-net/v2/http"
 	"github.com/ONSdigital/dp-sitemap/config"
 	"github.com/ONSdigital/dp-sitemap/event"
-	"github.com/ONSdigital/dp-sitemap/global"
 	"github.com/ONSdigital/dp-sitemap/robotseo"
 	"github.com/ONSdigital/dp-sitemap/sitemap"
 	es710 "github.com/elastic/go-elasticsearch/v7"
 )
 
-func createCliSitemapGenerator(cfg *config.Config, commandline *global.FlagFields) (*sitemap.Generator, error) {
+func createCliSitemapGenerator(cfg *config.Config, commandline *FlagFields) (*sitemap.Generator, error) {
 	store := &sitemap.LocalStore{}
 
 	var transport http.RoundTripper = dphttp.DefaultTransport
@@ -72,7 +71,7 @@ func createCliSitemapGenerator(cfg *config.Config, commandline *global.FlagField
 	return generator, nil
 }
 
-func GenerateSitemap(cfg *config.Config, commandline *global.FlagFields) {
+func GenerateSitemap(cfg *config.Config, commandline *FlagFields) {
 	generator, err := createCliSitemapGenerator(cfg, commandline)
 	if err != nil {
 		fmt.Println("Error creating sitemap generator", err.Error())
@@ -88,7 +87,7 @@ func GenerateSitemap(cfg *config.Config, commandline *global.FlagFields) {
 	fmt.Println("sitemap generation job complete")
 }
 
-func GenerateRobotFile(cfg *config.Config, commandline *global.FlagFields) {
+func GenerateRobotFile(cfg *config.Config, commandline *FlagFields) {
 	robotseo.Init(commandline.RobotsFilePathReader)
 	robotFileWriter := robotseo.RobotFileWriter{}
 	cfg.RobotsFilePath = map[config.Language]string{
@@ -111,7 +110,7 @@ func GenerateRobotFile(cfg *config.Config, commandline *global.FlagFields) {
 	fmt.Println("robot file creation successful")
 }
 
-func UpdateSitemap(cfg *config.Config, commandLine *global.FlagFields) error {
+func UpdateSitemap(cfg *config.Config, commandLine *FlagFields) error {
 	var scroll sitemap.Scroll
 	if commandLine.FakeScroll {
 		scroll = &FakeScroll{}
@@ -142,7 +141,7 @@ func UpdateSitemap(cfg *config.Config, commandLine *global.FlagFields) error {
 	return nil
 }
 
-func LoadStaticSitemap(cfg *config.Config, commandLine *global.FlagFields) {
+func LoadStaticSitemap(cfg *config.Config, commandLine *FlagFields) {
 	if !strings.HasSuffix(commandLine.SitemapPathReader, "/") {
 		commandLine.SitemapPathReader += "/"
 	}

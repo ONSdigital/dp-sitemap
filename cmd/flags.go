@@ -1,4 +1,4 @@
-package global
+package cmd
 
 var CmdFlagFields *FlagFields
 

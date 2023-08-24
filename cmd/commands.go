@@ -5,9 +5,7 @@ import (
 	"net/url"
 	"os"
 
-	"github.com/ONSdigital/dp-sitemap/cmd/utilities"
 	"github.com/ONSdigital/dp-sitemap/config"
-	"github.com/ONSdigital/dp-sitemap/global"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -58,7 +56,7 @@ func setupGenerateCmd() *cobra.Command {
 				os.Exit(1)
 			}
 
-			flagList := global.FlagFields{
+			flagList := FlagFields{
 				RobotsFilePath:       viper.GetString("robots-file-path"),
 				RobotsFilePathReader: viper.GetString("robots-file-path-reader"),
 				APIURL:               viper.GetString("api-url"),
@@ -70,9 +68,9 @@ func setupGenerateCmd() *cobra.Command {
 				ZebedeeURL:           viper.GetString("zebedee-url"),
 				FakeScroll:           viper.GetBool("fake-scroll"),
 			}
-			global.CmdFlagFields = &flagList
-			utilities.GenerateSitemap(cfg, &flagList)
-			utilities.GenerateRobotFile(cfg, &flagList)
+			CmdFlagFields = &flagList
+			GenerateSitemap(cfg, &flagList)
+			GenerateRobotFile(cfg, &flagList)
 			return nil
 		},
 	}
@@ -101,7 +99,7 @@ func setupUpdateCmd() *cobra.Command {
 				os.Exit(1)
 			}
 
-			flagList := global.FlagFields{
+			flagList := FlagFields{
 				RobotsFilePath:       viper.GetString("robots-file-path"),
 				RobotsFilePathReader: viper.GetString("robots-file-path-reader"),
 				APIURL:               viper.GetString("api-url"),
@@ -113,12 +111,12 @@ func setupUpdateCmd() *cobra.Command {
 				ZebedeeURL:           viper.GetString("zebedee-url"),
 				FakeScroll:           viper.GetBool("fake-scroll"),
 			}
-			global.CmdFlagFields = &flagList
-			err = utilities.UpdateSitemap(cfg, &flagList)
+			CmdFlagFields = &flagList
+			err = UpdateSitemap(cfg, &flagList)
 			if err != nil {
 				return err
 			}
-			utilities.GenerateRobotFile(cfg, &flagList)
+			GenerateRobotFile(cfg, &flagList)
 			return nil
 		},
 	}
@@ -136,13 +134,13 @@ func setupLoadStaticSitemapCmd() *cobra.Command {
 				os.Exit(1)
 			}
 
-			flagList := global.FlagFields{
+			flagList := FlagFields{
 				RobotsFilePathReader: viper.GetString("robots-file-path-reader"),
 				SitemapPath:          viper.GetString("sitemap-file-path"),
 				SitemapPathReader:    viper.GetString("sitemap-file-path-reader"),
 			}
-			global.CmdFlagFields = &flagList
-			utilities.LoadStaticSitemap(cfg, &flagList)
+			CmdFlagFields = &flagList
+			LoadStaticSitemap(cfg, &flagList)
 			return nil
 		},
 	}
