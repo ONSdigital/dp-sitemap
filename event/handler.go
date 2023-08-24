@@ -5,7 +5,6 @@ import (
 
 	"github.com/ONSdigital/dp-sitemap/clients"
 	"github.com/ONSdigital/dp-sitemap/config"
-	"github.com/ONSdigital/dp-sitemap/global"
 	"github.com/ONSdigital/dp-sitemap/sitemap"
 	"github.com/ONSdigital/log.go/v2/log"
 )
@@ -39,26 +38,14 @@ func (h *ContentPublishedHandler) Handle(ctx context.Context, _ *config.Config, 
 	}
 
 	if pageInfo.URLs[config.English] != nil {
-		var sitemapName string
-		if global.CmdFlagFields == nil {
-			sitemapName = "test_sitemap_en"
-		} else {
-			sitemapName = global.CmdFlagFields.SitemapPath + "_" + config.English.String()
-		}
-		err = h.createSiteMap(ctx, config.English, sitemapName, pageInfo)
+		err = h.createSiteMap(ctx, config.English, "test_sitemap_en", pageInfo)
 		if err != nil {
 			return err
 		}
 	}
 
 	if pageInfo.URLs[config.Welsh] != nil {
-		var sitemapName string
-		if global.CmdFlagFields == nil {
-			sitemapName = "test_sitemap_cy"
-		} else {
-			sitemapName = global.CmdFlagFields.SitemapPath + "_" + config.Welsh.String()
-		}
-		err = h.createSiteMap(ctx, config.Welsh, sitemapName, pageInfo)
+		err = h.createSiteMap(ctx, config.Welsh, "test_sitemap_cy", pageInfo)
 		if err != nil {
 			return err
 		}
