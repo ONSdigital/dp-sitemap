@@ -10,7 +10,7 @@ import (
 )
 
 func TestCreateCliSitemapGenerator(t *testing.T) {
-	Convey("Given valid config and command line flags/Fake scroll is True", t, func() {
+	Convey("Given valid config and command line flags, Fake scroll is True", t, func() {
 		cfg, _ := config.Get()
 		commandline := &FlagFields{
 			RobotsFilePath: "robot_file.txt",
