@@ -36,7 +36,6 @@ func createCliSitemapGenerator(cfg *config.Config, commandline *FlagFields) (*si
 
 	var transport http.RoundTripper = dphttp.DefaultTransport
 
-	// add SignerRegion,SignerService
 	if cfg.OpenSearchConfig.Signer {
 		var err error
 		transport, err = awsauth.NewAWSSignerRoundTripper(cfg.OpenSearchConfig.APIURL, cfg.OpenSearchConfig.SignerFilename, cfg.OpenSearchConfig.SignerRegion, cfg.OpenSearchConfig.SignerService, awsauth.Options{TlsInsecureSkipVerify: cfg.OpenSearchConfig.TLSInsecureSkipVerify})
