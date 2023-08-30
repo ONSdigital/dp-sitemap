@@ -1,7 +1,6 @@
-    {
-        "GoogleBot" :
-            {
-                "AllowList": ["/allow1", "/allow2"],
-                "DenyList": ["/deny1", "/deny2"]
-            }
+{
+    "*": {
+        "AllowList": ["/"],
+        "DenyList":  []
     }
+}

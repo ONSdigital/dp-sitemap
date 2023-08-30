@@ -1,15 +1,9 @@
 Feature: dp-sitemap write robot file
 
     Scenario: Write simple robots file
-        Given i have the following robot.json:
+        Given i have the following robot folder:
         """
-            {
-                "GoogleBot" :
-                    {
-                        "AllowList": ["/allow1", "/allow2"],
-                        "DenyList": ["/deny1", "/deny2"]
-                    }
-            }
+./features/steps/robot/
         """
         When i invoke writejson with the sitemap "www.site1.com/sitemap1"
         Then the content of the resulting robots file must be

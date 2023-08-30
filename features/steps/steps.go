@@ -26,7 +26,7 @@ import (
 )
 
 func (c *Component) RegisterSteps(ctx *godog.ScenarioContext) {
-	ctx.Step(`^i have the following robot\.json:$`, iHaveTheFollowingRobotjson)
+	ctx.Step(`^i have the following robot folder:$`, iHaveTheFollowingRobotFolder)
 	ctx.Step(`^i invoke writejson with the sitemap "([^"]*)"$`, c.iInvokeWritejsonWithTheSitemap)
 	ctx.Step(`^the content of the resulting robots file must be$`, c.theContentOfTheResultingRobotsFileMustBe)
 	ctx.Step(`^I generate a local sitemap$`, c.iGenerateLocalSitemap)
@@ -250,12 +250,8 @@ func (c *Component) theContentOfTheS3SitemapShouldBe(arg1 *godog.DocString) erro
 	return nil
 }
 
-func iHaveTheFollowingRobotjson(arg1 *godog.DocString) error {
-	robotseo.Init("./assets/robot/")
-	err := os.WriteFile("./assets/robot/robot_en.json", []byte(arg1.Content), 0o600)
-	if err != nil {
-		return fmt.Errorf("failed to write to robots file: %w", err)
-	}
+func iHaveTheFollowingRobotFolder(arg1 *godog.DocString) error {
+	robotseo.Init(arg1.Content)
 	return nil
 }
 
