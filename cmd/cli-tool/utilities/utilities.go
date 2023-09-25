@@ -39,7 +39,10 @@ func createCliSitemapGenerator(cfg *config.Config, commandline *FlagFields) (*si
 	var transport http.RoundTripper = dphttp.DefaultTransport
 	fmt.Println("createCliSitemapGenerator called!")
 
-	cfg.OpenSearchConfig.Signer = true
+	if !commandline.FakeScroll {
+		cfg.OpenSearchConfig.Signer = true
+		fmt.Println("Signer set true")
+	}
 	// add SignerRegion,SignerService
 	if cfg.OpenSearchConfig.Signer {
 		var err error
