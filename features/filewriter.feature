@@ -1,10 +1,7 @@
 Feature: dp-sitemap write robot file
 
     Scenario: Write simple robots file
-        Given i have the following robot folder:
-        """
-./features/steps/robot/
-        """
+        Given i have my robots config files in the folder "./features/steps/robot/"
         When i invoke writejson with the sitemap "www.site1.com/sitemap1"
         Then the content of the resulting robots file must be
         """
