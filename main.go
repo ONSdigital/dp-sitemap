@@ -7,7 +7,6 @@ import (
 	"syscall"
 
 	"github.com/ONSdigital/dp-sitemap/assets"
-	"github.com/ONSdigital/dp-sitemap/cmd"
 	"github.com/ONSdigital/dp-sitemap/robotseo"
 	"github.com/ONSdigital/dp-sitemap/service"
 	"github.com/ONSdigital/log.go/v2/log"
@@ -28,11 +27,6 @@ var (
 func main() {
 	log.Namespace = serviceName
 	ctx := context.Background()
-	cmdErr := cmd.GetRootCommand().Execute()
-	if cmdErr != nil {
-		log.Error(ctx, "error initialising kafka producer", cmdErr)
-		return
-	}
 
 	if err := run(ctx); err != nil {
 		log.Error(ctx, "fatal runtime error", err)

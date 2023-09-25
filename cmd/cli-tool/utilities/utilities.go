@@ -16,6 +16,8 @@ import (
 	"github.com/ONSdigital/dp-sitemap/event"
 	"github.com/ONSdigital/dp-sitemap/robotseo"
 	"github.com/ONSdigital/dp-sitemap/sitemap"
+
+	//"github.com/aws/smithy-go/logging"
 	es710 "github.com/elastic/go-elasticsearch/v7"
 )
 
@@ -35,25 +37,33 @@ func createCliSitemapGenerator(cfg *config.Config, commandline *FlagFields) (*si
 	store := &sitemap.LocalStore{}
 
 	var transport http.RoundTripper = dphttp.DefaultTransport
+	fmt.Println("createCliSitemapGenerator called!")
 
+	cfg.OpenSearchConfig.Signer = true
 	// add SignerRegion,SignerService
 	if cfg.OpenSearchConfig.Signer {
 		var err error
 		transport, err = awsauth.NewAWSSignerRoundTripper(cfg.OpenSearchConfig.APIURL, cfg.OpenSearchConfig.SignerFilename, cfg.OpenSearchConfig.SignerRegion, cfg.OpenSearchConfig.SignerService, awsauth.Options{TlsInsecureSkipVerify: cfg.OpenSearchConfig.TLSInsecureSkipVerify})
 		if err != nil {
-			fmt.Printf("failed to save file")
+			//logging.Logger("failed to save file")
+			fmt.Println("failed to save file")
 			return nil, err
 		}
 	}
 
+	fmt.Print("Roundtriper res: ", transport)
 	rawClient, err := es710.NewClient(es710.Config{
 		Addresses: []string{commandline.APIURL},
 		Transport: transport,
 	})
 	if err != nil {
+		fmt.Println("Raw Client Creation Unsuccesful!")
 		return nil, err
 	}
+	if rawClient != nil {
 
+		fmt.Println("Raw client is : ", rawClient)
+	}
 	// Get zebedeeClient using arg -zebedee-url
 	zebedeeClient := zebedee.New(commandline.ZebedeeURL)
 
@@ -85,6 +95,8 @@ func createCliSitemapGenerator(cfg *config.Config, commandline *FlagFields) (*si
 }
 
 func GenerateSitemap(cfg *config.Config, commandline *FlagFields) {
+
+	print("user zebedee url is: %p", commandline.ZebedeeURL)
 	generator, err := createCliSitemapGenerator(cfg, commandline)
 	if err != nil {
 		fmt.Println("Error creating sitemap generator", err.Error())
@@ -97,7 +109,7 @@ func GenerateSitemap(cfg *config.Config, commandline *FlagFields) {
 		fmt.Println("Error writing sitemap file", genErr.Error())
 		return
 	}
-	fmt.Println("sitemap generation job complete")
+	fmt.Println("sitemap generation job completedd")
 }
 
 func GenerateRobotFile(cfg *config.Config, commandline *FlagFields) {

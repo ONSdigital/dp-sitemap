@@ -17,6 +17,10 @@ audit:
 build:
 	go build -tags 'production' $(LDFLAGS) -o $(BINPATH)/dp-sitemap
 
+.PHONY: build-cli
+build-cli:
+	go build -tags 'production' $(LDFLAGS) -o $(BINPATH)/dp-sitemap-cli cmd/cli-tool/*.go
+
 lint:
 	go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.53.2
 	golangci-lint run ./...

@@ -1,11 +1,11 @@
-package cmd
+package main
 
 import (
 	"fmt"
 	"net/url"
 	"os"
 
-	"github.com/ONSdigital/dp-sitemap/cmd/utilities"
+	"github.com/ONSdigital/dp-sitemap/cmd/cli-tool/utilities"
 	"github.com/ONSdigital/dp-sitemap/config"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
