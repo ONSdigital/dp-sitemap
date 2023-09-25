@@ -4,14 +4,11 @@ go 1.20
 
 replace github.com/hashicorp/consul/api => github.com/hashicorp/consul/api v1.11.5
 
-// To fix [CVE-2023-3978]
-replace golang.org/x/net => golang.org/x/net v0.14.0
-
 require (
 	github.com/ONSdigital/dp-component-test v0.9.2
 	github.com/ONSdigital/dp-healthcheck v1.6.1
 	github.com/ONSdigital/dp-kafka/v3 v3.10.0
-	github.com/ONSdigital/dp-net/v2 v2.10.0
+	github.com/ONSdigital/dp-net/v2 v2.11.0
 	github.com/ONSdigital/go-ns v0.0.0-20210916104633-ac1c1c52327e
 	github.com/ONSdigital/log.go/v2 v2.4.1
 	github.com/cucumber/godog v0.12.6
@@ -100,7 +97,7 @@ require (
 	go.mongodb.org/mongo-driver v1.12.0 // indirect
 	golang.org/x/crypto v0.12.0 // indirect
 	golang.org/x/exp v0.0.0-20230321023759-10a507213a29
-	golang.org/x/net v0.11.0 // indirect
+	golang.org/x/net v0.14.0 // indirect
 	golang.org/x/sync v0.3.0 // indirect
 	golang.org/x/sys v0.11.0 // indirect
 	golang.org/x/text v0.12.0 // indirect
