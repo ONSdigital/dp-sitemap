@@ -6,7 +6,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/ONSdigital/dp-sitemap/cmd"
+	"github.com/ONSdigital/dp-sitemap/cmd/cli-tool/utilities"
 	"github.com/ONSdigital/dp-sitemap/robotseo"
 	"github.com/ONSdigital/dp-sitemap/service"
 	"github.com/ONSdigital/log.go/v2/log"
@@ -27,11 +27,6 @@ var (
 func main() {
 	log.Namespace = serviceName
 	ctx := context.Background()
-	cmdErr := cmd.GetRootCommand().Execute()
-	if cmdErr != nil {
-		log.Error(ctx, "error initialising kafka producer", cmdErr)
-		return
-	}
 
 	if err := run(ctx); err != nil {
 		log.Error(ctx, "fatal runtime error", err)
@@ -43,7 +38,7 @@ func run(ctx context.Context) error {
 	signals := make(chan os.Signal, 1)
 	signal.Notify(signals, os.Interrupt, syscall.SIGTERM)
 
-	robotseo.Init(cmd.CmdFlagFields.RobotsFilePathReader)
+	robotseo.Init(utilities.CmdFlagFields.RobotsFilePathReader)
 
 	// Run the service, providing an error channel for fatal errors
 	svcErrors := make(chan error, 1)
