@@ -275,6 +275,9 @@ func (f *ElasticFetcher) GetPageInfo(ctx context.Context, path string) (*PageInf
 		return &PageInfo{}, err
 	}
 
+	if description.Description.ReleaseDate == "" {
+		description.Description.ReleaseDate += time.Now().Format("2006-01-02T15:04:05Z07:00")
+	}
 	releaseDate, err := time.Parse(time.RFC3339, description.Description.ReleaseDate)
 	if err != nil {
 		log.Error(ctx, "Error parsing the release date", err)

@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"context"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"strings"
@@ -74,15 +75,13 @@ func createCliSitemapGenerator(cfg *config.Config, commandline *FlagFields) (*si
 func GenerateSitemap(cfg *config.Config, commandline *FlagFields) {
 	generator, err := createCliSitemapGenerator(cfg, commandline)
 	if err != nil {
-		fmt.Println("Error creating sitemap generator", err.Error())
-		return
+		log.Fatal("Error creating sitemap generator", err.Error())
 	}
 
 	// Generating sitemap
 	genErr := generator.MakeFullSitemap(context.Background())
 	if genErr != nil {
-		fmt.Println("Error writing sitemap file", genErr.Error())
-		return
+		log.Fatal("Error writing sitemap file", genErr.Error())
 	}
 	fmt.Println("sitemap generation job complete")
 }
@@ -117,12 +116,7 @@ func UpdateSitemap(cfg *config.Config, commandLine *FlagFields) error {
 	} else {
 		scroll = &sitemap.ElasticScroll{}
 	}
-	var store sitemap.FileStore
-	if commandLine.FakeScroll {
-		store = &sitemap.LocalStore{}
-	} else {
-		store = &sitemap.S3Store{}
-	}
+	store := &sitemap.LocalStore{}
 	zebedeeClient := zebedee.New(commandLine.ZebedeeURL)
 	fetcher := sitemap.NewElasticFetcher(scroll, cfg, zebedeeClient)
 	handler := event.NewContentPublishedHandler(store, zebedeeClient, cfg, fetcher)
