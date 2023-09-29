@@ -1,4 +1,4 @@
-package cmd
+package utilities
 
 var CmdFlagFields *FlagFields
 
