@@ -23,21 +23,15 @@ func Init(pathToRobotFile string) {
 	var err error
 	var fileName string
 
-	cfg, err := config.Get()
-	if err != nil {
-		log.Error(ctx, "error getting config ", err)
-		panic("Unable to get config")
-	}
-
 	if !strings.HasSuffix(pathToRobotFile, "/") {
 		pathToRobotFile += "/"
 	}
 	for _, lang := range []config.Language{config.English, config.Welsh} {
 		fileName = "robot_" + lang.String() + ".json"
 
-		// if debug is true (the default) we get the robot file for the component tests
+		// if pathToRobotFile is empty (the default) we get the robot file for the component tests
 		// otherwise we get the robot file from the local file store and the path specified by pathToRobotFile
-		if cfg.Debug {
+		if pathToRobotFile == "" {
 			b, err = features.GetRobotFile(fileName)
 		} else {
 			b, err = os.ReadFile(pathToRobotFile + fileName)
