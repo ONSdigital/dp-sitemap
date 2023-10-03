@@ -21,6 +21,10 @@ build:
 build-cli:
 	go build -tags 'production' $(LDFLAGS) -o $(BINPATH)/dp-sitemap-cli cmd/cli-tool/*.go
 
+.PHONY: build-cli-remote
+build-cli-remote:
+	GOOS=linux GOARCH=amd64 go build -tags 'production' $(LDFLAGS) -o $(BINPATH)/dp-sitemap-cli cmd/cli-tool/*.go
+
 lint:
 	go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.53.2
 	golangci-lint run ./...
