@@ -19,9 +19,9 @@ func GetRootCommand() *cobra.Command {
 		},
 	}
 	rootCmd.PersistentFlags().String("robots-file-path", "test_robots.txt", "path to robots file that will be generated")
-	rootCmd.PersistentFlags().String("robots-file-path-reader", "", "path to robots files that we are reading from")
+	rootCmd.PersistentFlags().String("robots-file-path-reader", "", "path to external robot file (optional)")
 	rootCmd.PersistentFlags().String("sitemap-file-path", "test_sitemap", "path to sitemap file")
-	rootCmd.PersistentFlags().String("sitemap-file-path-reader", "./sitemap/static/", "path to sitemap files that we are reading from")
+	rootCmd.PersistentFlags().String("sitemap-file-path-reader", "./sitemap/static/", "path to external sitemap files (optional)")
 	rootCmd.PersistentFlags().String("api-url", "http://localhost", "elastic search api url")
 	rootCmd.PersistentFlags().String("zebedee-url", "http://localhost:8082", "zebedee url")
 	rootCmd.PersistentFlags().String("sitemap-index", "1", "OPENSEARCH_SITEMAP_INDEX")

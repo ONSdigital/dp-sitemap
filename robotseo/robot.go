@@ -23,7 +23,7 @@ func Init(pathToRobotFile string) {
 	var err error
 	var fileName string
 
-	if !strings.HasSuffix(pathToRobotFile, "/") {
+	if !strings.HasSuffix(pathToRobotFile, "/") && pathToRobotFile != "" {
 		pathToRobotFile += "/"
 	}
 	for _, lang := range []config.Language{config.English, config.Welsh} {
