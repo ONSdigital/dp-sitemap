@@ -15,3 +15,12 @@ Set the opensearch signer value using "export OPENSEARCH_SIGNER=true" when runni
       --sitemap-file-path-reader string   path to sitemap files that we are reading from (default "./sitemap/static/")
       --sitemap-index string              OPENSEARCH_SITEMAP_INDEX (default "1")
       --zebedee-url string                zebedee url (default "http://localhost:8082")
+
+# Build Commands
+
+To build for Remote envirionment (Sandbox/Prod..etc):
+      make build-cli-remote
+This will create a Linux build
+
+To build for Local envirionment :
+      make build-cli
