@@ -43,7 +43,7 @@ func run(ctx context.Context) error {
 	signals := make(chan os.Signal, 1)
 	signal.Notify(signals, os.Interrupt, syscall.SIGTERM)
 
-	robotseo.Init(cmd.CmdFlagFields.RobotsFilePathReader)
+	robotseo.Init("")
 
 	// Run the service, providing an error channel for fatal errors
 	svcErrors := make(chan error, 1)
