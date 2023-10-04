@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/ONSdigital/dp-sitemap/config"
+	"github.com/ONSdigital/dp-sitemap/features"
 	"github.com/ONSdigital/log.go/v2/log"
 	"golang.org/x/exp/slices"
 )
@@ -21,12 +22,21 @@ func Init(pathToRobotFile string) {
 	var b []byte
 	var err error
 	var fileName string
-	if !strings.HasSuffix(pathToRobotFile, "/") {
+
+	if !strings.HasSuffix(pathToRobotFile, "/") && pathToRobotFile != "" {
 		pathToRobotFile += "/"
 	}
 	for _, lang := range []config.Language{config.English, config.Welsh} {
 		fileName = "robot_" + lang.String() + ".json"
-		b, err = os.ReadFile(pathToRobotFile + fileName)
+
+		// if pathToRobotFile is empty (the default) we get the robot file from the embedded filesystem
+		// otherwise we get the robot file from the local file store and the path specified by pathToRobotFile
+		if pathToRobotFile == "" {
+			b, err = features.GetRobotFile(fileName)
+		} else {
+			b, err = os.ReadFile(pathToRobotFile + fileName)
+		}
+
 		if err != nil {
 			log.Error(ctx, "can't find "+fileName, err)
 			panic("Can't find " + fileName)
