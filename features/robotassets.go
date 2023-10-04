@@ -7,6 +7,7 @@ import "embed"
 
 var folder embed.FS
 
+// GetRobotFile Gets the robot file from the embedded files
 func GetRobotFile(filename string) ([]byte, error) {
 	file, err := folder.ReadFile("steps/robot/" + filename)
 	if err != nil {

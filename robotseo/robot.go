@@ -29,7 +29,7 @@ func Init(pathToRobotFile string) {
 	for _, lang := range []config.Language{config.English, config.Welsh} {
 		fileName = "robot_" + lang.String() + ".json"
 
-		// if pathToRobotFile is empty (the default) we get the robot file for the component tests
+		// if pathToRobotFile is empty (the default) we get the robot file from the embedded filesystem
 		// otherwise we get the robot file from the local file store and the path specified by pathToRobotFile
 		if pathToRobotFile == "" {
 			b, err = features.GetRobotFile(fileName)
