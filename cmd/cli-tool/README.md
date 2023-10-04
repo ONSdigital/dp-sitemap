@@ -19,9 +19,15 @@ Set the opensearch signer value using "export OPENSEARCH_SIGNER=true" when runni
 # Build Commands
 
 To build for Remote envirionment (Sandbox/Prod..etc):
-      'make build-cli-remote'
+
+```sh
+      make build-cli-remote
+```
+
 This will create a Linux build
 
 To build for Local envirionment :
-      'make build-cli'
 
+```sh
+      make build-cli
+```
