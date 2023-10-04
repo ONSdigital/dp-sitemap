@@ -6,6 +6,7 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/ONSdigital/dp-sitemap/robotseo"
 	"github.com/ONSdigital/dp-sitemap/service"
 	"github.com/ONSdigital/log.go/v2/log"
 	"github.com/pkg/errors"
@@ -35,6 +36,8 @@ func main() {
 func run(ctx context.Context) error {
 	signals := make(chan os.Signal, 1)
 	signal.Notify(signals, os.Interrupt, syscall.SIGTERM)
+
+	robotseo.Init("")
 
 	// Run the service, providing an error channel for fatal errors
 	svcErrors := make(chan error, 1)
