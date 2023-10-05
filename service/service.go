@@ -56,17 +56,6 @@ func Run(ctx context.Context, serviceList *ExternalServiceList, buildTime, gitCo
 		return nil, err
 	}
 
-	// Event Handler for Kafka Consumer
-	event.Consume(ctx, consumer, &event.ContentPublishedHandler{}, cfg)
-
-	if consumerStartErr := consumer.Start(); consumerStartErr != nil {
-		log.Fatal(ctx, "error starting the consumer", consumerStartErr)
-		return nil, consumerStartErr
-	}
-
-	// Kafka error logging go-routine
-	consumer.LogErrors(ctx)
-
 	// Get S3 Client
 	s3Client, err := serviceList.GetS3Client(cfg)
 	if err != nil {
@@ -82,6 +71,40 @@ func Run(ctx context.Context, serviceList *ExternalServiceList, buildTime, gitCo
 	}
 
 	zebedeeClient := serviceList.GetZebedee(cfg)
+
+	var (
+		store                 sitemap.FileStore
+		fullSitemapFiles      sitemap.Files
+		publishingSitemapFile string
+	)
+	switch cfg.SitemapSaveLocation {
+	case "s3":
+		store = sitemap.NewS3Store(
+			s3Client,
+		)
+		fullSitemapFiles = cfg.S3Config.SitemapFileKey
+		publishingSitemapFile = cfg.S3Config.PublishingSitemapFileKey
+
+	default:
+		store = &sitemap.LocalStore{}
+		fullSitemapFiles = cfg.SitemapLocalFile
+		publishingSitemapFile = cfg.PublishingSitemapLocalFile
+	}
+
+	scroll := sitemap.NewElasticScroll(esRawClient, cfg)
+	fetcher := sitemap.NewElasticFetcher(scroll, cfg, zebedeeClient)
+	handler := event.NewContentPublishedHandler(store, zebedeeClient, cfg, fetcher)
+
+	// Event Handler for Kafka Consumer
+	event.Consume(ctx, consumer, handler, cfg)
+
+	if consumerStartErr := consumer.Start(); consumerStartErr != nil {
+		log.Fatal(ctx, "error starting the consumer", consumerStartErr)
+		return nil, consumerStartErr
+	}
+
+	// Kafka error logging go-routine
+	consumer.LogErrors(ctx)
 
 	// Get HealthCheck
 	hc, err := serviceList.GetHealthCheck(cfg, buildTime, gitCommit, version)
@@ -103,25 +126,6 @@ func Run(ctx context.Context, serviceList *ExternalServiceList, buildTime, gitCo
 			svcErrors <- errors.Wrap(err, "failure in http listen and serve")
 		}
 	}()
-
-	var (
-		store                 sitemap.FileStore
-		fullSitemapFiles      sitemap.Files
-		publishingSitemapFile string
-	)
-	switch cfg.SitemapSaveLocation {
-	case "s3":
-		store = sitemap.NewS3Store(
-			s3Client,
-		)
-		fullSitemapFiles = cfg.S3Config.SitemapFileKey
-		publishingSitemapFile = cfg.S3Config.PublishingSitemapFileKey
-
-	default:
-		store = &sitemap.LocalStore{}
-		fullSitemapFiles = cfg.SitemapLocalFile
-		publishingSitemapFile = cfg.PublishingSitemapLocalFile
-	}
 
 	scheduler := gocron.NewScheduler(time.UTC)
 	scheduler.SingletonModeAll()
