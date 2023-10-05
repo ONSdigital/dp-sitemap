@@ -26,7 +26,7 @@ func NewContentPublishedHandler(store sitemap.FileStore, client clients.ZebedeeC
 }
 
 // Handle takes a single event.
-func (h *ContentPublishedHandler) Handle(ctx context.Context, _ *config.Config, event *ContentPublished) (err error) {
+func (h *ContentPublishedHandler) Handle(ctx context.Context, cfg *config.Config, event *ContentPublished) (err error) {
 	logData := log.Data{
 		"eventContentPublished": event,
 	}
@@ -38,14 +38,14 @@ func (h *ContentPublishedHandler) Handle(ctx context.Context, _ *config.Config, 
 	}
 
 	if pageInfo.URLs[config.English] != nil {
-		err = h.createSiteMap(ctx, config.English, "test_sitemap_en", pageInfo)
+		err = h.createSiteMap(ctx, config.English, cfg.SitemapLocalFile[config.English], pageInfo)
 		if err != nil {
 			return err
 		}
 	}
 
 	if pageInfo.URLs[config.Welsh] != nil {
-		err = h.createSiteMap(ctx, config.Welsh, "test_sitemap_cy", pageInfo)
+		err = h.createSiteMap(ctx, config.Welsh, cfg.SitemapLocalFile[config.Welsh], pageInfo)
 		if err != nil {
 			return err
 		}
