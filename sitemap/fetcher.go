@@ -275,12 +275,18 @@ func (f *ElasticFetcher) GetPageInfo(ctx context.Context, path string) (*PageInf
 		return &PageInfo{}, err
 	}
 
-	releaseDate, err := time.Parse(time.RFC3339, description.Description.ReleaseDate)
-	if err != nil {
-		log.Error(ctx, "Error parsing the release date", err)
-		return &PageInfo{}, err
+	var releaseDate time.Time
+	var rd = ""
+
+	if description.Description.ReleaseDate != "" {
+		releaseDate, err = time.Parse(time.RFC3339, description.Description.ReleaseDate)
+		if err != nil {
+			log.Error(ctx, "Error parsing the release date", err)
+			return &PageInfo{}, err
+		}
+		rd = releaseDate.Format("2006-01-02")
 	}
-	rd := releaseDate.Format("2006-01-02")
+
 	urlEn, urlCy := f.URLVersions(ctx, path, rd)
 
 	return &PageInfo{
