@@ -62,8 +62,8 @@ func createCliSitemapGenerator(cfg *config.Config, commandline *FlagFields) (*si
 		sitemap.WithAdder(&sitemap.DefaultAdder{}),
 		sitemap.WithFileStore(store),
 		sitemap.WithFullSitemapFiles(map[config.Language]string{
-			config.English: commandline.SitemapPath + "_en",
-			config.Welsh:   commandline.SitemapPath + "_cy",
+			config.English: commandline.SitemapPath + "_en.xml",
+			config.Welsh:   commandline.SitemapPath + "_cy.xml",
 		}),
 	)
 
@@ -74,14 +74,14 @@ func GenerateSitemap(cfg *config.Config, commandline *FlagFields) {
 	generator, err := createCliSitemapGenerator(cfg, commandline)
 	if err != nil {
 		fmt.Println("Error creating sitemap generator", err.Error())
-		return
+		os.Exit(1)
 	}
 
 	// Generating sitemap
 	genErr := generator.MakeFullSitemap(context.Background())
 	if genErr != nil {
 		fmt.Println("Error writing sitemap file", genErr.Error())
-		return
+		os.Exit(1)
 	}
 	fmt.Println("sitemap generation job complete")
 }
@@ -117,7 +117,7 @@ func UpdateSitemap(cfg *config.Config, commandLine *FlagFields) error {
 		scroll = &sitemap.ElasticScroll{}
 	}
 	var store sitemap.FileStore
-	if commandLine.FakeScroll {
+	if cfg.SitemapSaveLocation == "local" {
 		store = &sitemap.LocalStore{}
 	} else {
 		store = &sitemap.S3Store{}
