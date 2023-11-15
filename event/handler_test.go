@@ -2,15 +2,16 @@ package event
 
 import (
 	"context"
+	"io"
+	"os"
+	"strings"
+	"testing"
+
 	"github.com/ONSdigital/dp-api-clients-go/v2/zebedee"
 	mock2 "github.com/ONSdigital/dp-sitemap/clients/mock"
 	"github.com/ONSdigital/dp-sitemap/config"
 	"github.com/ONSdigital/dp-sitemap/sitemap"
 	"github.com/ONSdigital/dp-sitemap/sitemap/mock"
-	"io"
-	"os"
-	"strings"
-	"testing"
 
 	. "github.com/smartystreets/goconvey/convey"
 )
@@ -55,6 +56,10 @@ func TestHandle(t *testing.T) {
 		}
 
 		store.CopyFileFunc = func(src io.Reader, dest io.Writer) error {
+			return nil
+		}
+
+		store.DeleteFileFunc = func(name string) error {
 			return nil
 		}
 

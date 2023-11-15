@@ -3,7 +3,8 @@ This repo holds all information/code regarding sitemap (for SEO and other purpos
 
 # Structure of robot.json
 Holds allow/deny list for different user-agents.
-```
+
+```json
 {
     "Googlebot": {
       "AllowList": ["/googleallow1", "/googleallow2"],
