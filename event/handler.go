@@ -83,6 +83,11 @@ func (h *ContentPublishedHandler) createSiteMap(ctx context.Context, lang config
 		return err
 	}
 
+	err = h.fileStore.DeleteFile(tmpSitemapName)
+	if err != nil {
+		log.Error(ctx, "Error deleting temp sitemap", err)
+	}
+
 	return nil
 }
 

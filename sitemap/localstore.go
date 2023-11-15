@@ -55,3 +55,11 @@ func (s *LocalStore) CreateFile(name string) (io.ReadWriteCloser, error) {
 	}
 	return file, nil
 }
+
+func (s *LocalStore) DeleteFile(name string) error {
+	err := os.Remove(name)
+	if err != nil {
+		return fmt.Errorf("failed to delete file : %w", err)
+	}
+	return nil
+}

@@ -100,4 +100,30 @@ func TestLocalStore(t *testing.T) {
 			So(string(content), ShouldEqual, "file content")
 		})
 	})
+
+	Convey("When a file deletion succeeds", t, func() {
+
+		randomFilename := path.Join(dir, "sitemap-test-"+uuid.NewString())
+		err := os.WriteFile(randomFilename, []byte("file content"), 0o600)
+
+		s := &sitemap.LocalStore{}
+		err = s.DeleteFile(randomFilename)
+
+		Convey("Localstore should not return an error", func() {
+			So(err, ShouldBeNil)
+		})
+	})
+
+	Convey("When an incorrect path is provided for deletion", t, func() {
+
+		randomFilename := path.Join(dir, "sitemap-test-"+uuid.NewString())
+
+		s := &sitemap.LocalStore{}
+		err := s.DeleteFile(randomFilename)
+
+		Convey("Localstore should not return an error", func() {
+			So(err, ShouldNotBeNil)
+			So(err.Error(), ShouldContainSubstring, "failed to delete file")
+		})
+	})
 }

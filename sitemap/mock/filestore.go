@@ -25,6 +25,9 @@ var _ sitemap.FileStore = &FileStoreMock{}
 //			CreateFileFunc: func(name string) (io.ReadWriteCloser, error) {
 //				panic("mock out the CreateFile method")
 //			},
+//			DeleteFileFunc: func(name string) error {
+//				panic("mock out the DeleteFile method")
+//			},
 //			GetFileFunc: func(name string) (io.ReadCloser, error) {
 //				panic("mock out the GetFile method")
 //			},
@@ -43,6 +46,9 @@ type FileStoreMock struct {
 
 	// CreateFileFunc mocks the CreateFile method.
 	CreateFileFunc func(name string) (io.ReadWriteCloser, error)
+
+	// DeleteFileFunc mocks the DeleteFile method.
+	DeleteFileFunc func(name string) error
 
 	// GetFileFunc mocks the GetFile method.
 	GetFileFunc func(name string) (io.ReadCloser, error)
@@ -64,6 +70,11 @@ type FileStoreMock struct {
 			// Name is the name argument value.
 			Name string
 		}
+		// DeleteFile holds details about calls to the DeleteFile method.
+		DeleteFile []struct {
+			// Name is the name argument value.
+			Name string
+		}
 		// GetFile holds details about calls to the GetFile method.
 		GetFile []struct {
 			// Name is the name argument value.
@@ -79,6 +90,7 @@ type FileStoreMock struct {
 	}
 	lockCopyFile   sync.RWMutex
 	lockCreateFile sync.RWMutex
+	lockDeleteFile sync.RWMutex
 	lockGetFile    sync.RWMutex
 	lockSaveFile   sync.RWMutex
 }
@@ -148,6 +160,38 @@ func (mock *FileStoreMock) CreateFileCalls() []struct {
 	mock.lockCreateFile.RLock()
 	calls = mock.calls.CreateFile
 	mock.lockCreateFile.RUnlock()
+	return calls
+}
+
+// DeleteFile calls DeleteFileFunc.
+func (mock *FileStoreMock) DeleteFile(name string) error {
+	if mock.DeleteFileFunc == nil {
+		panic("FileStoreMock.DeleteFileFunc: method is nil but FileStore.DeleteFile was just called")
+	}
+	callInfo := struct {
+		Name string
+	}{
+		Name: name,
+	}
+	mock.lockDeleteFile.Lock()
+	mock.calls.DeleteFile = append(mock.calls.DeleteFile, callInfo)
+	mock.lockDeleteFile.Unlock()
+	return mock.DeleteFileFunc(name)
+}
+
+// DeleteFileCalls gets all the calls that were made to DeleteFile.
+// Check the length with:
+//
+//	len(mockedFileStore.DeleteFileCalls())
+func (mock *FileStoreMock) DeleteFileCalls() []struct {
+	Name string
+} {
+	var calls []struct {
+		Name string
+	}
+	mock.lockDeleteFile.RLock()
+	calls = mock.calls.DeleteFile
+	mock.lockDeleteFile.RUnlock()
 	return calls
 }
 

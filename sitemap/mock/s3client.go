@@ -16,25 +16,25 @@ var _ sitemap.S3Client = &S3ClientMock{}
 
 // S3ClientMock is a mock implementation of sitemap.S3Client.
 //
-// 	func TestSomethingThatUsesS3Client(t *testing.T) {
+//	func TestSomethingThatUsesS3Client(t *testing.T) {
 //
-// 		// make and configure a mocked sitemap.S3Client
-// 		mockedS3Client := &S3ClientMock{
-// 			BucketNameFunc: func() string {
-// 				panic("mock out the BucketName method")
-// 			},
-// 			GetFunc: func(key string) (io.ReadCloser, *int64, error) {
-// 				panic("mock out the Get method")
-// 			},
-// 			UploadFunc: func(input *s3manager.UploadInput, options ...func(*s3manager.Uploader)) (*s3manager.UploadOutput, error) {
-// 				panic("mock out the Upload method")
-// 			},
-// 		}
+//		// make and configure a mocked sitemap.S3Client
+//		mockedS3Client := &S3ClientMock{
+//			BucketNameFunc: func() string {
+//				panic("mock out the BucketName method")
+//			},
+//			GetFunc: func(key string) (io.ReadCloser, *int64, error) {
+//				panic("mock out the Get method")
+//			},
+//			UploadFunc: func(input *s3manager.UploadInput, options ...func(*s3manager.Uploader)) (*s3manager.UploadOutput, error) {
+//				panic("mock out the Upload method")
+//			},
+//		}
 //
-// 		// use mockedS3Client in code that requires sitemap.S3Client
-// 		// and then make assertions.
+//		// use mockedS3Client in code that requires sitemap.S3Client
+//		// and then make assertions.
 //
-// 	}
+//	}
 type S3ClientMock struct {
 	// BucketNameFunc mocks the BucketName method.
 	BucketNameFunc func() string
@@ -83,7 +83,8 @@ func (mock *S3ClientMock) BucketName() string {
 
 // BucketNameCalls gets all the calls that were made to BucketName.
 // Check the length with:
-//     len(mockedS3Client.BucketNameCalls())
+//
+//	len(mockedS3Client.BucketNameCalls())
 func (mock *S3ClientMock) BucketNameCalls() []struct {
 } {
 	var calls []struct {
@@ -112,7 +113,8 @@ func (mock *S3ClientMock) Get(key string) (io.ReadCloser, *int64, error) {
 
 // GetCalls gets all the calls that were made to Get.
 // Check the length with:
-//     len(mockedS3Client.GetCalls())
+//
+//	len(mockedS3Client.GetCalls())
 func (mock *S3ClientMock) GetCalls() []struct {
 	Key string
 } {
@@ -145,7 +147,8 @@ func (mock *S3ClientMock) Upload(input *s3manager.UploadInput, options ...func(*
 
 // UploadCalls gets all the calls that were made to Upload.
 // Check the length with:
-//     len(mockedS3Client.UploadCalls())
+//
+//	len(mockedS3Client.UploadCalls())
 func (mock *S3ClientMock) UploadCalls() []struct {
 	Input   *s3manager.UploadInput
 	Options []func(*s3manager.Uploader)

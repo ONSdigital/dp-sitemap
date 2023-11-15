@@ -54,3 +54,7 @@ func (s *S3Store) CopyFile(_ io.Reader, _ io.Writer) error {
 func (s *S3Store) CreateFile(_ string) (io.ReadWriteCloser, error) {
 	return nil, nil
 }
+
+func (s *S3Store) DeleteFile(_ string) error {
+	return nil
+}
