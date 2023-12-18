@@ -122,7 +122,7 @@ func NewElasticFetcher(scroll Scroll, cfg *config.Config, zc clients.ZebedeeClie
 
 func (f *ElasticFetcher) HasWelshContent(ctx context.Context, path string) bool {
 	welshPath := path + "/data_cy.json"
-	log.Info(ctx, "Checking welsh content for "+welshPath)
+	log.Info(ctx, "checking welsh content", log.Data{"welsh_path": welshPath})
 	_, err := f.zClient.GetFileSize(ctx, "", "", config.Welsh.String(), welshPath)
 	return err == nil
 }
@@ -184,7 +184,7 @@ func (f *ElasticFetcher) GetFullSitemap(ctx context.Context) (fileNames Files, e
 	fileNames = Files{config.English: fileNameEn, config.Welsh: fileNameCy}
 	files := map[config.Language]*os.File{config.English: fileEn, config.Welsh: fileCy}
 
-	log.Info(ctx, "created sitemap files "+fileNameEn+", "+fileNameCy)
+	log.Info(ctx, "created sitemap files", log.Data{"filename_en": fileNameEn, "filename_cy": fileNameCy})
 	defer func() {
 		for i, fl := range files {
 			fl.Close()
@@ -192,10 +192,10 @@ func (f *ElasticFetcher) GetFullSitemap(ctx context.Context) (fileNames Files, e
 			if err != nil {
 				removeErr := os.Remove(fileNames[i])
 				if removeErr != nil {
-					log.Error(ctx, "failed to remove sitemap file "+fileNames[i], err)
+					log.Error(ctx, "failed to remove sitemap file", err, log.Data{"filename": fileNames[i]})
 					return
 				}
-				log.Info(ctx, "removed sitemap file "+fileNames[i])
+				log.Info(ctx, "removed sitemap file", log.Data{"filename": fileNames[i]})
 			}
 		}
 	}()
@@ -271,7 +271,7 @@ func (f *ElasticFetcher) GetFullSitemap(ctx context.Context) (fileNames Files, e
 func (f *ElasticFetcher) GetPageInfo(ctx context.Context, path string) (*PageInfo, error) {
 	description, err := f.zClient.GetPageDescription(ctx, "", "", "", path)
 	if err != nil {
-		log.Error(ctx, "Error getting page description", err)
+		log.Error(ctx, "error getting page description", err)
 		return &PageInfo{}, err
 	}
 
@@ -281,7 +281,7 @@ func (f *ElasticFetcher) GetPageInfo(ctx context.Context, path string) (*PageInf
 	if description.Description.ReleaseDate != "" {
 		releaseDate, err = time.Parse(time.RFC3339, description.Description.ReleaseDate)
 		if err != nil {
-			log.Error(ctx, "Error parsing the release date", err)
+			log.Error(ctx, "error parsing the release date", err)
 			return &PageInfo{}, err
 		}
 		rd = releaseDate.Format("2006-01-02")

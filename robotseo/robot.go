@@ -38,14 +38,14 @@ func Init(pathToRobotFile string) {
 		}
 
 		if err != nil {
-			log.Error(ctx, "can't find "+fileName, err)
+			log.Error(ctx, "file not found", err, log.Data{"filename": fileName})
 			panic("Can't find " + fileName)
 		}
 
 		rContent := map[string]SeoRobotModel{}
 		err = json.Unmarshal(b, &rContent)
 		if err != nil {
-			log.Error(ctx, "error reading "+fileName, err)
+			log.Error(ctx, "error reading file", err, log.Data{"filename": fileName})
 			panic("Unable to read JSON")
 		}
 		robotList[lang] = rContent
@@ -58,7 +58,7 @@ func Init(pathToRobotFile string) {
 		fileName := "robot_" + lang.String() + ".json"
 		rList := robotList[lang]
 		if len(rList) == 0 {
-			log.Error(ctx, "no entry in "+fileName, errors.New(fileName+" cant be empty"))
+			log.Error(ctx, "no entry in file", errors.New(fileName+" cant be empty"), log.Data{"filename": fileName})
 			panic(fileName + " cant be empty")
 		}
 		for ua, list := range rList {

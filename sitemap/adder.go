@@ -20,7 +20,7 @@ func (a *DefaultAdder) Add(oldSitemap io.Reader, url *URL) (fileName string, siz
 		return "", 0, fmt.Errorf("failed to create publishing sitemap file: %w", err)
 	}
 	fileName = file.Name()
-	log.Info(context.Background(), "created publishing sitemap file "+fileName)
+	log.Info(context.Background(), "created publishing sitemap file", log.Data{"filename": fileName})
 	defer func() {
 		closeErr := file.Close()
 		if closeErr != nil {
@@ -33,7 +33,7 @@ func (a *DefaultAdder) Add(oldSitemap io.Reader, url *URL) (fileName string, siz
 				log.Error(context.Background(), "failed to remove publishing sitemap file", removeErr)
 				return
 			}
-			log.Info(context.Background(), "removed publishing sitemap file "+fileName)
+			log.Info(context.Background(), "removed publishing sitemap file", log.Data{"filename": fileName})
 		}
 	}()
 

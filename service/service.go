@@ -187,7 +187,7 @@ func Run(ctx context.Context, serviceList *ExternalServiceList, buildTime, gitCo
 			body := robotFileWriter.GetRobotsFileBody(lang, cfg.SitemapLocalFile)
 			saveErr := store.SaveFile(cfg.RobotsFilePath[lang], strings.NewReader(body))
 			if saveErr != nil {
-				log.Error(ctx, "failed to save file: %w", saveErr)
+				log.Error(ctx, "failed to save file", saveErr)
 				return
 			}
 		}

@@ -152,10 +152,10 @@ func (g *Generator) AppendURL(ctx context.Context, sitemap io.ReadCloser, url *U
 	defer func() {
 		err = os.Remove(fileName)
 		if err != nil {
-			log.Error(ctx, "failed to remove temporary sitemap file "+fileName, err)
+			log.Error(ctx, "failed to remove temporary sitemap file", err, log.Data{"filename": fileName})
 			return
 		}
-		log.Info(ctx, "removed temporary sitemap file "+fileName)
+		log.Info(ctx, "removed temporary sitemap file", log.Data{"filename": fileName})
 	}()
 
 	file, err := os.Open(fileName)
@@ -192,10 +192,10 @@ func (g *Generator) MakeFullSitemap(ctx context.Context) error {
 		for _, fl := range sitemaps {
 			err = os.Remove(fl)
 			if err != nil {
-				log.Error(ctx, "failed to remove temporary sitemap file "+fl, err)
+				log.Error(ctx, "failed to remove temporary sitemap file", err, log.Data{"filename": fl})
 				return
 			}
-			log.Info(ctx, "removed temporary sitemap file "+fl)
+			log.Info(ctx, "removed temporary sitemap file", log.Data{"filename": fl})
 		}
 	}()
 
