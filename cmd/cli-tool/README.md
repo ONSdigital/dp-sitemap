@@ -34,3 +34,31 @@ To build for Local envirionment :
 ```sh
     make build-cli
 ```
+
+## To run in a remote environment
+
+[Build the tool](#build-commands) for remote environment
+
+Ship to remote:
+
+```sh
+    dp scp <env> <mount> ./build/dp-sitemap-cli-remote ./dp-sitemap
+```
+
+Remote onto the box.
+
+Now run the tool:
+
+```sh
+    export OPENSEARCH_SIGNER=true
+    ./dp-sitemap generate --fake-scroll=false --elasticsearch-url=<ElasticSearchURL> --zebedee-url=http://localhost:<ZebedeePort> --sitemap-index="ons"
+```
+
+ElasticSearchURL can be obtained from the configs for dp-search-data-importer
+ZebedeePort can be obtained from dp-setup
+
+Now copy the sitemap to your machine:
+
+```sh
+    dp scp <env> <mount> --pull ./test_sitemap_en.xml .
+```
