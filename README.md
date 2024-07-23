@@ -1,7 +1,9 @@
 # dp-sitemap
+
 This repo holds all information/code regarding sitemap (for SEO and other purposes).
 
-# Structure of robot.json
+## Structure of robot.json
+
 Holds allow/deny list for different user-agents.
 
 ```json
@@ -21,7 +23,7 @@ Holds allow/deny list for different user-agents.
 }
 ```
 
-### Getting started
+## Getting started
 
 * Run `make debug`
 
