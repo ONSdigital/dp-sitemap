@@ -55,8 +55,8 @@ type S3Config struct {
 }
 
 type OpenSearchConfig struct {
-	APIURL                string        `envconfig:"OPENSEARCH_API_URL"`
-	SitemapIndex          string        `envconfig:"OPENSEARCH_SITEMAP_INDEX"`
+	ElasticSearchURL      string        `envconfig:"OPENSEARCH_URL"`
+	ElasticSearchIndex    string        `envconfig:"OPENSEARCH_INDEX"`
 	ScrollTimeout         time.Duration `envconfig:"OPENSEARCH_SCROLL_TIMEOUT"`
 	ScrollSize            int           `envconfig:"OPENSEARCH_SCROLL_SIZE"`
 	DebugFirstPageOnly    bool          `envconfig:"OPENSEARCH_DEBUG_FIRST_PAGE_ONLY"` // only fetch first page of results with a size dictated by the scroll size setting
@@ -123,8 +123,8 @@ func Get() (*Config, error) {
 	}
 
 	cfg.OpenSearchConfig = OpenSearchConfig{
-		APIURL:                "http://localhost:11200",
-		SitemapIndex:          "ons",
+		ElasticSearchURL:      "http://localhost:11200",
+		ElasticSearchIndex:    "ons",
 		ScrollTimeout:         time.Minute,
 		ScrollSize:            10000,
 		DebugFirstPageOnly:    false,

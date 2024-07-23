@@ -13,14 +13,14 @@ func TestCreateCliSitemapGenerator(t *testing.T) {
 	Convey("Given valid config and command line flags/Fake scroll is True", t, func() {
 		cfg, _ := config.Get()
 		commandline := &FlagFields{
-			RobotsFilePath: "robot_file.txt",
-			APIURL:         "http://localhost",
-			ScrollTimeout:  "1000",
-			ScrollSize:     2,
-			ZebedeeURL:     "http://localhost:8082",
-			SitemapPath:    "test_sitemap",
-			FakeScroll:     true,
-			SitemapIndex:   "1",
+			RobotsFilePath:     "robot_file.txt",
+			ElasticSearchURL:   "http://localhost",
+			ScrollTimeout:      "1000",
+			ScrollSize:         2,
+			ZebedeeURL:         "http://localhost:8082",
+			SitemapPath:        "test_sitemap",
+			FakeScroll:         true,
+			ElasticSearchIndex: "1",
 		}
 		cfg.OpenSearchConfig.Signer = true
 		So(cfg.OpenSearchConfig.Signer, ShouldBeTrue)

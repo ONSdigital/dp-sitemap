@@ -41,7 +41,7 @@ func (f *ElasticScroll) GetScroll(ctx context.Context, id string, result interfa
 
 func (f *ElasticScroll) StartScroll(ctx context.Context, result interface{}) error {
 	res, err := f.elastic.Search(
-		f.elastic.Search.WithIndex(f.cfg.OpenSearchConfig.SitemapIndex),
+		f.elastic.Search.WithIndex(f.cfg.OpenSearchConfig.ElasticSearchIndex),
 		f.elastic.Search.WithScroll(f.cfg.OpenSearchConfig.ScrollTimeout),
 		f.elastic.Search.WithSize(f.cfg.OpenSearchConfig.ScrollSize),
 		f.elastic.Search.WithContext(ctx),

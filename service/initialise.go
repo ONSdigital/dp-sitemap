@@ -180,7 +180,7 @@ func (e *Init) DoGetESClients(ctx context.Context, cfg *config.OpenSearchConfig)
 
 	esClient, err = dpEs.NewClient(dpEsClient.Config{
 		ClientLib: dpEsClient.GoElasticV710,
-		Address:   cfg.APIURL,
+		Address:   cfg.ElasticSearchURL,
 		Transport: transport,
 	})
 	if err != nil {
@@ -188,7 +188,7 @@ func (e *Init) DoGetESClients(ctx context.Context, cfg *config.OpenSearchConfig)
 	}
 
 	rawClient, err = es710.NewClient(es710.Config{
-		Addresses: []string{cfg.APIURL},
+		Addresses: []string{cfg.ElasticSearchURL},
 		Transport: transport,
 	})
 	if err != nil {

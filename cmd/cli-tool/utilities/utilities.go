@@ -25,7 +25,7 @@ func createCliSitemapGenerator(cfg *config.Config, commandline *FlagFields) (*si
 
 	if cfg.OpenSearchConfig.Signer {
 		var err error
-		transport, err = awsauth.NewAWSSignerRoundTripper(cfg.OpenSearchConfig.APIURL, cfg.OpenSearchConfig.SignerFilename, cfg.OpenSearchConfig.SignerRegion, cfg.OpenSearchConfig.SignerService, awsauth.Options{TlsInsecureSkipVerify: cfg.OpenSearchConfig.TLSInsecureSkipVerify})
+		transport, err = awsauth.NewAWSSignerRoundTripper(cfg.OpenSearchConfig.ElasticSearchURL, cfg.OpenSearchConfig.SignerFilename, cfg.OpenSearchConfig.SignerRegion, cfg.OpenSearchConfig.SignerService, awsauth.Options{TlsInsecureSkipVerify: cfg.OpenSearchConfig.TLSInsecureSkipVerify})
 		if err != nil {
 			fmt.Printf("failed to save file")
 			return nil, err
@@ -33,7 +33,7 @@ func createCliSitemapGenerator(cfg *config.Config, commandline *FlagFields) (*si
 	}
 
 	rawClient, err := es710.NewClient(es710.Config{
-		Addresses: []string{commandline.APIURL},
+		Addresses: []string{commandline.ElasticSearchURL},
 		Transport: transport,
 	})
 	if err != nil {
@@ -95,7 +95,7 @@ func GenerateRobotFile(cfg *config.Config, commandline *FlagFields) {
 
 	store := &sitemap.LocalStore{}
 
-	cfg.OpenSearchConfig.APIURL = commandline.APIURL
+	cfg.OpenSearchConfig.ElasticSearchURL = commandline.ElasticSearchURL
 	cfg.OpenSearchConfig.ScrollSize = commandline.ScrollSize
 	cfg.OpenSearchConfig.Signer = true
 
