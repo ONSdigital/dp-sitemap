@@ -9,6 +9,10 @@ import (
 	. "github.com/smartystreets/goconvey/convey"
 )
 
+const (
+	defaultTestDataType = "abc"
+)
+
 func TestCreateCliSitemapGenerator(t *testing.T) {
 	Convey("Given valid config and command line flags/Fake scroll is True", t, func() {
 		cfg, _ := config.Get()
@@ -35,7 +39,6 @@ func TestCreateCliSitemapGenerator(t *testing.T) {
 		})
 
 		Convey("When Fakescroll is true", func() {
-
 			So(commandline.FakeScroll, ShouldBeTrue)
 			generator, err := createCliSitemapGenerator(cfg, commandline)
 
@@ -56,7 +59,6 @@ func TestCreateCliSitemapGenerator(t *testing.T) {
 				So(generator, ShouldNotBeNil)
 			})
 		})
-
 	})
 }
 
@@ -73,7 +75,7 @@ func TestUpdateSitemap(t *testing.T) {
 					var cont event.ContentPublished
 					cont.URI = "1"
 					cont.CollectionID = "1"
-					cont.DataType = "abc"
+					cont.DataType = defaultTestDataType
 					cont.JobID = "1"
 					cont.SearchIndex = "2"
 					cont.TraceID = "1"
@@ -86,7 +88,6 @@ func TestUpdateSitemap(t *testing.T) {
 			})
 
 			Convey("When getContent returns an error", func() {
-
 				getContent = func() (*event.ContentPublished, error) {
 					return nil, errors.New("Error")
 				}
@@ -106,7 +107,7 @@ func TestUpdateSitemap(t *testing.T) {
 					var cont event.ContentPublished
 					cont.URI = "1"
 					cont.CollectionID = "1"
-					cont.DataType = "abc"
+					cont.DataType = defaultTestDataType
 					cont.JobID = "1"
 					cont.SearchIndex = "2"
 					cont.TraceID = "1"
@@ -119,7 +120,6 @@ func TestUpdateSitemap(t *testing.T) {
 			})
 
 			Convey("When getContent returns an error", func() {
-
 				getContent = func() (*event.ContentPublished, error) {
 					return nil, errors.New("Error")
 				}

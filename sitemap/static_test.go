@@ -2,9 +2,10 @@ package sitemap
 
 import (
 	"encoding/xml"
-	"github.com/ONSdigital/dp-sitemap/config"
 	"os"
 	"testing"
+
+	"github.com/ONSdigital/dp-sitemap/config"
 
 	. "github.com/smartystreets/goconvey/convey"
 )
@@ -57,7 +58,7 @@ func TestLoadStaticSitemap(t *testing.T) {
 	})
 }
 
-func expectedUrlSetEnglish() *UrlsetReader {
+func expectedURLSetEnglish() *UrlsetReader {
 	return &UrlsetReader{
 		XMLName: xml.Name{Space: "http://www.sitemaps.org/schemas/sitemap/0.9", Local: "urlset"},
 		Xmlns:   "http://www.sitemaps.org/schemas/sitemap/0.9",
@@ -99,7 +100,7 @@ func expectedUrlSetEnglish() *UrlsetReader {
 	}
 }
 
-func expectedUrlSetWelsh() *UrlsetReader {
+func expectedURLSetWelsh() *UrlsetReader {
 	return &UrlsetReader{
 		XMLName: xml.Name{Space: "http://www.sitemaps.org/schemas/sitemap/0.9", Local: "urlset"},
 		Xmlns:   "http://www.sitemaps.org/schemas/sitemap/0.9",

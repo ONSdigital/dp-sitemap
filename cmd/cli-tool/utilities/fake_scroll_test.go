@@ -9,7 +9,6 @@ import (
 )
 
 func TestFakeStartScroll(t *testing.T) {
-
 	Convey("When valid input", t, func() {
 		testdata := sitemap.ElasticResult{}
 		Convey("Then the are no errors", func() {

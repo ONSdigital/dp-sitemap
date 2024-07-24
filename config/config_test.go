@@ -40,7 +40,6 @@ func TestConfig(t *testing.T) {
 				So(cfg.OpenSearchConfig.SignerRegion, ShouldEqual, "eu-west-2")
 				So(cfg.OpenSearchConfig.SignerService, ShouldEqual, "es")
 				So(cfg.OpenSearchConfig.TLSInsecureSkipVerify, ShouldEqual, false)
-				So(cfg.OpenSearchConfig.ElasticSearchURL, ShouldEqual, "http://localhost:11200")
 				So(cfg.ZebedeeURL, ShouldEqual, "http://localhost:8082")
 				So(cfg.DpOnsURLHostNameEn, ShouldEqual, "https://dp.aws.onsdigital.uk/")
 				So(cfg.DpOnsURLHostNameCy, ShouldEqual, "https://cy.dp.aws.onsdigital.uk/")

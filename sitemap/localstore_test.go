@@ -83,6 +83,8 @@ func TestLocalStore(t *testing.T) {
 	Convey("When local read succeeds", t, func() {
 		randomFilename := path.Join(dir, "sitemap-test-"+uuid.NewString())
 		err := os.WriteFile(randomFilename, []byte("file content"), 0o600)
+		So(err, ShouldBeNil)
+
 		defer func() {
 			removeErr := os.Remove(randomFilename)
 			So(removeErr, ShouldBeNil)
@@ -102,9 +104,9 @@ func TestLocalStore(t *testing.T) {
 	})
 
 	Convey("When a file deletion succeeds", t, func() {
-
 		randomFilename := path.Join(dir, "sitemap-test-"+uuid.NewString())
 		err := os.WriteFile(randomFilename, []byte("file content"), 0o600)
+		So(err, ShouldBeNil)
 
 		s := &sitemap.LocalStore{}
 		err = s.DeleteFile(randomFilename)
@@ -115,7 +117,6 @@ func TestLocalStore(t *testing.T) {
 	})
 
 	Convey("When an incorrect path is provided for deletion", t, func() {
-
 		randomFilename := path.Join(dir, "sitemap-test-"+uuid.NewString())
 
 		s := &sitemap.LocalStore{}

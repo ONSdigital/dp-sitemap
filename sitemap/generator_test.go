@@ -107,7 +107,8 @@ func TestGeneratePublishingSitemap(t *testing.T) {
 			So(url, ShouldResemble, &sitemap.URL{Loc: "a", Lastmod: "b"})
 			file, err := os.CreateTemp("", "sitemap-incr")
 			So(err, ShouldBeNil)
-			file.WriteString("file content")
+			_, err = file.WriteString("file content")
+			So(err, ShouldBeNil)
 			tempFile = file.Name()
 			return tempFile, 1, nil
 		}
@@ -151,7 +152,8 @@ func TestGeneratePublishingSitemap(t *testing.T) {
 		adder.AddFunc = func(oldSitemap io.Reader, url *sitemap.URL) (string, int, error) {
 			file, err := os.CreateTemp("", "sitemap-incr")
 			So(err, ShouldBeNil)
-			file.WriteString("file content")
+			_, err = file.WriteString("file content")
+			So(err, ShouldBeNil)
 			tempFile = file.Name()
 			return tempFile, 1, nil
 		}
@@ -238,7 +240,8 @@ func TestGenerateFullSitemap(t *testing.T) {
 		fetcher.GetFullSitemapFunc = func(ctx context.Context) (sitemap.Files, error) {
 			file, err := os.CreateTemp("", "sitemap")
 			So(err, ShouldBeNil)
-			file.WriteString("file content")
+			_, err = file.WriteString("file content")
+			So(err, ShouldBeNil)
 			tempFile = file.Name()
 			return sitemap.Files{config.English: tempFile}, nil
 		}
@@ -282,7 +285,8 @@ func TestGenerateFullSitemap(t *testing.T) {
 		fetcher.GetFullSitemapFunc = func(ctx context.Context) (sitemap.Files, error) {
 			file, err := os.CreateTemp("", "sitemap")
 			So(err, ShouldBeNil)
-			file.WriteString("file content")
+			_, err = file.WriteString("file content")
+			So(err, ShouldBeNil)
 			tempFile = file.Name()
 			return sitemap.Files{config.English: tempFile}, nil
 		}

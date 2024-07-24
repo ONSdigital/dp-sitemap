@@ -60,9 +60,12 @@ func NewComponent() *Component {
 			InitAtCreation:    false,
 		},
 	)
+	if err != nil {
+		log.Fatal(ctx, "Failed to create Kafka consumer", err)
+	}
 	consumer.Mock.CheckerFunc = funcCheck
 	consumer.Mock.StartFunc = func() error { return nil }
-	consumer.Mock.LogErrorsFunc = func(ctx context.Context) {}
+	consumer.Mock.LogErrorsFunc = func(ctx context.Context) { /* mock function */ }
 	c.KafkaConsumer = consumer.Mock
 
 	c.cfg = cfg
