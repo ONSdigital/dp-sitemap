@@ -16,24 +16,24 @@ Set the opensearch signer value using "export OPENSEARCH_SIGNER=true" when runni
     --scroll-timeout string             OPENSEARCH_SCROLL_TIMEOUT (default "2000")
     --sitemap-file-path string          path to sitemap file (default "test_sitemap")
     --sitemap-file-path-reader string   path to sitemap files that we are reading from (default "./sitemap/static/")
-    --sitemap-index string              OPENSEARCH_SITEMAP_INDEX (default "1")
+    --elasticsearch-index string        OPENSEARCH_SITEMAP_INDEX (default "1")
     --zebedee-url string                zebedee url (default "http://localhost:8082")
 
 ## Build Commands
 
 To build for Remote envirionment (sandbox/prod..etc):
 
-```sh
-    make build-cli-remote
-```
+    ```sh
+        make build-cli-remote
+    ```
 
 This will create a Linux build
 
 To build for Local envirionment :
 
-```sh
-    make build-cli
-```
+    ```sh
+        make build-cli
+    ```
 
 ## To run in a remote environment
 
@@ -41,24 +41,24 @@ To build for Local envirionment :
 
 Ship to remote:
 
-```sh
-    dp scp <env> <mount> ./build/dp-sitemap-cli-remote ./dp-sitemap
-```
+    ```sh
+        dp scp <env> <mount> ./build/dp-sitemap-cli-remote ./dp-sitemap
+    ```
 
 Remote onto the box.
 
 Now run the tool:
 
-```sh
-    export OPENSEARCH_SIGNER=true
-    ./dp-sitemap generate --fake-scroll=false --elasticsearch-url=<ElasticSearchURL> --zebedee-url=http://localhost:<ZebedeePort> --sitemap-index="ons"
-```
+    ```sh
+        export OPENSEARCH_SIGNER=true
+        ./dp-sitemap generate --fake-scroll=false --elasticsearch-url=<ElasticSearchURL> --zebedee-url=http://localhost:<ZebedeePort> --elasticsearch-index="ons"
+    ```
 
 ElasticSearchURL can be obtained from the configs for dp-search-data-importer
 ZebedeePort can be obtained from dp-setup
 
 Now copy the sitemap to your machine:
 
-```sh
-    dp scp <env> <mount> --pull ./test_sitemap_en.xml .
-```
+    ```sh
+        dp scp <env> <mount> --pull ./test_sitemap_en.xml .
+    ```
