@@ -7,7 +7,7 @@ VERSION ?= $(shell git tag --points-at HEAD | grep ^v | head -n 1)
 LDFLAGS = -ldflags "-X main.BuildTime=$(BUILD_TIME) -X main.GitCommit=$(GIT_COMMIT) -X main.Version=$(VERSION)"
 
 .PHONY: all
-all: audit test build
+all: audit lint test build
 
 .PHONY: audit
 audit:
@@ -26,7 +26,7 @@ build-cli-remote:
 	GOOS=linux GOARCH=amd64 go build -tags 'production' $(LDFLAGS) -o $(BINPATH)/dp-sitemap-cli-remote cmd/cli-tool/*.go
 
 lint:
-	go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.59.1
+	go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.64.5
 	golangci-lint run ./...
 
 .PHONY: debug
