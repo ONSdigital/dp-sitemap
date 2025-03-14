@@ -1,1 +1,2 @@
 CVE-2022-29153 # False positive on hashicorp/consul/api
+CVE-2024-10086 # vulnerability present on hashicorp/consul/api
