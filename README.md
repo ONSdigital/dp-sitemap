@@ -1,5 +1,11 @@
 # dp-sitemap
 
+---
+
+:warning: This repository was archived in March 2025 and is no longer in development. :warning:
+
+---
+
 This repo holds all information/code regarding sitemap (for SEO and other purposes).
 
 ## Structure of robot.json
@@ -71,6 +77,6 @@ See [CONTRIBUTING](CONTRIBUTING.md) for details.
 
 ### License
 
-Copyright © 2023, Office for National Statistics (https://www.ons.gov.uk)
+Copyright © 2025, Office for National Statistics (<https://www.ons.gov.uk>)
 
 Released under MIT license, see [LICENSE](LICENSE.md) for details.
