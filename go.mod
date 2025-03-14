@@ -1,3 +1,4 @@
+// Deprecated: This repository was archived in March 2025 as it is no longer in development
 module github.com/ONSdigital/dp-sitemap
 
 go 1.24.0
